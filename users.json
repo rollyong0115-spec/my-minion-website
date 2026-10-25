@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1792921459859,
+    "username": "eerf",
+    "password": "$2b$10$AeWwyv6hhxm5iuLwdlJz0eruLi2bXhLgUl24DNxajwXWoxYtY5Cf."
+  },
+  {
+    "id": 1792922431554,
+    "fullName": "sda",
+    "email": "asdasd",
+    "phone": "asdasd",
+    "username": "asdad",
+    "password": "$2b$10$XfncQhs7s17vcnphQ8RVSe5ryxz3UnwY1VgbHPSAEz3ZyGFxpCqk.",
+    "joinedAt": "10/25/2026"
+  },
+  {
+    "id": 1792924355864,
+    "fullName": "Dave",
+    "email": "rollyong15@gmail.com",
+    "phone": "09307828686",
+    "username": "rollyong01115@gmail.com",
+    "password": "$2b$10$fRS4fnotcsjklACaw0VObO2naBslF/V7Xf6hywlYCcw041lSQH76q",
+    "joinedAt": "10/25/2026"
+  },
+  {
+    "id": 1792924695154,
+    "fullName": "Dave1",
+    "email": "rollyong015@gmail.com",
+    "phone": "09307828686",
+    "username": "rollyong015@gmail.com",
+    "password": "$2b$10$TeBUOAib3Zft.iPAlByJ2ezPli2RZPUBg.QxxeKmg.AnF2/opcVw.",
+    "highScore": 140,
+    "joinedAt": "10/25/2026"
+  }
+]

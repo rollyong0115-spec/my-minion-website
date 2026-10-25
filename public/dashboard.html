@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gru's Lab - MinionFeed & Arcade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            background: #e2e8f0;
+            margin: 0;
+            color: #1e293b;
+        }
+
+        .navbar {
+            background: #fedb00;
+            border-bottom: 3px solid #1e3a8a;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .nav-logo { font-size: 24px; font-weight: 700; color: #1e3a8a; }
+        .nav-user { display: flex; align-items: center; gap: 15px; }
+
+        .arcade-btn {
+            background: #10b981;
+            color: white;
+            border: 2px solid #065f46;
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: inherit;
+        }
+        .arcade-btn:hover { background: #059669; }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: 2px solid #991b1b;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: inherit;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 25px auto;
+            display: grid;
+            grid-template-columns: 280px 1fr 240px;
+            gap: 20px;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            border: 2px solid #cbd5e1;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e3a8a;
+            border-bottom: 2px solid #fedb00;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            background: #fedb00;
+            border-radius: 50%;
+            border: 3px solid #1e3a8a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 10px auto;
+        }
+        .profile-name { font-size: 18px; font-weight: 700; text-align: center; }
+        .profile-username { font-size: 13px; color: #64748b; text-align: center; margin-bottom: 12px; }
+
+        .highscore-box {
+            background: #fef08a;
+            border: 2px dashed #ca8a04;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 700;
+            color: #854d0e;
+        }
+
+        .create-post textarea {
+            width: 100%;
+            height: 75px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+        }
+        .create-post input {
+            width: 100%;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            font-family: inherit;
+        }
+        .img-preview {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 8px;
+            margin-top: 8px;
+            display: none;
+            border: 2px dashed #cbd5e1;
+        }
+        .post-btn {
+            background: #2563eb;
+            color: white;
+            border: 2px solid #1e3a8a;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: inherit;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .post-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 18px;
+            border: 2px solid #cbd5e1;
+        }
+        .post-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            background: #fedb00;
+            border: 2px solid #1e3a8a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .post-author { font-weight: 700; color: #1e3a8a; }
+        .post-time { font-size: 12px; color: #94a3b8; }
+        .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
+        .post-img { width: 100%; border-radius: 12px; max-height: 350px; object-fit: cover; margin-bottom: 10px; }
+
+        .reaction-bar {
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 8px 0;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .react-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.1s;
+        }
+        .react-btn:hover { background: #fedb00; transform: scale(1.05); }
+
+        .share-btn {
+            margin-left: auto;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 6px 14px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+        }
+
+        .comments-box { margin-top: 10px; }
+        .comment-item {
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 10px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .comment-author { font-weight: 700; color: #1e3a8a; }
+        .add-comment { display: flex; gap: 6px; margin-top: 8px; }
+        .add-comment input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+        }
+        .add-comment button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+        }
+
+        #game-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+        .game-box {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: 4px solid #fedb00;
+            position: relative;
+        }
+        canvas {
+            background: #38bdf8;
+            border-radius: 12px;
+            display: block;
+            margin: 10px auto;
+            border: 3px solid #1e3a8a;
+            cursor: none;
+        }
+        .close-game {
+            position: absolute;
+            top: 12px; right: 15px;
+            font-size: 24px; font-weight: bold;
+            cursor: pointer; color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="nav-logo">&#127820; MinionFeed</div>
+        <div class="nav-user">
+            <button class="arcade-btn" onclick="openGame()">&#127918; Play Arcade</button>
+            <span id="nav-welcome">Bello!</span>
+            <button class="logout-btn" onclick="logout()">Log Out &#128075;</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div>
+            <div class="card">
+                <div class="avatar">&#127820;</div>
+                <div class="profile-name" id="user-fullname">Loading...</div>
+                <div class="profile-username" id="user-handle">@minion</div>
+                
+                <div class="highscore-box">
+                    &#127942; Arcade Record:<br>
+                    <span id="user-highscore" style="font-size: 22px;">0</span> &#127820;
+                </div>
+
+                <div style="font-size: 13px; color: #64748b;">
+                    <div>&#128231; <b>Email:</b> <span id="user-email">...</span></div>
+                    <div style="margin-top: 6px;">&#128241; <b>Phone:</b> <span id="user-phone">...</span></div>
+                    <div style="margin-top: 6px;">&#129514; <b>Joined:</b> <span id="user-joined">...</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card create-post">
+                <div class="card-header">Create Post &#129514;</div>
+                <textarea id="post-text" placeholder="What's happening? You can paste an image directly with Ctrl+V!"></textarea>
+                <input type="text" id="post-image" placeholder="Or paste an Image/GIF link here">
+                <img id="pasted-preview" class="img-preview" alt="Preview">
+                <button class="post-btn" onclick="publishPost()">Post to Feed &#128640;</button>
+            </div>
+            <div id="posts-container"></div>
+        </div>
+
+        <div>
+            <div class="card" style="text-align: center;">
+                <div class="card-header">Minion Arcade &#128377;</div>
+                <p style="font-size: 13px; color: #64748b;">Yellow = Bananas (+10)<br>Black = Bomb (Avoid!)</p>
+                <button class="arcade-btn" style="width: 100%;" onclick="openGame()">Play Game Now &#128640;</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="game-modal">
+        <div class="game-box">
+            <span class="close-game" onclick="closeGame()">&times;</span>
+            <h2 style="margin: 0; color: #1e3a8a;">BANANA CATCHER</h2>
+            <p style="margin: 5px 0; font-size: 13px; color: #64748b;">Catch Yellow Bananas | Dodge Black Bombs</p>
+            <canvas id="gameCanvas" width="400" height="420"></canvas>
+            <button id="start-game-btn" class="arcade-btn" onclick="startGame()">Start Game</button>
+        </div>
+    </div>
+
+<script>
+    let pastedImageBase64 = '';
+
+    // EMOJI CODES (Never turns into ??)
+    const EMOJIS = {
+        banana: String.fromCodePoint(0x1F34C),
+        love: String.fromCodePoint(0x2764),
+        haha: String.fromCodePoint(0x1F602),
+        rocket: String.fromCodePoint(0x1F680),
+        share: String.fromCodePoint(0x1F501)
+    };
+
+    document.getElementById('post-text').addEventListener('paste', (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    pastedImageBase64 = event.target.result;
+                    const preview = document.getElementById('pasted-preview');
+                    preview.src = pastedImageBase64;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(blob);
+            }
+        }
+    });
+
+    async function loadProfile() {
+        const res = await fetch('/api/me');
+        if (!res.ok) { window.location.href = '/index.html'; return; }
+        const user = await res.json();
+        document.getElementById('nav-welcome').innerText = 'Bello, ' + user.fullName + '!';
+        document.getElementById('user-fullname').innerText = user.fullName;
+        document.getElementById('user-handle').innerText = '@' + user.username;
+        document.getElementById('user-email').innerText = user.email;
+        document.getElementById('user-phone').innerText = user.phone;
+        document.getElementById('user-joined').innerText = user.joinedAt;
+        document.getElementById('user-highscore').innerText = user.highScore || 0;
+    }
+
+    async function loadPosts() {
+        const res = await fetch('/api/posts');
+        if (!res.ok) return;
+        const posts = await res.json();
+        const container = document.getElementById('posts-container');
+        container.innerHTML = '';
+
+        posts.forEach(post => {
+            const card = document.createElement('div');
+            card.className = 'post-card';
+            
+            const r = post.reactions || { banana: 0, love: 0, haha: 0, rocket: 0 };
+            const commentsHtml = (post.comments || []).map(c => `
+                <div class="comment-item">
+                    <span class="comment-author">${c.author}:</span> ${c.text}
+                </div>
+            `).join('');
+
+            card.innerHTML = `
+                <div class="post-top">
+                    <div class="post-avatar">${EMOJIS.banana}</div>
+                    <div>
+                        <div class="post-author">${post.author}</div>
+                        <div class="post-time">${post.time}</div>
+                    </div>
+                </div>
+                ${post.text ? `<div class="post-content">${post.text}</div>` : ''}
+                ${post.image ? `<img class="post-img" src="${post.image}" onerror="this.style.display='none'">` : ''}
+                
+                <div class="reaction-bar">
+                    <button class="react-btn" onclick="react(${post.id}, 'banana', this)">${EMOJIS.banana} ${r.banana || 0}</button>
+                    <button class="react-btn" onclick="react(${post.id}, 'love', this)">${EMOJIS.love} ${r.love || 0}</button>
+                    <button class="react-btn" onclick="react(${post.id}, 'haha', this)">${EMOJIS.haha} ${r.haha || 0}</button>
+                    <button class="react-btn" onclick="react(${post.id}, 'rocket', this)">${EMOJIS.rocket} ${r.rocket || 0}</button>
+                    <button class="share-btn" onclick="sharePost(${post.id})">${EMOJIS.share} Share</button>
+                </div>
+
+                <div class="comments-box">
+                    <div id="comments-${post.id}">${commentsHtml}</div>
+                    <div class="add-comment">
+                        <input type="text" id="comment-input-${post.id}" placeholder="Write a comment...">
+                        <button onclick="addComment(${post.id})">Send</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    async function publishPost() {
+        const text = document.getElementById('post-text').value.trim();
+        const imageUrl = document.getElementById('post-image').value.trim();
+        const image = pastedImageBase64 || imageUrl;
+
+        if (!text && !image) return;
+
+        const res = await fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, image })
+        });
+        if (res.ok) {
+            document.getElementById('post-text').value = '';
+            document.getElementById('post-image').value = '';
+            document.getElementById('pasted-preview').style.display = 'none';
+            pastedImageBase64 = '';
+            loadPosts();
+        }
+    }
+
+    async function react(id, type, btn) {
+        const res = await fetch(`/api/posts/${id}/react`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            btn.innerText = `${EMOJIS[type]} ${data.reactions[type]}`;
+        }
+    }
+
+    async function addComment(id) {
+        const input = document.getElementById(`comment-input-${id}`);
+        const text = input.value.trim();
+        if (!text) return;
+
+        const res = await fetch(`/api/posts/${id}/comment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        if (res.ok) {
+            input.value = '';
+            loadPosts();
+        }
+    }
+
+    async function sharePost(id) {
+        const res = await fetch(`/api/posts/${id}/share`, { method: 'POST' });
+        if (res.ok) {
+            alert('Post shared to the feed!');
+            loadPosts();
+        }
+    }
+
+    async function logout() {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/index.html';
+    }
+
+    // --- CANVAS ARCADE GAME ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let gameLoop;
+    let score = 0;
+    let lives = 3;
+    let isPlaying = false;
+    let basket = { x: 170, y: 360, width: 65, height: 42 };
+    let items = [];
+
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        basket.x = e.clientX - rect.left - basket.width / 2;
+        if (basket.x < 0) basket.x = 0;
+        if (basket.x > canvas.width - basket.width) basket.x = canvas.width - basket.width;
+    });
+
+    function openGame() { document.getElementById('game-modal').style.display = 'flex'; }
+    function closeGame() {
+        document.getElementById('game-modal').style.display = 'none';
+        isPlaying = false;
+        clearInterval(gameLoop);
+    }
+
+    function startGame() {
+        document.getElementById('start-game-btn').style.display = 'none';
+        score = 0;
+        lives = 3;
+        items = [];
+        isPlaying = true;
+        if (gameLoop) clearInterval(gameLoop);
+        gameLoop = setInterval(updateGame, 1000 / 60);
+    }
+
+    function drawBanana(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = '#fedb00';
+        ctx.strokeStyle = '#ca8a04';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 16, 0.2 * Math.PI, 0.85 * Math.PI, false);
+        ctx.quadraticCurveTo(-6, -4, 12, 4);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(11, 3, 4, 4);
+        ctx.restore();
+    }
+
+    function drawBomb(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = '#18181b';
+        ctx.beginPath();
+        ctx.arc(0, 4, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#71717a';
+        ctx.fillRect(-3, -12, 6, 4);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -12);
+        ctx.quadraticCurveTo(6, -18, 4, -22);
+        ctx.stroke();
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(4, -22, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function spawnItem() {
+        if (Math.random() < 0.045) {
+            const isBomb = Math.random() < 0.3;
+            items.push({
+                x: 25 + Math.random() * (canvas.width - 50),
+                y: -25,
+                radius: 16,
+                speed: 3 + Math.random() * 3,
+                isBomb: isBomb
+            });
+        }
+    }
+
+    function updateGame() {
+        if (!isPlaying) return;
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Minion Paddle
+        ctx.fillStyle = '#fedb00';
+        ctx.beginPath();
+        ctx.roundRect(basket.x, basket.y, basket.width, basket.height, 16);
+        ctx.fill();
+        ctx.strokeStyle = '#1e3a8a';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(basket.x + basket.width / 2, basket.y + 16, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(basket.x + basket.width / 2, basket.y + 16, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        spawnItem();
+        for (let i = items.length - 1; i >= 0; i--) {
+            let it = items[i];
+            it.y += it.speed;
+
+            if (it.isBomb) drawBomb(it.x, it.y);
+            else drawBanana(it.x, it.y);
+
+            if (it.y + it.radius > basket.y && it.y - it.radius < basket.y + basket.height &&
+                it.x + it.radius > basket.x && it.x - it.radius < basket.x + basket.width) {
+                if (it.isBomb) {
+                    lives--;
+                    if (lives <= 0) endGame();
+                } else {
+                    score += 10;
+                }
+                items.splice(i, 1);
+                continue;
+            }
+
+            if (it.y > canvas.height + 25) {
+                if (!it.isBomb) {
+                    lives--;
+                    if (lives <= 0) endGame();
+                }
+                items.splice(i, 1);
+            }
+        }
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 18px Fredoka, Arial, sans-serif';
+        ctx.fillText(`BANANAS: ${score}`, 15, 25);
+        ctx.fillText(`LIVES: ${lives}`, canvas.width - 95, 25);
+    }
+
+    async function endGame() {
+        isPlaying = false;
+        clearInterval(gameLoop);
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#fedb00';
+        ctx.font = 'bold 30px Fredoka, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 20);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '20px Fredoka, sans-serif';
+        ctx.fillText(`Caught: ${score} Bananas!`, canvas.width / 2, canvas.height / 2 + 15);
+        ctx.textAlign = 'left';
+
+        document.getElementById('start-game-btn').style.display = 'inline-block';
+        document.getElementById('start-game-btn').innerText = 'Play Again';
+
+        const res = await fetch('/api/highscore', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ score })
+        });
+        const data = await res.json();
+        document.getElementById('user-highscore').innerText = data.highScore;
+    }
+
+    loadProfile();
+    loadPosts();
+</script>
+</body>
+</html>
