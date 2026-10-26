@@ -2,6 +2,8 @@ const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const path = require('path');
 
 const app = express();
@@ -18,6 +20,15 @@ if (MONGO_URI) {
     console.warn('⚠️ MONGO_URI not set!');
 }
 
+// Optional Email Transporter (uses Render Environment Variables EMAIL_USER and EMAIL_PASS if provided)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER || '',
+        pass: process.env.EMAIL_PASS || ''
+    }
+});
+
 // --- DATABASE SCHEMAS ---
 const UserSchema = new mongoose.Schema({
     fullName: { type: String, required: true },
@@ -31,7 +42,21 @@ const UserSchema = new mongoose.Schema({
     avatar: { type: String, default: '' },
     coverPhoto: { type: String, default: '' },
     highScore: { type: Number, default: 0 },
+    friends: [{ type: String }],
+    blockedUsers: [{ type: String }],
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
     joinedAt: { type: String, default: () => new Date().toLocaleDateString() }
+});
+
+const NotificationSchema = new mongoose.Schema({
+    recipient: { type: String, required: true }, // username receiving the notification
+    sender: { type: String, required: true },    // fullName of sender
+    senderUsername: { type: String, required: true },
+    type: { type: String, required: true },      // 'friend', 'reply', 'mention', 'like'
+    text: { type: String, required: true },
+    read: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
 });
 
 const CommentSchema = new mongoose.Schema({
@@ -67,6 +92,7 @@ const PostSchema = new mongoose.Schema({
 
 const MessageSchema = new mongoose.Schema({
     sender: String,
+    username: String,
     avatar: String,
     text: String,
     time: String,
@@ -74,6 +100,7 @@ const MessageSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', UserSchema);
+const Notification = mongoose.model('Notification', NotificationSchema);
 const Post = mongoose.model('Post', PostSchema);
 const Message = mongoose.model('Message', MessageSchema);
 
@@ -96,30 +123,131 @@ function isStrongPassword(pwd) {
     return hasLetter && hasNumber && hasSymbol;
 }
 
-// --- AUTH ROUTES ---
+// Helper to notify mentioned users (@username)
+async function notifyMentions(text, sender) {
+    const matches = text.match(/@([a-zA-Z0-9_]+)/g);
+    if (!matches) return;
+    for (let m of matches) {
+        const username = m.replace('@', '').toLowerCase();
+        if (username !== sender.username.toLowerCase()) {
+            const userExists = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
+            if (userExists) {
+                await Notification.create({
+                    recipient: userExists.username,
+                    sender: sender.fullName,
+                    senderUsername: sender.username,
+                    type: 'mention',
+                    text: `${sender.fullName} mentioned you: "${text.substring(0, 40)}..."`
+                });
+            }
+        }
+    }
+}
+
+// --- FORGOT & RESET PASSWORD ---
+app.post('/api/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Please enter your email.' });
+
+        const user = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
+        if (!user) return res.status(404).json({ error: 'No account found with this email!' });
+
+        // Generate 1-hour expiration token
+        const token = crypto.randomBytes(20).toString('hex');
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+        await user.save();
+
+        const host = req.headers.host;
+        const protocol = req.headers['x-forwarded-proto'] || 'http';
+        const resetUrl = `${protocol}://${host}/reset-password.html?token=${token}`;
+
+        // Send email if SMTP is configured
+        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+            await transporter.sendMail({
+                to: user.email,
+                from: process.env.EMAIL_USER,
+                subject: '🍌 Gru’s Lab: Password Reset Link',
+                html: `
+                    <h2>Password Reset Request</h2>
+                    <p>Bello, ${user.fullName}!</p>
+                    <p>You requested to reset your Minion Banana Code. Click the link below to set a new password:</p>
+                    <p><a href="${resetUrl}" style="background:#fedb00;color:#1e3a8a;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold;">Reset Password Now</a></p>
+                    <p>This link expires in 1 hour.</p>
+                `
+            });
+            res.json({ message: 'Password reset link has been sent to your email!' });
+        } else {
+            // Development fallback: if no SMTP credentials set yet, return link directly so user can test immediately!
+            res.json({
+                message: 'Reset link generated! (Configure EMAIL_USER in Render to send via Gmail):',
+                resetUrl: resetUrl
+            });
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Server error processing request.' });
+    }
+});
+
+app.post('/api/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password required.' });
+
+        if (!isStrongPassword(newPassword)) {
+            return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers, and symbols.' });
+        }
+
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) return res.status(400).json({ error: 'Password reset link is invalid or has expired!' });
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        res.json({ message: 'Banana Code successfully reset! You can now log in.' });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to reset password.' });
+    }
+});
+
+// --- NOTIFICATION ROUTES ---
+app.get('/api/notifications', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = await User.findById(req.session.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const notifications = await Notification.find({ recipient: user.username }).sort({ createdAt: -1 }).limit(25);
+    res.json(notifications);
+});
+
+app.post('/api/notifications/read', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = await User.findById(req.session.userId);
+    if (user) {
+        await Notification.updateMany({ recipient: user.username, read: false }, { read: true });
+    }
+    res.json({ success: true });
+});
+
+// --- AUTH & USER ROUTES ---
 app.post('/api/register', async (req, res) => {
     try {
         const { fullName, email, phone, username, password } = req.body;
-        
-        if (!fullName || !email || !phone || !username || !password) {
-            return res.status(400).json({ error: 'Please fill in all details!' });
-        }
-
-        if (!isStrongPassword(password)) {
-            return res.status(400).json({
-                error: 'Password must be at least 8 characters with letters, numbers, and a symbol (e.g. Banana!123).'
-            });
-        }
+        if (!fullName || !email || !phone || !username || !password) return res.status(400).json({ error: 'Please fill in all details!' });
+        if (!isStrongPassword(password)) return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers & symbols.' });
 
         const usernameExists = await User.findOne({ username: new RegExp(`^${username.trim()}$`, 'i') });
-        if (usernameExists) {
-            return res.status(400).json({ error: 'Minion Name (username) is already taken! Try another one.' });
-        }
+        if (usernameExists) return res.status(400).json({ error: 'Minion Name already taken!' });
 
         const emailExists = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
-        if (emailExists) {
-            return res.status(400).json({ error: 'This email is already registered! Please log in instead.' });
-        }
+        if (emailExists) return res.status(400).json({ error: 'Email already registered!' });
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({ 
@@ -132,9 +260,6 @@ app.post('/api/register', async (req, res) => {
         await newUser.save();
         res.json({ message: 'Welcome to Gru’s Crew! You can now log in.' });
     } catch (err) {
-        if (err.code === 11000) {
-            return res.status(400).json({ error: 'Username or Email is already taken!' });
-        }
         res.status(500).json({ error: 'Database registration error: ' + err.message });
     }
 });
@@ -175,11 +300,89 @@ app.get('/api/me', async (req, res) => {
         avatar: user.avatar,
         coverPhoto: user.coverPhoto,
         highScore: user.highScore,
+        friends: user.friends || [],
+        blockedUsers: user.blockedUsers || [],
         joinedAt: user.joinedAt
     });
 });
 
-// Update Profile (with cover photo, avatar, location, bio)
+app.get('/api/users/:username', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const targetUser = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    const currentUser = await User.findById(req.session.userId);
+    const isFriend = currentUser.friends && currentUser.friends.includes(targetUser.username);
+    const isBlocked = currentUser.blockedUsers && currentUser.blockedUsers.includes(targetUser.username);
+
+    res.json({
+        fullName: targetUser.fullName,
+        username: targetUser.username,
+        bio: targetUser.bio,
+        location: targetUser.location,
+        role: targetUser.role,
+        avatar: targetUser.avatar,
+        coverPhoto: targetUser.coverPhoto,
+        highScore: targetUser.highScore,
+        joinedAt: targetUser.joinedAt,
+        isFriend: !!isFriend,
+        isBlocked: !!isBlocked
+    });
+});
+
+app.get('/api/users', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const users = await User.find({}, 'fullName username role avatar');
+    res.json(users);
+});
+
+app.post('/api/users/:username/friend', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const currentUser = await User.findById(req.session.userId);
+    const targetUsername = req.params.username;
+
+    if (!currentUser.friends) currentUser.friends = [];
+    const idx = currentUser.friends.indexOf(targetUsername);
+
+    let isFriend = false;
+    if (idx > -1) {
+        currentUser.friends.splice(idx, 1);
+    } else {
+        currentUser.friends.push(targetUsername);
+        isFriend = true;
+
+        // Trigger Notification to target user
+        await Notification.create({
+            recipient: targetUsername,
+            sender: currentUser.fullName,
+            senderUsername: currentUser.username,
+            type: 'friend',
+            text: `${currentUser.fullName} added you to their Minion crew! 🍌`
+        });
+    }
+    await currentUser.save();
+    res.json({ isFriend });
+});
+
+app.post('/api/users/:username/block', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const currentUser = await User.findById(req.session.userId);
+    const targetUsername = req.params.username;
+
+    if (!currentUser.blockedUsers) currentUser.blockedUsers = [];
+    const idx = currentUser.blockedUsers.indexOf(targetUsername);
+
+    let isBlocked = false;
+    if (idx > -1) {
+        currentUser.blockedUsers.splice(idx, 1);
+    } else {
+        currentUser.blockedUsers.push(targetUsername);
+        isBlocked = true;
+    }
+    await currentUser.save();
+    res.json({ isBlocked });
+});
+
 app.post('/api/profile', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const { fullName, bio, location, role, avatar, coverPhoto } = req.body;
@@ -211,7 +414,9 @@ app.post('/api/highscore', async (req, res) => {
 // --- MESSAGES ---
 app.get('/api/messages', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
-    const messages = await Message.find().sort({ createdAt: 1 }).limit(50);
+    const currentUser = await User.findById(req.session.userId);
+    const blocked = currentUser.blockedUsers || [];
+    const messages = await Message.find({ username: { $nin: blocked } }).sort({ createdAt: 1 }).limit(50);
     res.json(messages);
 });
 
@@ -223,18 +428,22 @@ app.post('/api/messages', async (req, res) => {
     const user = await User.findById(req.session.userId);
     const newMsg = new Message({
         sender: user ? user.fullName : 'Minion',
+        username: user ? user.username : 'minion',
         avatar: user && user.avatar ? user.avatar : '🍌',
         text: text.trim(),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     });
     await newMsg.save();
+    await notifyMentions(text, user);
     res.json(newMsg);
 });
 
 // --- POSTS ---
 app.get('/api/posts', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
-    let posts = await Post.find().sort({ createdAt: -1 });
+    const currentUser = await User.findById(req.session.userId);
+    const blocked = currentUser.blockedUsers || [];
+    let posts = await Post.find({ username: { $nin: blocked } }).sort({ createdAt: -1 });
     res.json(posts);
 });
 
@@ -251,6 +460,7 @@ app.post('/api/posts', async (req, res) => {
         image: image || ''
     });
     await newPost.save();
+    if (text) await notifyMentions(text, user);
     res.json(newPost);
 });
 
@@ -262,7 +472,7 @@ app.put('/api/posts/:id', async (req, res) => {
     const user = await User.findById(req.session.userId);
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ error: 'Post not found' });
-    if (post.username !== user.username) return res.status(403).json({ error: 'Not allowed to edit this post' });
+    if (post.username !== user.username) return res.status(403).json({ error: 'Not allowed to edit' });
 
     post.text = text.trim();
     post.edited = true;
@@ -295,6 +505,18 @@ app.post('/api/posts/:id/comment', async (req, res) => {
             time: 'Just now'
         });
         await post.save();
+        await notifyMentions(text, user);
+
+        // Notify post author if someone else commented on their post
+        if (post.username !== user.username) {
+            await Notification.create({
+                recipient: post.username,
+                sender: user.fullName,
+                senderUsername: user.username,
+                type: 'reply',
+                text: `${user.fullName} commented on your post!`
+            });
+        }
         return res.json(post.comments[post.comments.length - 1]);
     }
     res.status(404).json({ error: 'Post not found' });
@@ -311,7 +533,7 @@ app.put('/api/posts/:postId/comment/:commentId', async (req, res) => {
 
     const comment = post.comments.id(req.params.commentId);
     if (!comment) return res.status(404).json({ error: 'Comment not found' });
-    if (comment.username !== user.username) return res.status(403).json({ error: 'Not allowed to edit this comment' });
+    if (comment.username !== user.username) return res.status(403).json({ error: 'Not allowed' });
 
     comment.text = text.trim();
     comment.edited = true;
@@ -340,6 +562,19 @@ app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
     };
     comment.replies.push(newReply);
     await post.save();
+    await notifyMentions(text, user);
+
+    // Notify comment author that someone replied to them
+    if (comment.username && comment.username !== user.username) {
+        await Notification.create({
+            recipient: comment.username,
+            sender: user.fullName,
+            senderUsername: user.username,
+            type: 'reply',
+            text: `${user.fullName} replied to your comment!`
+        });
+    }
+
     res.json(newReply);
 });
 
