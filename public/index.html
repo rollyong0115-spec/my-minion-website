@@ -20,7 +20,6 @@
             padding: 20px;
         }
 
-        /* Video Background */
         .video-background {
             position: fixed;
             top: 0; left: 0;
@@ -58,7 +57,6 @@
             max-width: 400px;
         }
 
-        /* Minion Circle Badge */
         .minion-circle {
             width: 120px;
             height: 120px;
@@ -164,7 +162,6 @@
             left: calc(50% - 12px);
         }
 
-        /* Card */
         .card {
             background: rgba(255, 255, 255, 0.96);
             border: 4px solid #fedb00;
@@ -198,13 +195,12 @@
             box-shadow: 0 0 0 3px rgba(254, 219, 0, 0.4);
         }
 
-        /* Password Wrapper with Eye Icon */
         .password-wrapper {
             position: relative;
             width: 100%;
         }
         .password-wrapper input {
-            padding-right: 45px; /* Leave space for eye icon */
+            padding-right: 45px;
         }
         .eye-btn {
             position: absolute;
@@ -219,7 +215,18 @@
             align-items: center;
             justify-content: center;
         }
-        .eye-btn:hover { color: #1e3a8a; }
+
+        .pwd-requirement-box {
+            display: none;
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 4px 0 8px 0;
+            font-size: 11px;
+            color: #475569;
+            text-align: left;
+            border-left: 3px solid #fedb00;
+        }
 
         #signup-fields { display: none; }
 
@@ -243,7 +250,7 @@
 
         .toggle-box { margin-top: 14px; font-size: 14px; color: #64748b; }
         .toggle-box a { color: #2563eb; font-weight: 700; text-decoration: underline; cursor: pointer; }
-        .message { margin-top: 8px; font-size: 13px; font-weight: 600; min-height: 18px; }
+        .message { margin-top: 8px; font-size: 13px; font-weight: 600; min-height: 18px; line-height: 1.4; }
 
         .gibberish-box {
             margin-top: 14px;
@@ -273,7 +280,6 @@
 
     <div class="login-wrapper">
 
-        <!-- Minion Circle Badge -->
         <div class="minion-circle">
             <div class="hair"><div></div><div></div><div></div></div>
             <div class="strap"></div>
@@ -300,10 +306,14 @@
 
             <input type="text" id="username" placeholder="Username or Email" required>
             
-            <!-- Password Field with Show/Hide Eye Icon -->
             <div class="password-wrapper">
                 <input type="password" id="password" placeholder="Banana Code (Password)" required>
                 <span class="eye-btn" id="eye-toggle-btn" onclick="togglePasswordVisibility()">&#128065;&#65039;</span>
+            </div>
+
+            <!-- Password helper hint (visible in signup mode) -->
+            <div class="pwd-requirement-box" id="pwd-help">
+                🔒 <b>Password Rules:</b> 8+ characters with letters, numbers, and symbols (e.g. <code>Banana!123</code>).
             </div>
 
             <button class="submit-btn" id="submit-btn" onclick="submitAuth()">Log In &#128640;</button>
@@ -324,21 +334,18 @@
     let isLogin = true;
     let isPasswordFocused = false;
 
-    // --- SHOW / HIDE PASSWORD ---
     function togglePasswordVisibility() {
         const passwordField = document.getElementById('password');
         const eyeBtn = document.getElementById('eye-toggle-btn');
         if (passwordField.type === 'password') {
             passwordField.type = 'text';
-            eyeBtn.innerHTML = '&#128584;'; // Monkey covering eyes (means password is shown)
+            eyeBtn.innerHTML = '&#128584;';
         } else {
-            passwordField.type === 'password';
             passwordField.type = 'password';
-            eyeBtn.innerHTML = '&#128065;&#65039;'; // Eye open
+            eyeBtn.innerHTML = '&#128065;&#65039;';
         }
     }
 
-    // --- INTERACTIVE EYE LOGIC ---
     const eyeSocket = document.getElementById('eye-socket');
     const pupil = document.getElementById('pupil');
     const eyelid = document.getElementById('eyelid');
@@ -381,8 +388,11 @@
     function toggleForm() {
         isLogin = !isLogin;
         const signupFields = document.getElementById('signup-fields');
+        const pwdHelp = document.getElementById('pwd-help');
+
         if (isLogin) {
             signupFields.style.display = 'none';
+            pwdHelp.style.display = 'none';
             document.getElementById('form-title').innerHTML = 'BELLO! &#127820;';
             document.getElementById('form-subtitle').innerText = "Enter Gru's Lab to access the network";
             document.getElementById('submit-btn').innerHTML = 'Log In &#128640;';
@@ -390,6 +400,7 @@
             document.getElementById('toggle-link').innerText = "Join Gru's Crew";
         } else {
             signupFields.style.display = 'block';
+            pwdHelp.style.display = 'block';
             document.getElementById('form-title').innerHTML = 'JOIN THE CREW! &#129514;';
             document.getElementById('form-subtitle').innerText = 'Fill in your details to serve Gru';
             document.getElementById('submit-btn').innerHTML = 'Become a Minion &#127820;';
@@ -399,10 +410,27 @@
         document.getElementById('message').innerText = '';
     }
 
+    // Client-side strong password checker
+    function checkStrongPassword(pwd) {
+        if (!pwd || pwd.length < 8) return false;
+        const hasLetter = /[a-zA-Z]/.test(pwd);
+        const hasNumber = /[0-9]/.test(pwd);
+        const hasSymbol = /[!@#$%^&*(),.?":{}|<>\-_=+]/.test(pwd);
+        return hasLetter && hasNumber && hasSymbol;
+    }
+
     async function submitAuth() {
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
         const msg = document.getElementById('message');
+
+        if (!isLogin) {
+            if (!checkStrongPassword(password)) {
+                msg.style.color = '#ef4444';
+                msg.innerText = 'Password must be 8+ characters and include letters, numbers, and symbols (e.g. Banana!123)!';
+                return;
+            }
+        }
 
         const endpoint = isLogin ? '/api/login' : '/api/register';
         let bodyData = { username, password };
