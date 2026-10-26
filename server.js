@@ -1,3 +1,6 @@
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
@@ -10,6 +13,7 @@ const MONGO_URI = process.env.MONGO_URI;
 
 app.set('trust proxy', 1);
 
+// Connect to MongoDB Cloud Database
 if (MONGO_URI) {
     mongoose.connect(MONGO_URI)
         .then(() => console.log('✅ Connected to MongoDB Cloud Database!'))
@@ -86,24 +90,54 @@ app.use(session({
     cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 * 7 }
 }));
 
+function isStrongPassword(pwd) {
+    if (!pwd || pwd.length < 8) return false;
+    const hasLetter = /[a-zA-Z]/.test(pwd);
+    const hasNumber = /[0-9]/.test(pwd);
+    const hasSymbol = /[!@#$%^&*(),.?":{}|<>\-_=+]/.test(pwd);
+    return hasLetter && hasNumber && hasSymbol;
+}
+
 // --- AUTH ROUTES ---
 app.post('/api/register', async (req, res) => {
     try {
         const { fullName, email, phone, username, password } = req.body;
-        if (!fullName || !email || !phone || !username || !password) return res.status(400).json({ error: 'Please fill in all details!' });
+        
+        if (!fullName || !email || !phone || !username || !password) {
+            return res.status(400).json({ error: 'Please fill in all details!' });
+        }
 
-        const usernameExists = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
-        if (usernameExists) return res.status(400).json({ error: 'Minion Name already taken!' });
+        if (!isStrongPassword(password)) {
+            return res.status(400).json({
+                error: 'Password must be at least 8 characters with letters, numbers, and a symbol (e.g. Banana!123).'
+            });
+        }
 
-        const emailExists = await User.findOne({ email: new RegExp(`^${email}$`, 'i') });
-        if (emailExists) return res.status(400).json({ error: 'Email already registered!' });
+        const usernameExists = await User.findOne({ username: new RegExp(`^${username.trim()}$`, 'i') });
+        if (usernameExists) {
+            return res.status(400).json({ error: 'Minion Name (username) is already taken! Try another one.' });
+        }
+
+        const emailExists = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
+        if (emailExists) {
+            return res.status(400).json({ error: 'This email is already registered! Please log in instead.' });
+        }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ fullName, email, phone, username, password: hashedPassword });
+        const newUser = new User({ 
+            fullName: fullName.trim(), 
+            email: email.trim().toLowerCase(), 
+            phone: phone.trim(), 
+            username: username.trim(), 
+            password: hashedPassword 
+        });
         await newUser.save();
         res.json({ message: 'Welcome to Gru’s Crew! You can now log in.' });
     } catch (err) {
-        res.status(500).json({ error: 'Database registration error!' });
+        if (err.code === 11000) {
+            return res.status(400).json({ error: 'Username or Email is already taken!' });
+        }
+        res.status(500).json({ error: 'Database registration error: ' + err.message });
     }
 });
 
@@ -111,7 +145,10 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         const user = await User.findOne({
-            $or: [{ username: new RegExp(`^${username}$`, 'i') }, { email: new RegExp(`^${username}$`, 'i') }]
+            $or: [
+                { username: new RegExp(`^${username.trim()}$`, 'i') },
+                { email: new RegExp(`^${username.trim()}$`, 'i') }
+            ]
         });
         if (!user) return res.status(400).json({ error: 'Minion not found!' });
 
@@ -191,7 +228,7 @@ app.post('/api/messages', async (req, res) => {
     res.json(newMsg);
 });
 
-// --- POSTS (WITH EDIT & REPLY) ---
+// --- POSTS ---
 app.get('/api/posts', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     let posts = await Post.find().sort({ createdAt: -1 });
@@ -214,7 +251,6 @@ app.post('/api/posts', async (req, res) => {
     res.json(newPost);
 });
 
-// EDIT POST
 app.put('/api/posts/:id', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const { text } = req.body;
@@ -231,7 +267,6 @@ app.put('/api/posts/:id', async (req, res) => {
     res.json(post);
 });
 
-// REACT TO POST
 app.post('/api/posts/:id/react', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const { type } = req.body;
@@ -244,7 +279,6 @@ app.post('/api/posts/:id/react', async (req, res) => {
     res.status(404).json({ error: 'Post not found' });
 });
 
-// ADD COMMENT
 app.post('/api/posts/:id/comment', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const { text } = req.body;
@@ -263,7 +297,6 @@ app.post('/api/posts/:id/comment', async (req, res) => {
     res.status(404).json({ error: 'Post not found' });
 });
 
-// EDIT COMMENT
 app.put('/api/posts/:postId/comment/:commentId', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const { text } = req.body;
@@ -283,7 +316,6 @@ app.put('/api/posts/:postId/comment/:commentId', async (req, res) => {
     res.json(comment);
 });
 
-// REPLY TO COMMENT
 app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const { text } = req.body;
