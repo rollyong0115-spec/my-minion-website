@@ -10,7 +10,6 @@ const MONGO_URI = process.env.MONGO_URI;
 
 app.set('trust proxy', 1);
 
-// Connect to MongoDB Cloud Database
 if (MONGO_URI) {
     mongoose.connect(MONGO_URI)
         .then(() => console.log('✅ Connected to MongoDB Cloud Database!'))
@@ -26,9 +25,11 @@ const UserSchema = new mongoose.Schema({
     phone: String,
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    bio: { type: String, default: 'Official Minion ready for chaos! 🍌' },
+    bio: { type: String, default: 'Living life one banana at a time! 🍌' },
+    location: { type: String, default: "Gru's Secret Lab" },
     role: { type: String, default: 'Rocket Scientist' },
-    avatar: { type: String, default: '🍌' },
+    avatar: { type: String, default: '' },
+    coverPhoto: { type: String, default: '' },
     highScore: { type: Number, default: 0 },
     joinedAt: { type: String, default: () => new Date().toLocaleDateString() }
 });
@@ -76,8 +77,8 @@ const User = mongoose.model('User', UserSchema);
 const Post = mongoose.model('Post', PostSchema);
 const Message = mongoose.model('Message', MessageSchema);
 
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
@@ -169,22 +170,27 @@ app.get('/api/me', async (req, res) => {
         phone: user.phone,
         username: user.username,
         bio: user.bio,
+        location: user.location,
         role: user.role,
         avatar: user.avatar,
+        coverPhoto: user.coverPhoto,
         highScore: user.highScore,
         joinedAt: user.joinedAt
     });
 });
 
+// Update Profile (with cover photo, avatar, location, bio)
 app.post('/api/profile', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
-    const { fullName, bio, role, avatar } = req.body;
+    const { fullName, bio, location, role, avatar, coverPhoto } = req.body;
     const user = await User.findById(req.session.userId);
     if (user) {
         if (fullName) user.fullName = fullName;
-        if (bio) user.bio = bio;
+        if (bio !== undefined) user.bio = bio;
+        if (location !== undefined) user.location = location;
         if (role) user.role = role;
-        if (avatar) user.avatar = avatar;
+        if (avatar !== undefined) user.avatar = avatar;
+        if (coverPhoto !== undefined) user.coverPhoto = coverPhoto;
         await user.save();
         return res.json({ message: 'Profile updated!', user });
     }
@@ -217,7 +223,7 @@ app.post('/api/messages', async (req, res) => {
     const user = await User.findById(req.session.userId);
     const newMsg = new Message({
         sender: user ? user.fullName : 'Minion',
-        avatar: user ? (user.avatar || '🍌') : '🍌',
+        avatar: user && user.avatar ? user.avatar : '🍌',
         text: text.trim(),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     });
