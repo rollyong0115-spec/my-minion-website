@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gru's Lab - Feed, Profile & Notifications</title>
+    <title>Gru's Lab - Feed & Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -27,7 +27,6 @@
         .arcade-btn { background: #10b981; color: white; border: 2px solid #065f46; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 13px; }
         .logout-btn { background: #ef4444; color: white; border: 2px solid #991b1b; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 13px; }
 
-        /* Notification Bell */
         .notif-bell-btn {
             background: white; border: 2px solid #1e3a8a; border-radius: 50%; width: 38px; height: 38px;
             cursor: pointer; font-size: 17px; display: flex; align-items: center; justify-content: center; position: relative;
@@ -43,7 +42,7 @@
         }
         .notif-header { background: #1e3a8a; color: #fedb00; padding: 10px 14px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
         .notif-list { max-height: 300px; overflow-y: auto; }
-        .notif-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 12px; cursor: pointer; transition: background 0.1s; }
+        .notif-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 12px; cursor: pointer; }
         .notif-item:hover { background: #fef9c3; }
         .notif-item.unread { background: #eff6ff; font-weight: bold; }
 
@@ -80,7 +79,6 @@
         .profile-details-pills { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; font-size: 13px; color: #475569; }
         .pill { display: flex; align-items: center; gap: 5px; background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
 
-        /* Action Buttons */
         .fb-action-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 15px; width: 100%; }
         .fb-btn-blue { background: #1877f2; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
         .fb-btn-gray { background: #e4e6eb; color: #050505; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
@@ -91,24 +89,21 @@
         .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 2px solid #cbd5e1; margin-bottom: 20px; }
         .card-header { font-size: 17px; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #fedb00; padding-bottom: 8px; margin-bottom: 15px; }
 
-        .member-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 10px; cursor: pointer; transition: background 0.1s; margin-bottom: 5px; }
+        .member-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 10px; cursor: pointer; margin-bottom: 5px; }
         .member-item:hover { background: #f1f5f9; }
         .member-info { display: flex; align-items: center; gap: 8px; }
         .member-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: #fedb00; display: flex; align-items: center; justify-content: center; font-size: 16px; }
 
-        /* Post Creation */
         .create-post textarea { width: 100%; height: 75px; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px; font-family: inherit; resize: none; outline: none; }
         .create-post input { width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-family: inherit; }
         .img-preview { max-width: 100%; max-height: 180px; border-radius: 8px; margin-top: 8px; display: none; border: 2px dashed #cbd5e1; }
         .post-btn { background: #2563eb; color: white; border: 2px solid #1e3a8a; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 700; font-family: inherit; margin-top: 10px; width: 100%; }
 
-        /* Post Card */
         .post-card { background: white; border-radius: 16px; padding: 18px; margin-bottom: 16px; border: 2px solid #cbd5e1; }
         .post-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
         .post-user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .post-avatar-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #fedb00; border: 2px solid #1e3a8a; display: flex; align-items: center; justify-content: center; font-size: 20px; }
         .post-author { font-weight: 700; color: #1e3a8a; font-size: 15px; }
-        .post-author:hover { text-decoration: underline; }
         .post-time { font-size: 11px; color: #94a3b8; }
         .edited-tag { font-size: 11px; color: #94a3b8; font-style: italic; }
         .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
@@ -119,11 +114,9 @@
         .react-btn { background: #f8fafc; border: 1px solid #cbd5e1; padding: 5px 12px; border-radius: 18px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; }
         .react-btn:hover { background: #fedb00; }
 
-        /* Comments */
         .comment-item { background: #f8fafc; padding: 8px 12px; border-radius: 10px; margin-bottom: 6px; font-size: 13px; border: 1px solid #f1f5f9; }
         .comment-header { display: flex; justify-content: space-between; margin-bottom: 2px; }
         .comment-author { font-weight: 700; color: #1e3a8a; cursor: pointer; }
-        .comment-author:hover { text-decoration: underline; }
         .replies-list { margin-left: 20px; margin-top: 6px; border-left: 2px solid #fedb00; padding-left: 10px; }
         .reply-item { background: #ffffff; padding: 6px 10px; border-radius: 8px; margin-bottom: 4px; font-size: 12px; border: 1px solid #e2e8f0; }
         .reply-box { margin-left: 20px; margin-top: 6px; display: none; gap: 6px; }
@@ -133,7 +126,6 @@
         .add-comment input { flex: 1; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 13px; }
         .add-comment button { background: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: inherit; }
 
-        /* Messenger */
         .chat-container { display: flex; flex-direction: column; height: 380px; }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
         .chat-bubble { background: #f1f5f9; padding: 8px 12px; border-radius: 12px; font-size: 13px; max-width: 90%; }
@@ -164,7 +156,6 @@
 </head>
 <body>
 
-    <!-- TOP NAVBAR -->
     <div class="navbar">
         <div class="nav-logo" onclick="switchView('feed')">
             <span>&#127820;</span> MinionFeed
@@ -180,13 +171,11 @@
         </div>
 
         <div class="nav-user">
-            <!-- Notification Bell -->
             <button class="notif-bell-btn" onclick="toggleNotifs()">
                 &#128276;
                 <span class="notif-badge" id="notif-badge">0</span>
             </button>
 
-            <!-- Notification Dropdown -->
             <div class="notif-dropdown" id="notif-dropdown">
                 <div class="notif-header">
                     <span>Notifications &#128276;</span>
@@ -216,15 +205,12 @@
                 <div id="posts-container"></div>
             </div>
 
-            <!-- Sidebar -->
             <div>
-                <!-- Crew Directory -->
                 <div class="card">
                     <div class="card-header">&#128101; Minion Crew Members</div>
                     <div id="members-list" style="max-height: 180px; overflow-y: auto;"></div>
                 </div>
 
-                <!-- Chatroom -->
                 <div class="card">
                     <div class="card-header">&#128172; Lab Messenger</div>
                     <div class="chat-container">
@@ -262,6 +248,7 @@
                         <p class="profile-bio-text" id="user-bio">"Living life one banana at a time!"</p>
                         
                         <div class="profile-details-pills">
+                            <div class="pill">&#128231; <span id="user-display-email">...</span></div>
                             <div class="pill">&#128205; <span id="user-location">Gru's Secret Lab</span></div>
                             <div class="pill">&#128640; <span id="user-role">Rocket Scientist</span></div>
                             <div class="pill">&#127942; Record: <span id="user-highscore">0</span> &#127820;</div>
@@ -279,21 +266,33 @@
         </div>
     </div>
 
-    <!-- EDIT PROFILE MODAL -->
+    <!-- EDIT PROFILE MODAL (NOW WITH EMAIL & PHONE!) -->
     <div class="modal-bg" id="profile-modal">
         <div class="modal-box">
             <span class="close-btn" onclick="closeProfileModal()">&times;</span>
-            <h2 style="color: #1e3a8a; margin: 0 0 10px 0;">Edit Your Profile</h2>
-            <label>&#128247; Profile Picture:</label>
-            <input type="file" id="upload-avatar" accept="image/*">
-            <label>&#128444;&#65039; Cover Background Photo:</label>
-            <input type="file" id="upload-cover" accept="image/*">
+            <h2 style="color: #1e3a8a; margin: 0 0 10px 0;">Edit Your Information</h2>
+
+            <label>&#128231; Email Address (used for password reset):</label>
+            <input type="email" id="edit-email" placeholder="e.g. realemail@gmail.com">
+
+            <label>&#128241; Contact Phone Number:</label>
+            <input type="tel" id="edit-phone" placeholder="e.g. 09123456789">
+
             <label>Full Name:</label>
             <input type="text" id="edit-name">
+
+            <label>&#128247; Profile Picture:</label>
+            <input type="file" id="upload-avatar" accept="image/*">
+
+            <label>&#128444;&#65039; Cover Background Photo:</label>
+            <input type="file" id="upload-cover" accept="image/*">
+
             <label>Bio (About You):</label>
             <textarea id="edit-bio" rows="2"></textarea>
+
             <label>&#128205; Where are you from? (Location):</label>
             <input type="text" id="edit-location">
+
             <label>Minion Role:</label>
             <select id="edit-role">
                 <option value="Rocket Scientist">🚀 Rocket Scientist</option>
@@ -302,6 +301,7 @@
                 <option value="Gru's Favorite">⭐ Gru's Favorite</option>
                 <option value="Secret Spy">🕵️ Secret Spy</option>
             </select>
+
             <button class="save-modal-btn" onclick="saveProfile()">Save Changes &#10004;</button>
         </div>
     </div>
@@ -367,6 +367,13 @@
         document.getElementById('user-role').innerText = profile.role || 'Minion';
         document.getElementById('user-highscore').innerText = profile.highScore || 0;
 
+        const emailEl = document.getElementById('user-display-email');
+        if (currentUser && currentUser.username.toLowerCase() === username.toLowerCase()) {
+            emailEl.innerText = currentUser.email;
+        } else {
+            emailEl.innerText = 'Minion Member';
+        }
+
         const avatarEl = document.getElementById('profile-avatar');
         if (profile.avatar && profile.avatar.startsWith('data:image')) {
             avatarEl.innerHTML = `<img src="${profile.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
@@ -385,7 +392,7 @@
         const isSelf = currentUser && currentUser.username.toLowerCase() === username.toLowerCase();
 
         if (isSelf) {
-            actionsArea.innerHTML = `<button class="fb-btn-gray" onclick="openProfileModal()">&#9999;&#65039; Edit Profile</button>`;
+            actionsArea.innerHTML = `<button class="fb-btn-gray" onclick="openProfileModal()">&#9999;&#65039; Edit Profile & Info</button>`;
         } else {
             actionsArea.innerHTML = `
                 <button class="fb-btn-blue" id="btn-friend" onclick="toggleFriend('${profile.username}')">
@@ -430,7 +437,6 @@
         input.focus();
     }
 
-    // --- NOTIFICATIONS ---
     function toggleNotifs() {
         const drop = document.getElementById('notif-dropdown');
         drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
@@ -480,7 +486,6 @@
     }
     setInterval(loadNotifications, 8000);
 
-    // Load Member list
     async function loadMembers() {
         const res = await fetch('/api/users');
         if (!res.ok) return;
@@ -547,6 +552,8 @@
 
     function openProfileModal() {
         document.getElementById('edit-name').value = currentUser.fullName;
+        document.getElementById('edit-email').value = currentUser.email || '';
+        document.getElementById('edit-phone').value = currentUser.phone || '';
         document.getElementById('edit-bio').value = currentUser.bio || '';
         document.getElementById('edit-location').value = currentUser.location || '';
         document.getElementById('edit-role').value = currentUser.role || 'Rocket Scientist';
@@ -556,13 +563,21 @@
     }
     function closeProfileModal() { document.getElementById('profile-modal').style.display = 'none'; }
 
+    // SAVE PROFILE (Includes real Email & Phone update!)
     async function saveProfile() {
         const fullName = document.getElementById('edit-name').value.trim();
+        const email = document.getElementById('edit-email').value.trim();
+        const phone = document.getElementById('edit-phone').value.trim();
         const bio = document.getElementById('edit-bio').value.trim();
         const location = document.getElementById('edit-location').value.trim();
         const role = document.getElementById('edit-role').value;
 
-        let payload = { fullName, bio, location, role };
+        if (!email) {
+            alert('Email cannot be empty!');
+            return;
+        }
+
+        let payload = { fullName, email, phone, bio, location, role };
         if (newAvatarBase64) payload.avatar = newAvatarBase64;
         if (newCoverBase64) payload.coverPhoto = newCoverBase64;
 
@@ -572,11 +587,15 @@
             body: JSON.stringify(payload)
         });
 
+        const data = await res.json();
         if (res.ok) {
             closeProfileModal();
             await loadProfile();
             openUserProfile(currentUser.username);
             loadMembers();
+            alert('Your profile and email have been successfully updated! 🍌');
+        } else {
+            alert(data.error || 'Failed to update profile');
         }
     }
 
