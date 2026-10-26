@@ -48,22 +48,41 @@
 
         /* Post Card */
         .post-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 18px; border: 2px solid #cbd5e1; }
-        .post-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .post-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .post-user-info { display: flex; align-items: center; gap: 12px; }
         .post-avatar { width: 40px; height: 40px; background: #fedb00; border: 2px solid #1e3a8a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
         .post-author { font-weight: 700; color: #1e3a8a; }
         .post-time { font-size: 12px; color: #94a3b8; }
+        .edited-tag { font-size: 11px; color: #94a3b8; font-style: italic; }
         .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
         .post-img { width: 100%; border-radius: 12px; max-height: 350px; object-fit: cover; margin-bottom: 10px; }
+        
+        .action-link { font-size: 12px; color: #2563eb; cursor: pointer; text-decoration: underline; font-weight: 600; margin-left: 8px; }
+        .action-link:hover { color: #1d4ed8; }
+
         .reaction-bar { display: flex; gap: 8px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 8px 0; margin: 10px 0; flex-wrap: wrap; }
         .react-btn { background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 18px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; }
         .react-btn:hover { background: #fedb00; }
-        .share-btn { margin-left: auto; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 18px; cursor: pointer; font-weight: bold; font-family: inherit; }
-        .comment-item { background: #f8fafc; padding: 6px 10px; border-radius: 8px; margin-bottom: 5px; font-size: 13px; }
-        .add-comment { display: flex; gap: 6px; margin-top: 8px; }
-        .add-comment input { flex: 1; padding: 6px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 13px; }
-        .add-comment button { background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: inherit; }
 
-        /* --- MESSENGER CHATBOX (RIGHT COLUMN) --- */
+        /* Comments & Replies */
+        .comments-section { margin-top: 12px; }
+        .comment-item { background: #f8fafc; padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border: 1px solid #f1f5f9; }
+        .comment-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .comment-author { font-weight: 700; color: #1e3a8a; }
+        .comment-actions { margin-top: 4px; font-size: 11px; }
+
+        .replies-list { margin-left: 20px; margin-top: 6px; border-left: 2px solid #fedb00; padding-left: 10px; }
+        .reply-item { background: #ffffff; padding: 6px 10px; border-radius: 8px; margin-bottom: 4px; font-size: 12px; border: 1px solid #e2e8f0; }
+
+        .reply-box { margin-left: 20px; margin-top: 6px; display: none; gap: 6px; }
+        .reply-box input { flex: 1; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 12px; }
+        .reply-box button { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: inherit; font-size: 12px; }
+
+        .add-comment { display: flex; gap: 6px; margin-top: 10px; }
+        .add-comment input { flex: 1; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 13px; }
+        .add-comment button { background: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: inherit; }
+
+        /* Messenger Chat */
         .chat-container { display: flex; flex-direction: column; height: 420px; }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
         .chat-bubble { background: #f1f5f9; padding: 8px 12px; border-radius: 12px; font-size: 13px; max-width: 90%; }
@@ -74,10 +93,10 @@
         .chat-input-bar input { flex: 1; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 13px; outline: none; }
         .chat-send-btn { background: #2563eb; color: white; border: none; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit; }
 
-        /* MODALS */
+        /* Modals */
         .modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; }
         .modal-box { background: white; border-radius: 20px; padding: 25px; text-align: center; border: 4px solid #fedb00; width: 380px; position: relative; }
-        .modal-box select, .modal-box input, .modal-box textarea { width: 100%; padding: 10px; margin: 8px 0; border: 2px solid #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 14px; }
+        .modal-box select, .modal-box input { width: 100%; padding: 10px; margin: 8px 0; border: 2px solid #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 14px; }
         .save-modal-btn { background: #fedb00; border: 2px solid #ca8a04; padding: 10px; border-radius: 10px; font-weight: bold; font-family: inherit; width: 100%; cursor: pointer; margin-top: 10px; }
         .close-btn { position: absolute; top: 12px; right: 15px; font-size: 22px; cursor: pointer; color: #ef4444; font-weight: bold; }
     </style>
@@ -95,7 +114,7 @@
 
     <div class="container">
         
-        <!-- LEFT: PROFILE CARD -->
+        <!-- LEFT: PROFILE -->
         <div>
             <div class="card" style="text-align: center;">
                 <div class="avatar" id="user-avatar">&#127820;</div>
@@ -118,7 +137,7 @@
             </div>
         </div>
 
-        <!-- MIDDLE: NEWS FEED -->
+        <!-- MIDDLE: FEED -->
         <div>
             <div class="card create-post">
                 <div class="card-header">Create Post &#129514;</div>
@@ -130,14 +149,12 @@
             <div id="posts-container"></div>
         </div>
 
-        <!-- RIGHT: LIVE MESSENGER / CHAT -->
+        <!-- RIGHT: MESSENGER -->
         <div>
             <div class="card">
                 <div class="card-header">&#128172; Lab Messenger</div>
                 <div class="chat-container">
-                    <div class="chat-messages" id="chat-messages">
-                        <!-- Live chat messages -->
-                    </div>
+                    <div class="chat-messages" id="chat-messages"></div>
                     <div class="chat-input-bar">
                         <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()">
                         <button class="chat-send-btn" onclick="sendChat()">Send</button>
@@ -148,15 +165,13 @@
 
     </div>
 
-    <!-- EDIT PROFILE MODAL -->
+    <!-- PROFILE MODAL -->
     <div class="modal-bg" id="profile-modal">
         <div class="modal-box">
             <span class="close-btn" onclick="closeProfileModal()">&times;</span>
             <h2 style="color: #1e3a8a; margin: 0 0 10px 0;">Edit Minion Profile</h2>
-            
             <input type="text" id="edit-name" placeholder="Full Name">
             <input type="text" id="edit-bio" placeholder="Minion Bio / Motto">
-            
             <select id="edit-role">
                 <option value="Rocket Scientist">🚀 Rocket Scientist</option>
                 <option value="Banana Guard">🍌 Banana Guard</option>
@@ -164,7 +179,6 @@
                 <option value="Gru's Favorite">⭐ Gru's Favorite</option>
                 <option value="Secret Spy">🕵️ Secret Spy</option>
             </select>
-
             <select id="edit-avatar">
                 <option value="🍌">🍌 Classic Banana</option>
                 <option value="🚀">🚀 Rocket Minion</option>
@@ -172,7 +186,6 @@
                 <option value="🎸">🎸 Stuart's Guitar</option>
                 <option value="🧪">🧪 Lab Flask</option>
             </select>
-
             <button class="save-modal-btn" onclick="saveProfile()">Save Profile &#10004;</button>
         </div>
     </div>
@@ -193,10 +206,9 @@
 
     const EMOJIS = {
         banana: String.fromCodePoint(0x1F34C), love: String.fromCodePoint(0x2764),
-        haha: String.fromCodePoint(0x1F602), rocket: String.fromCodePoint(0x1F680), share: String.fromCodePoint(0x1F501)
+        haha: String.fromCodePoint(0x1F602), rocket: String.fromCodePoint(0x1F680)
     };
 
-    // Load Profile
     async function loadProfile() {
         const res = await fetch('/api/me');
         if (!res.ok) { window.location.href = '/index.html'; return; }
@@ -239,14 +251,13 @@
         }
     }
 
-    // --- MESSAGES SYSTEM ---
+    // --- MESSAGES ---
     async function loadMessages() {
         const res = await fetch('/api/messages');
         if (!res.ok) return;
         const messages = await res.json();
         const box = document.getElementById('chat-messages');
         box.innerHTML = '';
-
         messages.forEach(m => {
             const isMine = currentUser && m.sender === currentUser.fullName;
             const bubble = document.createElement('div');
@@ -266,7 +277,6 @@
         const text = input.value.trim();
         if (!text) return;
         input.value = '';
-
         const res = await fetch('/api/messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -274,8 +284,6 @@
         });
         if (res.ok) loadMessages();
     }
-
-    // Refresh messages automatically every 4 seconds (like live chat!)
     setInterval(loadMessages, 4000);
 
     // --- POSTS ---
@@ -307,29 +315,61 @@
             const card = document.createElement('div');
             card.className = 'post-card';
             const r = post.reactions || { banana: 0, love: 0, haha: 0, rocket: 0 };
-            const commentsHtml = (post.comments || []).map(c => `<div class="comment-item"><b>${c.author}:</b> ${c.text}</div>`).join('');
+            const isMyPost = currentUser && post.username === currentUser.username;
+
+            // Render comments & replies
+            const commentsHtml = (post.comments || []).map(c => {
+                const isMyComment = currentUser && c.username === currentUser.username;
+                const repliesHtml = (c.replies || []).map(rep => `
+                    <div class="reply-item">
+                        <b>${rep.author}:</b> ${rep.text}
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <div>
+                                <span class="comment-author">${c.author}:</span> ${c.text}
+                                ${c.edited ? '<span class="edited-tag">(edited)</span>' : ''}
+                            </div>
+                            ${isMyComment ? `<span class="action-link" onclick="editComment('${post._id}', '${c._id}', '${c.text.replace(/'/g, "\\'")}')">Edit</span>` : ''}
+                        </div>
+                        <div class="comment-actions">
+                            <span class="action-link" onclick="toggleReplyBox('${post._id}', '${c._id}')">↩️ Reply</span>
+                        </div>
+                        <div class="replies-list">${repliesHtml}</div>
+                        <div class="reply-box" id="reply-box-${post._id}-${c._id}">
+                            <input type="text" id="reply-input-${post._id}-${c._id}" placeholder="Reply to ${c.author}...">
+                            <button onclick="sendReply('${post._id}', '${c._id}')">Reply</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
 
             card.innerHTML = `
                 <div class="post-top">
-                    <div class="post-avatar">${EMOJIS.banana}</div>
-                    <div>
-                        <div class="post-author">${post.author}</div>
-                        <div class="post-time">${post.time}</div>
+                    <div class="post-user-info">
+                        <div class="post-avatar">${EMOJIS.banana}</div>
+                        <div>
+                            <div class="post-author">${post.author}</div>
+                            <div class="post-time">${post.time} ${post.edited ? '<span class="edited-tag">(edited)</span>' : ''}</div>
+                        </div>
                     </div>
+                    ${isMyPost ? `<span class="action-link" onclick="editPost('${post._id}', '${post.text.replace(/'/g, "\\'")}')">✏️ Edit Post</span>` : ''}
                 </div>
-                ${post.text ? `<div class="post-content">${post.text}</div>` : ''}
+                ${post.text ? `<div class="post-content" id="post-text-${post._id}">${post.text}</div>` : ''}
                 ${post.image ? `<img class="post-img" src="${post.image}" onerror="this.style.display='none'">` : ''}
                 <div class="reaction-bar">
-                    <button class="react-btn" onclick="react(${post.id}, 'banana', this)">${EMOJIS.banana} ${r.banana || 0}</button>
-                    <button class="react-btn" onclick="react(${post.id}, 'love', this)">${EMOJIS.love} ${r.love || 0}</button>
-                    <button class="react-btn" onclick="react(${post.id}, 'haha', this)">${EMOJIS.haha} ${r.haha || 0}</button>
-                    <button class="react-btn" onclick="react(${post.id}, 'rocket', this)">${EMOJIS.rocket} ${r.rocket || 0}</button>
-                    <button class="share-btn" onclick="sharePost(${post.id})">${EMOJIS.share} Share</button>
+                    <button class="react-btn" onclick="react('${post._id}', 'banana', this)">${EMOJIS.banana} ${r.banana || 0}</button>
+                    <button class="react-btn" onclick="react('${post._id}', 'love', this)">${EMOJIS.love} ${r.love || 0}</button>
+                    <button class="react-btn" onclick="react('${post._id}', 'haha', this)">${EMOJIS.haha} ${r.haha || 0}</button>
+                    <button class="react-btn" onclick="react('${post._id}', 'rocket', this)">${EMOJIS.rocket} ${r.rocket || 0}</button>
                 </div>
-                <div>${commentsHtml}</div>
+                <div class="comments-section">${commentsHtml}</div>
                 <div class="add-comment">
-                    <input type="text" id="comment-${post.id}" placeholder="Write comment...">
-                    <button onclick="addComment(${post.id})">Send</button>
+                    <input type="text" id="comment-${post._id}" placeholder="Write a comment...">
+                    <button onclick="addComment('${post._id}')">Send</button>
                 </div>
             `;
             container.appendChild(card);
@@ -356,6 +396,54 @@
         }
     }
 
+    // EDIT POST
+    async function editPost(postId, currentText) {
+        const newText = prompt("Edit your post:", currentText);
+        if (newText === null || newText.trim() === "" || newText.trim() === currentText) return;
+
+        const res = await fetch(`/api/posts/${postId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: newText.trim() })
+        });
+        if (res.ok) loadPosts();
+        else alert('Could not edit post');
+    }
+
+    // EDIT COMMENT
+    async function editComment(postId, commentId, currentText) {
+        const newText = prompt("Edit your comment:", currentText);
+        if (newText === null || newText.trim() === "" || newText.trim() === currentText) return;
+
+        const res = await fetch(`/api/posts/${postId}/comment/${commentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: newText.trim() })
+        });
+        if (res.ok) loadPosts();
+        else alert('Could not edit comment');
+    }
+
+    // TOGGLE REPLY BOX
+    function toggleReplyBox(postId, commentId) {
+        const box = document.getElementById(`reply-box-${postId}-${commentId}`);
+        box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    // SEND REPLY
+    async function sendReply(postId, commentId) {
+        const input = document.getElementById(`reply-input-${postId}-${commentId}`);
+        const text = input.value.trim();
+        if (!text) return;
+
+        const res = await fetch(`/api/posts/${postId}/comment/${commentId}/reply`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        if (res.ok) loadPosts();
+    }
+
     async function react(id, type, btn) {
         const res = await fetch(`/api/posts/${id}/react`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type })
@@ -376,17 +464,12 @@
         if (res.ok) loadPosts();
     }
 
-    async function sharePost(id) {
-        const res = await fetch(`/api/posts/${id}/share`, { method: 'POST' });
-        if (res.ok) loadPosts();
-    }
-
     async function logout() {
         await fetch('/api/logout', { method: 'POST' });
         window.location.href = '/index.html';
     }
 
-    // --- GAME ENGINE ---
+    // --- ARCADE ---
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     let gameLoop, score = 0, lives = 3, isPlaying = false;
