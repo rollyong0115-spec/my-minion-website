@@ -3,26 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gru's Lab - Profile & Feed</title>
+    <title>Gru's Lab - Feed & Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Fredoka', cursive, sans-serif; background: #e2e8f0; margin: 0; color: #1e293b; }
 
+        /* --- NAVBAR --- */
         .navbar {
-            background: #fedb00; border-bottom: 3px solid #1e3a8a; padding: 12px 24px;
+            background: #fedb00; border-bottom: 3px solid #1e3a8a; padding: 10px 20px;
             display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
         }
-        .nav-logo { font-size: 22px; font-weight: 700; color: #1e3a8a; }
-        .nav-user { display: flex; align-items: center; gap: 12px; }
-        .arcade-btn { background: #10b981; color: white; border: 2px solid #065f46; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 13px; }
-        .logout-btn { background: #ef4444; color: white; border: 2px solid #991b1b; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 13px; }
+        .nav-logo { font-size: 22px; font-weight: 700; color: #1e3a8a; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .nav-center-tabs { display: flex; gap: 8px; }
+        .nav-tab-btn {
+            background: rgba(255, 255, 255, 0.4); border: 2px solid transparent; padding: 7px 14px;
+            border-radius: 20px; font-weight: 700; font-family: inherit; font-size: 13px; color: #1e3a8a;
+            cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s;
+        }
+        .nav-tab-btn:hover { background: rgba(255, 255, 255, 0.8); }
+        .nav-tab-btn.active { background: #1e3a8a; color: #fedb00; border-color: #1e3a8a; }
 
-        /* --- FACEBOOK-STYLE PROFILE HEADER --- */
+        .nav-user { display: flex; align-items: center; gap: 8px; }
+        .arcade-btn { background: #10b981; color: white; border: 2px solid #065f46; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 13px; }
+        .logout-btn { background: #ef4444; color: white; border: 2px solid #991b1b; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 13px; }
+
+        /* --- PROFILE VIEW (FACEBOOK STYLE) --- */
+        #view-profile { display: none; }
+        
+        .back-nav-bar {
+            max-width: 950px; margin: 12px auto 0 auto; padding: 0 15px;
+        }
+        .back-btn {
+            background: white; border: 2px solid #cbd5e1; padding: 8px 16px; border-radius: 12px;
+            font-weight: 700; font-family: inherit; font-size: 14px; color: #1e3a8a; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .back-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+
         .profile-container {
-            max-width: 950px; margin: 0 auto; background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06); border-bottom: 2px solid #cbd5e1;
-            position: relative;
+            max-width: 950px; margin: 12px auto 20px auto; background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06); border-radius: 20px; overflow: hidden;
+            border: 2px solid #cbd5e1; position: relative;
         }
         .cover-photo-wrapper {
             position: relative; width: 100%; height: 260px;
@@ -51,20 +73,30 @@
         .profile-bio-text { margin: 10px 0 0 0; color: #334155; font-size: 15px; font-style: italic; max-width: 600px; }
         
         .profile-details-pills {
-            display: flex; gap: 15px; flex-wrap: wrap; margin-top: 12px; font-size: 13px; color: #475569;
+            display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; font-size: 13px; color: #475569;
         }
         .pill { display: flex; align-items: center; gap: 5px; background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
 
         .edit-fb-btn {
             background: #e2e8f0; color: #0f172a; border: none; padding: 10px 18px;
-            border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 14px;
+            border-radius: 10px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 14px;
             display: flex; align-items: center; gap: 6px;
         }
         .edit-fb-btn:hover { background: #cbd5e1; }
 
-        /* --- MAIN FEED & SIDEBAR --- */
+        /* Profile Mini Banner on Feed View */
+        .feed-profile-strip {
+            background: white; border-radius: 16px; padding: 14px 18px; margin-bottom: 18px;
+            border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); cursor: pointer; transition: transform 0.1s;
+        }
+        .feed-profile-strip:hover { transform: translateY(-2px); border-color: #fedb00; }
+        .strip-left { display: flex; align-items: center; gap: 12px; }
+        .strip-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #fedb00; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 2px solid #1e3a8a; }
+
+        /* --- FEED VIEW LAYOUT --- */
         .container {
-            max-width: 950px; margin: 20px auto; display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 0 15px;
+            max-width: 980px; margin: 20px auto; display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 0 15px;
         }
         .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 2px solid #cbd5e1; margin-bottom: 20px; }
         .card-header { font-size: 17px; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #fedb00; padding-bottom: 8px; margin-bottom: 15px; }
@@ -128,81 +160,121 @@
             .cover-photo-wrapper { height: 180px; }
             .avatar-img { width: 110px; height: 110px; font-size: 45px; }
             .avatar-wrapper { margin-top: -55px; }
+            .nav-tab-btn span { display: none; } /* Show only icons on small screens */
         }
     </style>
 </head>
 <body>
 
+    <!-- TOP NAVBAR WITH TABS -->
     <div class="navbar">
-        <div class="nav-logo">&#127820; MinionFeed</div>
+        <div class="nav-logo" onclick="switchView('feed')">
+            <span>&#127820;</span> MinionFeed
+        </div>
+
+        <div class="nav-center-tabs">
+            <button class="nav-tab-btn active" id="tab-feed" onclick="switchView('feed')">
+                &#127968; <span>News Feed</span>
+            </button>
+            <button class="nav-tab-btn" id="tab-profile" onclick="switchView('profile')">
+                &#128100; <span>My Profile</span>
+            </button>
+        </div>
+
         <div class="nav-user">
             <button class="arcade-btn" onclick="openGame()">&#127918; Arcade</button>
-            <button class="logout-btn" onclick="logout()">Log Out &#128075;</button>
+            <button class="logout-btn" onclick="logout()">&#128075;</button>
         </div>
     </div>
 
-    <!-- FACEBOOK-STYLE PROFILE HEADER -->
-    <div class="profile-container">
-        <!-- Cover Photo Banner -->
-        <div class="cover-photo-wrapper" id="profile-cover"></div>
-
-        <div class="profile-header-content">
-            <div class="avatar-wrapper">
-                <div class="avatar-img" id="profile-avatar">&#127820;</div>
-            </div>
-
-            <div class="profile-title-bar">
-                <div class="profile-names">
-                    <h1 id="user-fullname">Loading Name...</h1>
-                    <p id="user-handle">@username</p>
-                    <p class="profile-bio-text" id="user-bio">"Living life one banana at a time!"</p>
-                    
-                    <div class="profile-details-pills">
-                        <div class="pill">&#128205; <span id="user-location">Gru's Secret Lab</span></div>
-                        <div class="pill">&#128640; <span id="user-role">Rocket Scientist</span></div>
-                        <div class="pill">&#127942; Record: <span id="user-highscore">0</span> &#127820;</div>
+    <!-- VIEW 1: NEWS FEED (HOME) -->
+    <div id="view-feed">
+        <div class="container">
+            <!-- Left: Feed -->
+            <div>
+                <!-- Clickable Profile Strip -->
+                <div class="feed-profile-strip" onclick="switchView('profile')">
+                    <div class="strip-left">
+                        <div class="strip-avatar" id="feed-strip-avatar">&#127820;</div>
+                        <div>
+                            <div style="font-weight: 700; color: #0f172a;" id="feed-strip-name">My Profile</div>
+                            <div style="font-size: 12px; color: #64748b;">View your Facebook-style profile & bio &rarr;</div>
+                        </div>
                     </div>
+                    <button class="nav-tab-btn" style="background:#f1f5f9; font-size: 12px;">View Profile</button>
                 </div>
 
-                <button class="edit-fb-btn" onclick="openProfileModal()">
-                    &#9999;&#65039; Edit Profile
-                </button>
+                <div class="card create-post">
+                    <div class="card-header">Create Post &#129514;</div>
+                    <textarea id="post-text" placeholder="What's on your mind? (Paste image with Ctrl+V)"></textarea>
+                    <input type="text" id="post-image" placeholder="Or paste an Image/GIF link here">
+                    <img id="pasted-preview" class="img-preview" alt="Preview">
+                    <button class="post-btn" onclick="publishPost()">Post to Feed &#128640;</button>
+                </div>
+                <div id="posts-container"></div>
             </div>
-        </div>
-    </div>
 
-    <!-- MAIN FEED & MESSENGER -->
-    <div class="container">
-        
-        <!-- Left: News Feed -->
-        <div>
-            <div class="card create-post">
-                <div class="card-header">Create Post &#129514;</div>
-                <textarea id="post-text" placeholder="What's on your mind? (Paste image with Ctrl+V)"></textarea>
-                <input type="text" id="post-image" placeholder="Or paste an Image/GIF link here">
-                <img id="pasted-preview" class="img-preview" alt="Preview">
-                <button class="post-btn" onclick="publishPost()">Post to Feed &#128640;</button>
-            </div>
-            <div id="posts-container"></div>
-        </div>
-
-        <!-- Right: Messenger Chat -->
-        <div>
-            <div class="card">
-                <div class="card-header">&#128172; Lab Messenger</div>
-                <div class="chat-container">
-                    <div class="chat-messages" id="chat-messages"></div>
-                    <div class="chat-input-bar">
-                        <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()">
-                        <button class="chat-send-btn" onclick="sendChat()">Send</button>
+            <!-- Right: Messenger Chat -->
+            <div>
+                <div class="card">
+                    <div class="card-header">&#128172; Lab Messenger</div>
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chat-messages"></div>
+                        <div class="chat-input-bar">
+                            <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()">
+                            <button class="chat-send-btn" onclick="sendChat()">Send</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 
-    <!-- EDIT PROFILE MODAL (FACEBOOK STYLE) -->
+    <!-- VIEW 2: PROFILE PAGE (FACEBOOK STYLE) -->
+    <div id="view-profile">
+        <!-- Prominent Back to News Feed Button -->
+        <div class="back-nav-bar">
+            <button class="back-btn" onclick="switchView('feed')">
+                &larr; Back to News Feed
+            </button>
+        </div>
+
+        <div class="profile-container">
+            <div class="cover-photo-wrapper" id="profile-cover"></div>
+
+            <div class="profile-header-content">
+                <div class="avatar-wrapper">
+                    <div class="avatar-img" id="profile-avatar">&#127820;</div>
+                </div>
+
+                <div class="profile-title-bar">
+                    <div class="profile-names">
+                        <h1 id="user-fullname">Loading Name...</h1>
+                        <p id="user-handle">@username</p>
+                        <p class="profile-bio-text" id="user-bio">"Living life one banana at a time!"</p>
+                        
+                        <div class="profile-details-pills">
+                            <div class="pill">&#128205; <span id="user-location">Gru's Secret Lab</span></div>
+                            <div class="pill">&#128640; <span id="user-role">Rocket Scientist</span></div>
+                            <div class="pill">&#127942; Record: <span id="user-highscore">0</span> &#127820;</div>
+                        </div>
+                    </div>
+
+                    <button class="edit-fb-btn" onclick="openProfileModal()">
+                        &#9999;&#65039; Edit Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- User's Posts Section -->
+        <div style="max-width: 950px; margin: 0 auto 30px auto; padding: 0 15px;">
+            <div class="card-header" style="font-size: 19px;">My Activity & Posts</div>
+            <div id="my-posts-container"></div>
+        </div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL -->
     <div class="modal-bg" id="profile-modal">
         <div class="modal-box">
             <span class="close-btn" onclick="closeProfileModal()">&times;</span>
@@ -248,6 +320,7 @@
 
 <script>
     let currentUser = null;
+    let allPosts = [];
     let pastedImageBase64 = '';
     let newAvatarBase64 = null;
     let newCoverBase64 = null;
@@ -257,7 +330,30 @@
         haha: String.fromCodePoint(0x1F602), rocket: String.fromCodePoint(0x1F680)
     };
 
-    // Client-side auto photo resizer (keeps uploads under 200KB for lightning speed)
+    // --- TAB VIEW SWITCHING (FEED vs PROFILE) ---
+    function switchView(viewName) {
+        const feedView = document.getElementById('view-feed');
+        const profileView = document.getElementById('view-profile');
+        const tabFeed = document.getElementById('tab-feed');
+        const tabProfile = document.getElementById('tab-profile');
+
+        if (viewName === 'profile') {
+            feedView.style.display = 'none';
+            profileView.style.display = 'block';
+            tabProfile.classList.add('active');
+            tabFeed.classList.remove('active');
+            renderMyPosts();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            profileView.style.display = 'none';
+            feedView.style.display = 'block';
+            tabFeed.classList.add('active');
+            tabProfile.classList.remove('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    // Client-side photo resizer
     function resizeImage(file, maxWidth, maxHeight) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -279,7 +375,6 @@
         });
     }
 
-    // Photo file listeners
     document.getElementById('upload-avatar').addEventListener('change', async (e) => {
         if (e.target.files && e.target.files[0]) {
             newAvatarBase64 = await resizeImage(e.target.files[0], 400, 400);
@@ -298,21 +393,25 @@
         currentUser = await res.json();
 
         document.getElementById('user-fullname').innerText = currentUser.fullName;
+        document.getElementById('feed-strip-name').innerText = currentUser.fullName;
         document.getElementById('user-handle').innerText = '@' + currentUser.username;
         document.getElementById('user-bio').innerText = `"${currentUser.bio || 'Living life one banana at a time!'}"`;
         document.getElementById('user-location').innerText = currentUser.location || "Gru's Secret Lab";
         document.getElementById('user-role').innerText = currentUser.role || 'Minion';
         document.getElementById('user-highscore').innerText = currentUser.highScore || 0;
 
-        // Render Profile Avatar
+        // Render Avatar
         const avatarEl = document.getElementById('profile-avatar');
+        const stripAvatar = document.getElementById('feed-strip-avatar');
         if (currentUser.avatar && currentUser.avatar.startsWith('data:image')) {
             avatarEl.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            stripAvatar.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
         } else {
             avatarEl.innerHTML = currentUser.avatar || '🍌';
+            stripAvatar.innerHTML = currentUser.avatar || '🍌';
         }
 
-        // Render Cover Photo
+        // Render Cover
         const coverEl = document.getElementById('profile-cover');
         if (currentUser.coverPhoto && currentUser.coverPhoto.startsWith('data:image')) {
             coverEl.style.backgroundImage = `url('${currentUser.coverPhoto}')`;
@@ -411,42 +510,34 @@
         }
     });
 
-    async function loadPosts() {
-        const res = await fetch('/api/posts');
-        if (!res.ok) return;
-        const posts = await res.json();
-        const container = document.getElementById('posts-container');
-        container.innerHTML = '';
+    function createPostCardHtml(post) {
+        const r = post.reactions || { banana: 0, love: 0, haha: 0, rocket: 0 };
+        const isMyPost = currentUser && post.username === currentUser.username;
 
-        posts.forEach(post => {
-            const card = document.createElement('div');
-            card.className = 'post-card';
-            const r = post.reactions || { banana: 0, love: 0, haha: 0, rocket: 0 };
-            const isMyPost = currentUser && post.username === currentUser.username;
+        const commentsHtml = (post.comments || []).map(c => {
+            const isMyComment = currentUser && c.username === currentUser.username;
+            const repliesHtml = (c.replies || []).map(rep => `
+                <div class="reply-item"><b>${rep.author}:</b> ${rep.text}</div>
+            `).join('');
 
-            const commentsHtml = (post.comments || []).map(c => {
-                const isMyComment = currentUser && c.username === currentUser.username;
-                const repliesHtml = (c.replies || []).map(rep => `
-                    <div class="reply-item"><b>${rep.author}:</b> ${rep.text}</div>
-                `).join('');
-
-                return `
-                    <div class="comment-item">
-                        <div class="comment-header">
-                            <div><span class="comment-author">${c.author}:</span> ${c.text} ${c.edited ? '<span class="edited-tag">(edited)</span>' : ''}</div>
-                            ${isMyComment ? `<span class="action-link" onclick="editComment('${post._id}', '${c._id}', '${c.text.replace(/'/g, "\\'")}')">Edit</span>` : ''}
-                        </div>
-                        <div><span class="action-link" onclick="toggleReplyBox('${post._id}', '${c._id}')">↩️ Reply</span></div>
-                        <div class="replies-list">${repliesHtml}</div>
-                        <div class="reply-box" id="reply-box-${post._id}-${c._id}">
-                            <input type="text" id="reply-input-${post._id}-${c._id}" placeholder="Reply to ${c.author}...">
-                            <button onclick="sendReply('${post._id}', '${c._id}')">Reply</button>
-                        </div>
+            return `
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div><span class="comment-author">${c.author}:</span> ${c.text} ${c.edited ? '<span class="edited-tag">(edited)</span>' : ''}</div>
+                        ${isMyComment ? `<span class="action-link" onclick="editComment('${post._id}', '${c._id}', '${c.text.replace(/'/g, "\\'")}')">Edit</span>` : ''}
                     </div>
-                `;
-            }).join('');
+                    <div><span class="action-link" onclick="toggleReplyBox('${post._id}', '${c._id}')">↩️ Reply</span></div>
+                    <div class="replies-list">${repliesHtml}</div>
+                    <div class="reply-box" id="reply-box-${post._id}-${c._id}">
+                        <input type="text" id="reply-input-${post._id}-${c._id}" placeholder="Reply to ${c.author}...">
+                        <button onclick="sendReply('${post._id}', '${c._id}')">Reply</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
 
-            card.innerHTML = `
+        return `
+            <div class="post-card">
                 <div class="post-top">
                     <div class="post-user-info">
                         <div class="post-avatar-img">🍌</div>
@@ -470,8 +561,35 @@
                     <input type="text" id="comment-${post._id}" placeholder="Write a comment...">
                     <button onclick="addComment('${post._id}')">Send</button>
                 </div>
-            `;
-            container.appendChild(card);
+            </div>
+        `;
+    }
+
+    async function loadPosts() {
+        const res = await fetch('/api/posts');
+        if (!res.ok) return;
+        allPosts = await res.json();
+        const container = document.getElementById('posts-container');
+        container.innerHTML = '';
+        allPosts.forEach(post => {
+            container.innerHTML += createPostCardHtml(post);
+        });
+        if (document.getElementById('view-profile').style.display === 'block') {
+            renderMyPosts();
+        }
+    }
+
+    function renderMyPosts() {
+        const myContainer = document.getElementById('my-posts-container');
+        if (!myContainer) return;
+        myContainer.innerHTML = '';
+        const myPosts = allPosts.filter(p => currentUser && p.username === currentUser.username);
+        if (myPosts.length === 0) {
+            myContainer.innerHTML = '<div style="background:white;padding:25px;border-radius:14px;text-align:center;color:#64748b;">No posts yet! Switch to the News Feed to make your first post.</div>';
+            return;
+        }
+        myPosts.forEach(post => {
+            myContainer.innerHTML += createPostCardHtml(post);
         });
     }
 
