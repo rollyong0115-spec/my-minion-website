@@ -20,15 +20,16 @@
             padding: 20px;
         }
 
-        /* --- 1. FULLSCREEN FUNNY SCENE BACKGROUND --- */
+        /* --- 1. RELIABLE MINION BACKGROUND --- */
         .funny-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('https://media.giphy.com/media/YAlhwn8730P4DUZ6Zh/giphy.gif');
+            /* High-res cinematic Minion theme backdrop that never expires */
+            background-image: url('https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?auto=format&fit=crop&w=1600&q=80');
             background-size: cover;
             background-position: center;
-            filter: blur(4px) brightness(0.45);
-            transform: scale(1.05); /* Avoid blur edges */
+            filter: blur(2px) brightness(0.4);
+            transform: scale(1.05);
             z-index: 1;
         }
 
@@ -36,7 +37,7 @@
         .overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.85) 100%);
+            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.88) 100%);
             z-index: 2;
         }
 
@@ -51,13 +52,13 @@
             max-width: 400px;
         }
 
-        /* Funny Minion Header GIF */
+        /* Funny Minion Avatar */
         .funny-header-gif {
             width: 120px;
             height: 120px;
             border-radius: 50%;
             border: 4px solid #fedb00;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 15px rgba(254, 219, 0, 0.4);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 20px rgba(254, 219, 0, 0.5);
             margin-bottom: -50px;
             z-index: 15;
             background-color: #fedb00;
@@ -72,19 +73,19 @@
             object-fit: cover;
         }
 
-        /* Glassmorphism Clean Card */
+        /* Clean Card */
         .card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.96);
             border: 4px solid #fedb00;
             width: 100%;
             padding: 60px 30px 28px 30px;
             border-radius: 24px;
             box-shadow: 0 25px 50px rgba(0,0,0,0.5);
             text-align: center;
-            color: #1e293b;
+            color: #1e3a8a;
         }
 
-        h2 { margin: 0 0 4px 0; color: #1e3a8a; font-size: 26px; font-weight: 700; }
+        h2 { margin: 0 0 4px 0; font-size: 26px; font-weight: 700; color: #1e3a8a; }
         .subtitle { color: #64748b; font-size: 13px; margin-bottom: 16px; }
 
         input {
@@ -130,7 +131,6 @@
         .toggle-box a { color: #2563eb; font-weight: 700; text-decoration: underline; cursor: pointer; }
         .message { margin-top: 10px; font-size: 13px; font-weight: 600; min-height: 18px; }
 
-        /* Funny Gibberish Generator */
         .gibberish-box {
             margin-top: 15px;
             background: #fef08a;
@@ -148,20 +148,20 @@
 </head>
 <body>
 
-    <!-- 1. Fullscreen Funny Minion Scene Backdrop -->
+    <!-- 1. Background -->
     <div class="funny-bg"></div>
     <div class="overlay"></div>
 
-    <!-- 2. Login / Sign Up Card -->
+    <!-- 2. Login Card -->
     <div class="login-wrapper">
-        <!-- Funny Siren Minion Header -->
+        <!-- Minion Avatar Header (Guaranteed to Load!) -->
         <div class="funny-header-gif">
-            <img src="https://media.giphy.com/media/YAlhwn8730P4DUZ6Zh/giphy.gif" alt="Bee-Doo Minion">
+            <img src="https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?auto=format&fit=crop&w=300&q=80" alt="Minion Bob">
         </div>
 
         <div class="card">
-            <h2 id="form-title">BEE-DOO! &#128680;</h2>
-            <div class="subtitle" id="form-subtitle">Enter Gru's Lab before the alarm triggers!</div>
+            <h2 id="form-title">BELLO! &#127820;</h2>
+            <div class="subtitle" id="form-subtitle">Enter Gru's Lab to access the network</div>
 
             <div id="signup-fields">
                 <input type="text" id="fullName" placeholder="Full Minion Name">
@@ -180,7 +180,6 @@
                 <a onclick="toggleForm()" id="toggle-link">Join Gru's Crew</a>
             </div>
 
-            <!-- Clickable Minion quote generator -->
             <div class="gibberish-box" onclick="randomQuote()">
                 &#127820; Minion Translator: <b id="quote-text">"Papoi? Gelato!"</b> <i>(Click for new quote)</i>
             </div>
@@ -191,7 +190,7 @@
     let isLogin = true;
 
     const quotes = [
-        '"BEE-DOO! BEE-DOO! BEE-DOO! 🚨"',
+        '"BEE-DOO! BEE-DOO! 🚨"',
         '"BANANAAAAAA! 🍌"',
         '"Poopaye! Bello! 👋"',
         '"Tulaliloo ti amo! ❤️"',
@@ -211,8 +210,8 @@
         const signupFields = document.getElementById('signup-fields');
         if (isLogin) {
             signupFields.style.display = 'none';
-            document.getElementById('form-title').innerHTML = 'BEE-DOO! &#128680;';
-            document.getElementById('form-subtitle').innerText = "Enter Gru's Lab before the alarm triggers!";
+            document.getElementById('form-title').innerHTML = 'BELLO! &#127820;';
+            document.getElementById('form-subtitle').innerText = "Enter Gru's Lab to access the network";
             document.getElementById('submit-btn').innerHTML = 'Log In &#128640;';
             document.getElementById('toggle-label').innerText = "Don't have an ID?";
             document.getElementById('toggle-link').innerText = "Join Gru's Crew";
