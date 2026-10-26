@@ -9,286 +9,110 @@
         * { box-sizing: border-box; }
         body {
             font-family: 'Fredoka', cursive, sans-serif;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #0f172a;
-            position: relative;
-            overflow: hidden;
-            padding: 20px;
+            margin: 0; min-height: 100vh; display: flex;
+            justify-content: center; align-items: center;
+            background: #0f172a; position: relative; overflow: hidden; padding: 20px;
         }
 
         .video-background {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            overflow: hidden;
-            z-index: 1;
-            pointer-events: none;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            overflow: hidden; z-index: 1; pointer-events: none;
         }
         .video-background iframe {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 100vw; height: 56.25vw;
-            min-height: 100vh; min-width: 177.77vh;
+            position: absolute; top: 50%; left: 50%;
+            width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh;
             transform: translate(-50%, -50%) scale(1.1);
-            filter: brightness(0.65) contrast(1.05);
-            pointer-events: none;
+            filter: brightness(0.65) contrast(1.05); pointer-events: none;
         }
 
         .overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.88) 100%);
-            z-index: 2;
-            pointer-events: none;
+            z-index: 2; pointer-events: none;
         }
 
         .login-wrapper {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 400px;
+            position: relative; z-index: 10; display: flex;
+            flex-direction: column; align-items: center; width: 100%; max-width: 400px;
         }
 
         .minion-circle {
-            width: 120px;
-            height: 120px;
-            background: #fedb00;
-            border-radius: 50%;
-            border: 4px solid #fedb00;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 20px rgba(254, 219, 0, 0.5);
-            position: relative;
-            margin-bottom: -45px;
-            z-index: 20;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 120px; height: 120px; background: #fedb00; border-radius: 50%;
+            border: 4px solid #fedb00; box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 20px rgba(254, 219, 0, 0.5);
+            position: relative; margin-bottom: -45px; z-index: 20; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
         }
-        .hair {
-            position: absolute;
-            top: 2px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 3px;
-        }
+        .hair { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px; }
         .hair div { width: 3px; height: 10px; background: #18181b; }
         .hair div:nth-child(1) { transform: rotate(-15deg); }
         .hair div:nth-child(3) { transform: rotate(15deg); }
-
-        .strap {
-            width: 100%;
-            height: 16px;
-            background: #18181b;
-            position: absolute;
-            top: 45px;
-        }
+        .strap { width: 100%; height: 16px; background: #18181b; position: absolute; top: 45px; }
         .goggle-rim {
-            width: 56px;
-            height: 56px;
-            background: #d4d4d8;
-            border: 5px solid #52525b;
-            border-radius: 50%;
-            position: absolute;
-            top: 25px;
-            left: calc(50% - 28px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-            z-index: 2;
+            width: 56px; height: 56px; background: #d4d4d8; border: 5px solid #52525b; border-radius: 50%;
+            position: absolute; top: 25px; left: calc(50% - 28px); display: flex; align-items: center; justify-content: center; z-index: 2;
         }
-        .eye-socket {
-            width: 36px;
-            height: 36px;
-            background: white;
-            border-radius: 50%;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .eyelid {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 0%;
-            background: #fedb00;
-            border-bottom: 3px solid #18181b;
-            transition: height 0.22s ease-in-out;
-            z-index: 5;
-        }
-        .pupil-track {
-            width: 16px;
-            height: 16px;
-            background: #854d0e;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.05s ease-out;
-        }
-        .pupil-dot {
-            width: 8px;
-            height: 8px;
-            background: #09090b;
-            border-radius: 50%;
-            position: relative;
-        }
-        .pupil-dot::after {
-            content: '';
-            width: 2px;
-            height: 2px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 1px; left: 1px;
-        }
-        .mouth {
-            width: 24px;
-            height: 10px;
-            border-bottom: 3px solid #18181b;
-            border-radius: 0 0 24px 24px;
-            position: absolute;
-            bottom: 16px;
-            left: calc(50% - 12px);
-        }
+        .eye-socket { width: 36px; height: 36px; background: white; border-radius: 50%; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .eyelid { position: absolute; top: 0; left: 0; width: 100%; height: 0%; background: #fedb00; border-bottom: 3px solid #18181b; transition: height 0.22s ease-in-out; z-index: 5; }
+        .pupil-track { width: 16px; height: 16px; background: #854d0e; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: transform 0.05s ease-out; }
+        .pupil-dot { width: 8px; height: 8px; background: #09090b; border-radius: 50%; position: relative; }
+        .pupil-dot::after { content: ''; width: 2px; height: 2px; background: white; border-radius: 50%; position: absolute; top: 1px; left: 1px; }
+        .mouth { width: 24px; height: 10px; border-bottom: 3px solid #18181b; border-radius: 0 0 24px 24px; position: absolute; bottom: 16px; left: calc(50% - 12px); }
 
         .card {
-            background: rgba(255, 255, 255, 0.96);
-            border: 4px solid #fedb00;
-            width: 100%;
-            padding: 55px 28px 24px 28px;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-            text-align: center;
-            color: #1e3a8a;
+            background: rgba(255, 255, 255, 0.96); border: 4px solid #fedb00; width: 100%;
+            padding: 55px 28px 24px 28px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            text-align: center; color: #1e3a8a;
         }
 
         h2 { margin: 0 0 4px 0; font-size: 26px; font-weight: 700; color: #1e3a8a; }
         .subtitle { color: #64748b; font-size: 13px; margin-bottom: 16px; }
 
         input {
-            width: 100%;
-            padding: 12px 14px;
-            margin: 6px 0;
-            background: #f8fafc;
-            border: 2px solid #cbd5e1;
-            border-radius: 12px;
-            font-family: inherit;
-            font-size: 14px;
-            color: #0f172a;
-            outline: none;
-            transition: all 0.2s ease;
+            width: 100%; padding: 12px 14px; margin: 6px 0; background: #f8fafc; border: 2px solid #cbd5e1;
+            border-radius: 12px; font-family: inherit; font-size: 14px; color: #0f172a; outline: none; transition: all 0.2s ease;
         }
-        input:focus {
-            border-color: #fedb00;
-            background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(254, 219, 0, 0.4);
-        }
+        input:focus { border-color: #fedb00; background: #ffffff; box-shadow: 0 0 0 3px rgba(254, 219, 0, 0.4); }
 
-        .password-wrapper {
-            position: relative;
-            width: 100%;
-        }
-        .password-wrapper input {
-            padding-right: 45px;
-        }
-        .eye-btn {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            font-size: 18px;
-            user-select: none;
-            color: #64748b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .password-wrapper { position: relative; width: 100%; }
+        .password-wrapper input { padding-right: 45px; }
+        .eye-btn { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 18px; user-select: none; color: #64748b; }
 
-        .pwd-requirement-box {
-            display: none;
-            background: #f1f5f9;
-            border-radius: 8px;
-            padding: 8px 12px;
-            margin: 4px 0 8px 0;
-            font-size: 11px;
-            color: #475569;
-            text-align: left;
-            border-left: 3px solid #fedb00;
-        }
-
+        .pwd-requirement-box { display: none; background: #f1f5f9; border-radius: 8px; padding: 8px 12px; margin: 4px 0 8px 0; font-size: 11px; color: #475569; text-align: left; border-left: 3px solid #fedb00; }
         #signup-fields { display: none; }
 
         button.submit-btn {
-            width: 100%;
-            padding: 13px;
-            background: #fedb00;
-            color: #1e3a8a;
-            border: 2px solid #ca8a04;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 700;
-            margin-top: 10px;
-            font-family: inherit;
-            box-shadow: 0 4px 0 #ca8a04;
-            transition: all 0.1s ease;
+            width: 100%; padding: 13px; background: #fedb00; color: #1e3a8a; border: 2px solid #ca8a04;
+            border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; margin-top: 10px;
+            font-family: inherit; box-shadow: 0 4px 0 #ca8a04; transition: all 0.1s ease;
         }
         button.submit-btn:hover { background: #fde047; transform: translateY(-2px); box-shadow: 0 6px 0 #ca8a04; }
-        button.submit-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #ca8a04; }
 
-        .toggle-box { margin-top: 14px; font-size: 14px; color: #64748b; }
+        .forgot-link { font-size: 12px; color: #2563eb; text-decoration: underline; cursor: pointer; margin-top: 8px; display: inline-block; font-weight: 600; }
+        .toggle-box { margin-top: 12px; font-size: 14px; color: #64748b; }
         .toggle-box a { color: #2563eb; font-weight: 700; text-decoration: underline; cursor: pointer; }
         .message { margin-top: 8px; font-size: 13px; font-weight: 600; min-height: 18px; line-height: 1.4; }
 
-        .gibberish-box {
-            margin-top: 14px;
-            background: #fef08a;
-            border: 2px dashed #ca8a04;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            color: #854d0e;
-            cursor: pointer;
-            user-select: none;
-        }
-        .gibberish-box:hover { background: #fde047; }
+        /* Forgot Modal */
+        .modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 15px; }
+        .modal-box { background: white; border-radius: 20px; padding: 22px; border: 4px solid #fedb00; width: 100%; max-width: 360px; text-align: center; position: relative; }
+        .close-btn { position: absolute; top: 12px; right: 15px; font-size: 22px; cursor: pointer; color: #ef4444; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="video-background">
-        <iframe 
-            src="https://www.youtube.com/embed/bCcVSW-c3nA?autoplay=1&mute=1&controls=0&loop=1&playlist=bCcVSW-c3nA&playsinline=1&modestbranding=1" 
-            frameborder="0" 
-            allow="autoplay; encrypted-media" 
-            allowfullscreen>
-        </iframe>
+        <iframe src="https://www.youtube.com/embed/bCcVSW-c3nA?autoplay=1&mute=1&controls=0&loop=1&playlist=bCcVSW-c3nA&playsinline=1&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
     <div class="overlay"></div>
 
     <div class="login-wrapper">
-
         <div class="minion-circle">
             <div class="hair"><div></div><div></div><div></div></div>
             <div class="strap"></div>
             <div class="goggle-rim">
                 <div class="eye-socket" id="eye-socket">
                     <div class="eyelid" id="eyelid"></div>
-                    <div class="pupil-track" id="pupil">
-                        <div class="pupil-dot"></div>
-                    </div>
+                    <div class="pupil-track" id="pupil"><div class="pupil-dot"></div></div>
                 </div>
             </div>
             <div class="mouth"></div>
@@ -311,22 +135,34 @@
                 <span class="eye-btn" id="eye-toggle-btn" onclick="togglePasswordVisibility()">&#128065;&#65039;</span>
             </div>
 
-            <!-- Password helper hint (visible in signup mode) -->
             <div class="pwd-requirement-box" id="pwd-help">
-                🔒 <b>Password Rules:</b> 8+ characters with letters, numbers, and symbols (e.g. <code>Banana!123</code>).
+                🔒 8+ chars with letters, numbers & symbols (e.g. <code>Banana!123</code>).
             </div>
 
             <button class="submit-btn" id="submit-btn" onclick="submitAuth()">Log In &#128640;</button>
+            
+            <div id="forgot-btn-box">
+                <span class="forgot-link" onclick="openForgotModal()">Forgot Banana Code?</span>
+            </div>
+
             <div id="message" class="message"></div>
 
             <div class="toggle-box">
                 <span id="toggle-label">Don't have an ID?</span>
                 <a onclick="toggleForm()" id="toggle-link">Join Gru's Crew</a>
             </div>
+        </div>
+    </div>
 
-            <div class="gibberish-box" onclick="randomQuote()">
-                &#127820; Minion Translator: <b id="quote-text">"Papoi? Gelato!"</b> <i>(Click for new quote)</i>
-            </div>
+    <!-- FORGOT PASSWORD MODAL -->
+    <div class="modal-bg" id="forgot-modal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeForgotModal()">&times;</span>
+            <h3 style="color:#1e3a8a;margin:0 0 8px 0;">Reset Banana Code 🔑</h3>
+            <p style="font-size:12px;color:#64748b;margin:0 0 12px 0;">Enter your registered email address:</p>
+            <input type="email" id="forgot-email" placeholder="Enter your email">
+            <button class="submit-btn" onclick="requestResetLink()">Send Reset Link 📧</button>
+            <div id="forgot-msg" style="margin-top:10px;font-size:12px;font-weight:bold;"></div>
         </div>
     </div>
 
@@ -361,48 +197,28 @@
         pupil.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
     });
 
-    passwordInput.addEventListener('focus', () => {
-        isPasswordFocused = true;
-        eyelid.style.height = '100%';
-    });
-    passwordInput.addEventListener('blur', () => {
-        isPasswordFocused = false;
-        eyelid.style.height = '0%';
-    });
-
-    const quotes = [
-        '"BEE-DOO! BEE-DOO! 🚨"',
-        '"BANANAAAAAA! 🍌"',
-        '"Poopaye! Bello! 👋"',
-        '"Tulaliloo ti amo! ❤️"',
-        '"Underwear... hehehe! 😂"',
-        '"Gelato! Papple! 🍦"',
-        '"Muak muak muak! 😘"'
-    ];
-
-    function randomQuote() {
-        const random = quotes[Math.floor(Math.random() * quotes.length)];
-        document.getElementById('quote-text').innerText = random;
-    }
+    passwordInput.addEventListener('focus', () => { isPasswordFocused = true; eyelid.style.height = '100%'; });
+    passwordInput.addEventListener('blur', () => { isPasswordFocused = false; eyelid.style.height = '0%'; });
 
     function toggleForm() {
         isLogin = !isLogin;
         const signupFields = document.getElementById('signup-fields');
         const pwdHelp = document.getElementById('pwd-help');
+        const forgotBox = document.getElementById('forgot-btn-box');
 
         if (isLogin) {
             signupFields.style.display = 'none';
             pwdHelp.style.display = 'none';
+            forgotBox.style.display = 'block';
             document.getElementById('form-title').innerHTML = 'BELLO! &#127820;';
-            document.getElementById('form-subtitle').innerText = "Enter Gru's Lab to access the network";
             document.getElementById('submit-btn').innerHTML = 'Log In &#128640;';
             document.getElementById('toggle-label').innerText = "Don't have an ID?";
             document.getElementById('toggle-link').innerText = "Join Gru's Crew";
         } else {
             signupFields.style.display = 'block';
             pwdHelp.style.display = 'block';
+            forgotBox.style.display = 'none';
             document.getElementById('form-title').innerHTML = 'JOIN THE CREW! &#129514;';
-            document.getElementById('form-subtitle').innerText = 'Fill in your details to serve Gru';
             document.getElementById('submit-btn').innerHTML = 'Become a Minion &#127820;';
             document.getElementById('toggle-label').innerText = 'Already part of the crew?';
             document.getElementById('toggle-link').innerText = 'Log In';
@@ -410,13 +226,8 @@
         document.getElementById('message').innerText = '';
     }
 
-    // Client-side strong password checker
     function checkStrongPassword(pwd) {
-        if (!pwd || pwd.length < 8) return false;
-        const hasLetter = /[a-zA-Z]/.test(pwd);
-        const hasNumber = /[0-9]/.test(pwd);
-        const hasSymbol = /[!@#$%^&*(),.?":{}|<>\-_=+]/.test(pwd);
-        return hasLetter && hasNumber && hasSymbol;
+        return pwd && pwd.length >= 8 && /[a-zA-Z]/.test(pwd) && /[0-9]/.test(pwd) && /[!@#$%^&*(),.?":{}|<>\-_=+]/.test(pwd);
     }
 
     async function submitAuth() {
@@ -424,12 +235,10 @@
         const password = document.getElementById('password').value.trim();
         const msg = document.getElementById('message');
 
-        if (!isLogin) {
-            if (!checkStrongPassword(password)) {
-                msg.style.color = '#ef4444';
-                msg.innerText = 'Password must be 8+ characters and include letters, numbers, and symbols (e.g. Banana!123)!';
-                return;
-            }
+        if (!isLogin && !checkStrongPassword(password)) {
+            msg.style.color = '#ef4444';
+            msg.innerText = 'Password must be 8+ characters and include letters, numbers, and symbols (e.g. Banana!123)!';
+            return;
         }
 
         const endpoint = isLogin ? '/api/login' : '/api/register';
@@ -447,7 +256,6 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bodyData)
             });
-
             const data = await res.json();
             if (!res.ok) {
                 msg.style.color = '#ef4444';
@@ -464,6 +272,37 @@
         } catch (e) {
             msg.style.color = '#ef4444';
             msg.innerText = 'Server unreachable!';
+        }
+    }
+
+    function openForgotModal() { document.getElementById('forgot-modal').style.display = 'flex'; }
+    function closeForgotModal() { document.getElementById('forgot-modal').style.display = 'none'; }
+
+    async function requestResetLink() {
+        const email = document.getElementById('forgot-email').value.trim();
+        const msg = document.getElementById('forgot-msg');
+        if (!email) return;
+
+        msg.style.color = '#1e3a8a';
+        msg.innerText = 'Checking...';
+
+        const res = await fetch('/api/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            msg.style.color = '#22c55e';
+            if (data.resetUrl) {
+                msg.innerHTML = `${data.message}<br><a href="${data.resetUrl}" style="color:#2563eb;word-break:break-all;">Click here to reset your password</a>`;
+            } else {
+                msg.innerText = data.message;
+            }
+        } else {
+            msg.style.color = '#ef4444';
+            msg.innerText = data.error;
         }
     }
 </script>
