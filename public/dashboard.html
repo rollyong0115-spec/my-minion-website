@@ -2,263 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Gru's Lab - MinionFeed & Arcade</title>
+    <title>Gru's Lab - Feed, Messages & Arcade</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
-        body {
-            font-family: 'Fredoka', cursive, sans-serif;
-            background: #e2e8f0;
-            margin: 0;
-            color: #1e293b;
-        }
+        body { font-family: 'Fredoka', cursive, sans-serif; background: #e2e8f0; margin: 0; color: #1e293b; }
 
         .navbar {
-            background: #fedb00;
-            border-bottom: 3px solid #1e3a8a;
-            padding: 12px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #fedb00; border-bottom: 3px solid #1e3a8a; padding: 12px 30px;
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
         }
         .nav-logo { font-size: 24px; font-weight: 700; color: #1e3a8a; }
         .nav-user { display: flex; align-items: center; gap: 15px; }
-
-        .arcade-btn {
-            background: #10b981;
-            color: white;
-            border: 2px solid #065f46;
-            padding: 8px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-            font-family: inherit;
-        }
-        .arcade-btn:hover { background: #059669; }
-
-        .logout-btn {
-            background: #ef4444;
-            color: white;
-            border: 2px solid #991b1b;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-            font-family: inherit;
-        }
+        .arcade-btn { background: #10b981; color: white; border: 2px solid #065f46; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; }
+        .logout-btn { background: #ef4444; color: white; border: 2px solid #991b1b; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; }
 
         .container {
-            max-width: 1050px;
-            margin: 25px auto;
-            display: grid;
-            grid-template-columns: 280px 1fr 240px;
-            gap: 20px;
-            padding: 0 15px;
+            max-width: 1200px; margin: 25px auto; display: grid; grid-template-columns: 280px 1fr 320px; gap: 20px; padding: 0 15px;
         }
+        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 2px solid #cbd5e1; margin-bottom: 20px; }
+        .card-header { font-size: 18px; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #fedb00; padding-bottom: 8px; margin-bottom: 15px; }
 
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-            border: 2px solid #cbd5e1;
-            margin-bottom: 20px;
-        }
-        .card-header {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1e3a8a;
-            border-bottom: 2px solid #fedb00;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-        }
-
+        /* Profile Card */
         .avatar {
-            width: 60px;
-            height: 60px;
-            background: #fedb00;
-            border-radius: 50%;
-            border: 3px solid #1e3a8a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin: 0 auto 10px auto;
+            width: 70px; height: 70px; background: #fedb00; border-radius: 50%; border: 3px solid #1e3a8a;
+            display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 10px auto;
         }
         .profile-name { font-size: 18px; font-weight: 700; text-align: center; }
-        .profile-username { font-size: 13px; color: #64748b; text-align: center; margin-bottom: 12px; }
+        .profile-username { font-size: 13px; color: #64748b; text-align: center; margin-bottom: 6px; }
+        .profile-role { background: #dbeafe; color: #1e40af; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: bold; text-align: center; display: inline-block; margin: 0 auto 10px auto; }
+        .profile-bio { font-size: 13px; color: #475569; text-align: center; margin-bottom: 15px; font-style: italic; }
+        
+        .edit-profile-btn {
+            width: 100%; padding: 8px; background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit; color: #334155; margin-bottom: 12px;
+        }
+        .edit-profile-btn:hover { background: #fedb00; border-color: #ca8a04; }
 
-        .highscore-box {
-            background: #fef08a;
-            border: 2px dashed #ca8a04;
-            padding: 10px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 15px;
-            font-weight: 700;
-            color: #854d0e;
-        }
+        .highscore-box { background: #fef08a; border: 2px dashed #ca8a04; padding: 8px; border-radius: 12px; text-align: center; font-weight: 700; color: #854d0e; font-size: 14px; margin-bottom: 12px; }
 
-        .create-post textarea {
-            width: 100%;
-            height: 75px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px;
-            font-family: inherit;
-            resize: none;
-            outline: none;
-        }
-        .create-post input {
-            width: 100%;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 8px 12px;
-            margin-top: 8px;
-            font-family: inherit;
-        }
-        .img-preview {
-            max-width: 100%;
-            max-height: 180px;
-            border-radius: 8px;
-            margin-top: 8px;
-            display: none;
-            border: 2px dashed #cbd5e1;
-        }
-        .post-btn {
-            background: #2563eb;
-            color: white;
-            border: 2px solid #1e3a8a;
-            padding: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 700;
-            font-family: inherit;
-            margin-top: 10px;
-            width: 100%;
-        }
+        /* Post Box */
+        .create-post textarea { width: 100%; height: 75px; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px; font-family: inherit; resize: none; outline: none; }
+        .create-post input { width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-family: inherit; }
+        .img-preview { max-width: 100%; max-height: 180px; border-radius: 8px; margin-top: 8px; display: none; border: 2px dashed #cbd5e1; }
+        .post-btn { background: #2563eb; color: white; border: 2px solid #1e3a8a; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 700; font-family: inherit; margin-top: 10px; width: 100%; }
 
-        .post-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 18px;
-            border: 2px solid #cbd5e1;
-        }
+        /* Post Card */
+        .post-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 18px; border: 2px solid #cbd5e1; }
         .post-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-        .post-avatar {
-            width: 40px;
-            height: 40px;
-            background: #fedb00;
-            border: 2px solid #1e3a8a;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
+        .post-avatar { width: 40px; height: 40px; background: #fedb00; border: 2px solid #1e3a8a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
         .post-author { font-weight: 700; color: #1e3a8a; }
         .post-time { font-size: 12px; color: #94a3b8; }
         .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
         .post-img { width: 100%; border-radius: 12px; max-height: 350px; object-fit: cover; margin-bottom: 10px; }
-
-        .reaction-bar {
-            display: flex;
-            gap: 8px;
-            border-top: 1px solid #f1f5f9;
-            border-bottom: 1px solid #f1f5f9;
-            padding: 8px 0;
-            margin: 10px 0;
-            flex-wrap: wrap;
-        }
-        .react-btn {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            padding: 6px 12px;
-            border-radius: 18px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.1s;
-        }
-        .react-btn:hover { background: #fedb00; transform: scale(1.05); }
-
-        .share-btn {
-            margin-left: auto;
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            padding: 6px 14px;
-            border-radius: 18px;
-            cursor: pointer;
-            font-weight: bold;
-            font-family: inherit;
-        }
-
-        .comments-box { margin-top: 10px; }
-        .comment-item {
-            background: #f8fafc;
-            padding: 8px 12px;
-            border-radius: 10px;
-            margin-bottom: 6px;
-            font-size: 13px;
-        }
-        .comment-author { font-weight: 700; color: #1e3a8a; }
+        .reaction-bar { display: flex; gap: 8px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 8px 0; margin: 10px 0; flex-wrap: wrap; }
+        .react-btn { background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 18px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; }
+        .react-btn:hover { background: #fedb00; }
+        .share-btn { margin-left: auto; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 18px; cursor: pointer; font-weight: bold; font-family: inherit; }
+        .comment-item { background: #f8fafc; padding: 6px 10px; border-radius: 8px; margin-bottom: 5px; font-size: 13px; }
         .add-comment { display: flex; gap: 6px; margin-top: 8px; }
-        .add-comment input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 13px;
-        }
-        .add-comment button {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-family: inherit;
-        }
+        .add-comment input { flex: 1; padding: 6px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 13px; }
+        .add-comment button { background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: inherit; }
 
-        #game-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 999;
-            justify-content: center;
-            align-items: center;
-        }
-        .game-box {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            border: 4px solid #fedb00;
-            position: relative;
-        }
-        canvas {
-            background: #38bdf8;
-            border-radius: 12px;
-            display: block;
-            margin: 10px auto;
-            border: 3px solid #1e3a8a;
-            cursor: none;
-        }
-        .close-game {
-            position: absolute;
-            top: 12px; right: 15px;
-            font-size: 24px; font-weight: bold;
-            cursor: pointer; color: #ef4444;
-        }
+        /* --- MESSENGER CHATBOX (RIGHT COLUMN) --- */
+        .chat-container { display: flex; flex-direction: column; height: 420px; }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
+        .chat-bubble { background: #f1f5f9; padding: 8px 12px; border-radius: 12px; font-size: 13px; max-width: 90%; }
+        .chat-bubble.mine { background: #dbeafe; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .chat-sender { font-size: 11px; font-weight: bold; color: #1e3a8a; margin-bottom: 2px; }
+        .chat-time { font-size: 10px; color: #94a3b8; margin-top: 3px; text-align: right; }
+        .chat-input-bar { display: flex; gap: 6px; margin-top: 10px; }
+        .chat-input-bar input { flex: 1; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 13px; outline: none; }
+        .chat-send-btn { background: #2563eb; color: white; border: none; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit; }
+
+        /* MODALS */
+        .modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; }
+        .modal-box { background: white; border-radius: 20px; padding: 25px; text-align: center; border: 4px solid #fedb00; width: 380px; position: relative; }
+        .modal-box select, .modal-box input, .modal-box textarea { width: 100%; padding: 10px; margin: 8px 0; border: 2px solid #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 14px; }
+        .save-modal-btn { background: #fedb00; border: 2px solid #ca8a04; padding: 10px; border-radius: 10px; font-weight: bold; font-family: inherit; width: 100%; cursor: pointer; margin-top: 10px; }
+        .close-btn { position: absolute; top: 12px; right: 15px; font-size: 22px; cursor: pointer; color: #ef4444; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -274,29 +95,34 @@
 
     <div class="container">
         
+        <!-- LEFT: PROFILE CARD -->
         <div>
-            <div class="card">
-                <div class="avatar">&#127820;</div>
+            <div class="card" style="text-align: center;">
+                <div class="avatar" id="user-avatar">&#127820;</div>
                 <div class="profile-name" id="user-fullname">Loading...</div>
                 <div class="profile-username" id="user-handle">@minion</div>
-                
+                <div class="profile-role" id="user-role">Rocket Scientist</div>
+                <div class="profile-bio" id="user-bio">"Banana Enthusiast!"</div>
+
+                <button class="edit-profile-btn" onclick="openProfileModal()">&#9999;&#65039; Edit My Profile</button>
+
                 <div class="highscore-box">
-                    &#127942; Arcade Record:<br>
-                    <span id="user-highscore" style="font-size: 22px;">0</span> &#127820;
+                    &#127942; Arcade Record: <span id="user-highscore">0</span> &#127820;
                 </div>
 
-                <div style="font-size: 13px; color: #64748b;">
+                <div style="font-size: 12px; color: #64748b; text-align: left;">
                     <div>&#128231; <b>Email:</b> <span id="user-email">...</span></div>
-                    <div style="margin-top: 6px;">&#128241; <b>Phone:</b> <span id="user-phone">...</span></div>
-                    <div style="margin-top: 6px;">&#129514; <b>Joined:</b> <span id="user-joined">...</span></div>
+                    <div style="margin-top: 4px;">&#128241; <b>Phone:</b> <span id="user-phone">...</span></div>
+                    <div style="margin-top: 4px;">&#129514; <b>Joined:</b> <span id="user-joined">...</span></div>
                 </div>
             </div>
         </div>
 
+        <!-- MIDDLE: NEWS FEED -->
         <div>
             <div class="card create-post">
                 <div class="card-header">Create Post &#129514;</div>
-                <textarea id="post-text" placeholder="What's happening? You can paste an image directly with Ctrl+V!"></textarea>
+                <textarea id="post-text" placeholder="Share a status update or press Ctrl+V to paste an image!"></textarea>
                 <input type="text" id="post-image" placeholder="Or paste an Image/GIF link here">
                 <img id="pasted-preview" class="img-preview" alt="Preview">
                 <button class="post-btn" onclick="publishPost()">Post to Feed &#128640;</button>
@@ -304,38 +130,155 @@
             <div id="posts-container"></div>
         </div>
 
+        <!-- RIGHT: LIVE MESSENGER / CHAT -->
         <div>
-            <div class="card" style="text-align: center;">
-                <div class="card-header">Minion Arcade &#128377;</div>
-                <p style="font-size: 13px; color: #64748b;">Yellow = Bananas (+10)<br>Black = Bomb (Avoid!)</p>
-                <button class="arcade-btn" style="width: 100%;" onclick="openGame()">Play Game Now &#128640;</button>
+            <div class="card">
+                <div class="card-header">&#128172; Lab Messenger</div>
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Live chat messages -->
+                    </div>
+                    <div class="chat-input-bar">
+                        <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()">
+                        <button class="chat-send-btn" onclick="sendChat()">Send</button>
+                    </div>
+                </div>
             </div>
         </div>
 
     </div>
 
-    <div id="game-modal">
-        <div class="game-box">
-            <span class="close-game" onclick="closeGame()">&times;</span>
+    <!-- EDIT PROFILE MODAL -->
+    <div class="modal-bg" id="profile-modal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeProfileModal()">&times;</span>
+            <h2 style="color: #1e3a8a; margin: 0 0 10px 0;">Edit Minion Profile</h2>
+            
+            <input type="text" id="edit-name" placeholder="Full Name">
+            <input type="text" id="edit-bio" placeholder="Minion Bio / Motto">
+            
+            <select id="edit-role">
+                <option value="Rocket Scientist">🚀 Rocket Scientist</option>
+                <option value="Banana Guard">🍌 Banana Guard</option>
+                <option value="Evil Infiltrator">🧪 Evil Infiltrator</option>
+                <option value="Gru's Favorite">⭐ Gru's Favorite</option>
+                <option value="Secret Spy">🕵️ Secret Spy</option>
+            </select>
+
+            <select id="edit-avatar">
+                <option value="🍌">🍌 Classic Banana</option>
+                <option value="🚀">🚀 Rocket Minion</option>
+                <option value="🧸">🧸 Bob's Bear</option>
+                <option value="🎸">🎸 Stuart's Guitar</option>
+                <option value="🧪">🧪 Lab Flask</option>
+            </select>
+
+            <button class="save-modal-btn" onclick="saveProfile()">Save Profile &#10004;</button>
+        </div>
+    </div>
+
+    <!-- ARCADE MODAL -->
+    <div class="modal-bg" id="game-modal">
+        <div class="modal-box" style="width: auto;">
+            <span class="close-btn" onclick="closeGame()">&times;</span>
             <h2 style="margin: 0; color: #1e3a8a;">BANANA CATCHER</h2>
-            <p style="margin: 5px 0; font-size: 13px; color: #64748b;">Catch Yellow Bananas | Dodge Black Bombs</p>
-            <canvas id="gameCanvas" width="400" height="420"></canvas>
+            <canvas id="gameCanvas" width="400" height="400" style="background: #38bdf8; border-radius: 12px; display: block; margin: 10px auto; border: 3px solid #1e3a8a;"></canvas>
             <button id="start-game-btn" class="arcade-btn" onclick="startGame()">Start Game</button>
         </div>
     </div>
 
 <script>
+    let currentUser = null;
     let pastedImageBase64 = '';
 
-    // EMOJI CODES (Never turns into ??)
     const EMOJIS = {
-        banana: String.fromCodePoint(0x1F34C),
-        love: String.fromCodePoint(0x2764),
-        haha: String.fromCodePoint(0x1F602),
-        rocket: String.fromCodePoint(0x1F680),
-        share: String.fromCodePoint(0x1F501)
+        banana: String.fromCodePoint(0x1F34C), love: String.fromCodePoint(0x2764),
+        haha: String.fromCodePoint(0x1F602), rocket: String.fromCodePoint(0x1F680), share: String.fromCodePoint(0x1F501)
     };
 
+    // Load Profile
+    async function loadProfile() {
+        const res = await fetch('/api/me');
+        if (!res.ok) { window.location.href = '/index.html'; return; }
+        currentUser = await res.json();
+        document.getElementById('nav-welcome').innerText = 'Bello, ' + currentUser.fullName + '!';
+        document.getElementById('user-fullname').innerText = currentUser.fullName;
+        document.getElementById('user-handle').innerText = '@' + currentUser.username;
+        document.getElementById('user-role').innerText = currentUser.role || 'Minion';
+        document.getElementById('user-bio').innerText = `"${currentUser.bio || 'Banana lover'}"`;
+        document.getElementById('user-avatar').innerText = currentUser.avatar || '🍌';
+        document.getElementById('user-email').innerText = currentUser.email;
+        document.getElementById('user-phone').innerText = currentUser.phone;
+        document.getElementById('user-joined').innerText = currentUser.joinedAt;
+        document.getElementById('user-highscore').innerText = currentUser.highScore || 0;
+    }
+
+    function openProfileModal() {
+        document.getElementById('edit-name').value = currentUser.fullName;
+        document.getElementById('edit-bio').value = currentUser.bio;
+        document.getElementById('edit-role').value = currentUser.role;
+        document.getElementById('edit-avatar').value = currentUser.avatar;
+        document.getElementById('profile-modal').style.display = 'flex';
+    }
+    function closeProfileModal() { document.getElementById('profile-modal').style.display = 'none'; }
+
+    async function saveProfile() {
+        const fullName = document.getElementById('edit-name').value.trim();
+        const bio = document.getElementById('edit-bio').value.trim();
+        const role = document.getElementById('edit-role').value;
+        const avatar = document.getElementById('edit-avatar').value;
+
+        const res = await fetch('/api/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullName, bio, role, avatar })
+        });
+        if (res.ok) {
+            closeProfileModal();
+            loadProfile();
+        }
+    }
+
+    // --- MESSAGES SYSTEM ---
+    async function loadMessages() {
+        const res = await fetch('/api/messages');
+        if (!res.ok) return;
+        const messages = await res.json();
+        const box = document.getElementById('chat-messages');
+        box.innerHTML = '';
+
+        messages.forEach(m => {
+            const isMine = currentUser && m.sender === currentUser.fullName;
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${isMine ? 'mine' : ''}`;
+            bubble.innerHTML = `
+                <div class="chat-sender">${m.avatar || '🍌'} ${m.sender}</div>
+                <div>${m.text}</div>
+                <div class="chat-time">${m.time}</div>
+            `;
+            box.appendChild(bubble);
+        });
+        box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendChat() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+
+        const res = await fetch('/api/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        if (res.ok) loadMessages();
+    }
+
+    // Refresh messages automatically every 4 seconds (like live chat!)
+    setInterval(loadMessages, 4000);
+
+    // --- POSTS ---
     document.getElementById('post-text').addEventListener('paste', (e) => {
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
         for (let item of items) {
@@ -353,19 +296,6 @@
         }
     });
 
-    async function loadProfile() {
-        const res = await fetch('/api/me');
-        if (!res.ok) { window.location.href = '/index.html'; return; }
-        const user = await res.json();
-        document.getElementById('nav-welcome').innerText = 'Bello, ' + user.fullName + '!';
-        document.getElementById('user-fullname').innerText = user.fullName;
-        document.getElementById('user-handle').innerText = '@' + user.username;
-        document.getElementById('user-email').innerText = user.email;
-        document.getElementById('user-phone').innerText = user.phone;
-        document.getElementById('user-joined').innerText = user.joinedAt;
-        document.getElementById('user-highscore').innerText = user.highScore || 0;
-    }
-
     async function loadPosts() {
         const res = await fetch('/api/posts');
         if (!res.ok) return;
@@ -376,13 +306,8 @@
         posts.forEach(post => {
             const card = document.createElement('div');
             card.className = 'post-card';
-            
             const r = post.reactions || { banana: 0, love: 0, haha: 0, rocket: 0 };
-            const commentsHtml = (post.comments || []).map(c => `
-                <div class="comment-item">
-                    <span class="comment-author">${c.author}:</span> ${c.text}
-                </div>
-            `).join('');
+            const commentsHtml = (post.comments || []).map(c => `<div class="comment-item"><b>${c.author}:</b> ${c.text}</div>`).join('');
 
             card.innerHTML = `
                 <div class="post-top">
@@ -394,7 +319,6 @@
                 </div>
                 ${post.text ? `<div class="post-content">${post.text}</div>` : ''}
                 ${post.image ? `<img class="post-img" src="${post.image}" onerror="this.style.display='none'">` : ''}
-                
                 <div class="reaction-bar">
                     <button class="react-btn" onclick="react(${post.id}, 'banana', this)">${EMOJIS.banana} ${r.banana || 0}</button>
                     <button class="react-btn" onclick="react(${post.id}, 'love', this)">${EMOJIS.love} ${r.love || 0}</button>
@@ -402,13 +326,10 @@
                     <button class="react-btn" onclick="react(${post.id}, 'rocket', this)">${EMOJIS.rocket} ${r.rocket || 0}</button>
                     <button class="share-btn" onclick="sharePost(${post.id})">${EMOJIS.share} Share</button>
                 </div>
-
-                <div class="comments-box">
-                    <div id="comments-${post.id}">${commentsHtml}</div>
-                    <div class="add-comment">
-                        <input type="text" id="comment-input-${post.id}" placeholder="Write a comment...">
-                        <button onclick="addComment(${post.id})">Send</button>
-                    </div>
+                <div>${commentsHtml}</div>
+                <div class="add-comment">
+                    <input type="text" id="comment-${post.id}" placeholder="Write comment...">
+                    <button onclick="addComment(${post.id})">Send</button>
                 </div>
             `;
             container.appendChild(card);
@@ -419,7 +340,6 @@
         const text = document.getElementById('post-text').value.trim();
         const imageUrl = document.getElementById('post-image').value.trim();
         const image = pastedImageBase64 || imageUrl;
-
         if (!text && !image) return;
 
         const res = await fetch('/api/posts', {
@@ -438,9 +358,7 @@
 
     async function react(id, type, btn) {
         const res = await fetch(`/api/posts/${id}/react`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type })
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type })
         });
         if (res.ok) {
             const data = await res.json();
@@ -449,27 +367,18 @@
     }
 
     async function addComment(id) {
-        const input = document.getElementById(`comment-input-${id}`);
+        const input = document.getElementById(`comment-${id}`);
         const text = input.value.trim();
         if (!text) return;
-
         const res = await fetch(`/api/posts/${id}/comment`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text })
         });
-        if (res.ok) {
-            input.value = '';
-            loadPosts();
-        }
+        if (res.ok) loadPosts();
     }
 
     async function sharePost(id) {
         const res = await fetch(`/api/posts/${id}/share`, { method: 'POST' });
-        if (res.ok) {
-            alert('Post shared to the feed!');
-            loadPosts();
-        }
+        if (res.ok) loadPosts();
     }
 
     async function logout() {
@@ -477,15 +386,11 @@
         window.location.href = '/index.html';
     }
 
-    // --- CANVAS ARCADE GAME ---
+    // --- GAME ENGINE ---
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    let gameLoop;
-    let score = 0;
-    let lives = 3;
-    let isPlaying = false;
-    let basket = { x: 170, y: 360, width: 65, height: 42 };
-    let items = [];
+    let gameLoop, score = 0, lives = 3, isPlaying = false;
+    let basket = { x: 170, y: 340, width: 65, height: 42 }, items = [];
 
     canvas.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
@@ -495,163 +400,56 @@
     });
 
     function openGame() { document.getElementById('game-modal').style.display = 'flex'; }
-    function closeGame() {
-        document.getElementById('game-modal').style.display = 'none';
-        isPlaying = false;
-        clearInterval(gameLoop);
-    }
+    function closeGame() { document.getElementById('game-modal').style.display = 'none'; isPlaying = false; clearInterval(gameLoop); }
 
     function startGame() {
         document.getElementById('start-game-btn').style.display = 'none';
-        score = 0;
-        lives = 3;
-        items = [];
-        isPlaying = true;
+        score = 0; lives = 3; items = []; isPlaying = true;
         if (gameLoop) clearInterval(gameLoop);
         gameLoop = setInterval(updateGame, 1000 / 60);
     }
 
-    function drawBanana(x, y) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.fillStyle = '#fedb00';
-        ctx.strokeStyle = '#ca8a04';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(0, 0, 16, 0.2 * Math.PI, 0.85 * Math.PI, false);
-        ctx.quadraticCurveTo(-6, -4, 12, 4);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = '#78350f';
-        ctx.fillRect(11, 3, 4, 4);
-        ctx.restore();
-    }
-
-    function drawBomb(x, y) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.fillStyle = '#18181b';
-        ctx.beginPath();
-        ctx.arc(0, 4, 14, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#71717a';
-        ctx.fillRect(-3, -12, 6, 4);
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(0, -12);
-        ctx.quadraticCurveTo(6, -18, 4, -22);
-        ctx.stroke();
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.arc(4, -22, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-    }
-
-    function spawnItem() {
-        if (Math.random() < 0.045) {
-            const isBomb = Math.random() < 0.3;
-            items.push({
-                x: 25 + Math.random() * (canvas.width - 50),
-                y: -25,
-                radius: 16,
-                speed: 3 + Math.random() * 3,
-                isBomb: isBomb
-            });
-        }
-    }
-
     function updateGame() {
         if (!isPlaying) return;
+        ctx.fillStyle = '#38bdf8'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fedb00'; ctx.beginPath(); ctx.roundRect(basket.x, basket.y, basket.width, basket.height, 16); ctx.fill();
+        ctx.strokeStyle = '#1e3a8a'; ctx.lineWidth = 3; ctx.stroke();
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(basket.x + 32, basket.y + 16, 10, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(basket.x + 32, basket.y + 16, 4, 0, Math.PI * 2); ctx.fill();
 
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (Math.random() < 0.04) items.push({ x: 25 + Math.random() * (canvas.width - 50), y: -20, isBomb: Math.random() < 0.3 });
 
-        // Minion Paddle
-        ctx.fillStyle = '#fedb00';
-        ctx.beginPath();
-        ctx.roundRect(basket.x, basket.y, basket.width, basket.height, 16);
-        ctx.fill();
-        ctx.strokeStyle = '#1e3a8a';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(basket.x + basket.width / 2, basket.y + 16, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.arc(basket.x + basket.width / 2, basket.y + 16, 4, 0, Math.PI * 2);
-        ctx.fill();
-
-        spawnItem();
         for (let i = items.length - 1; i >= 0; i--) {
-            let it = items[i];
-            it.y += it.speed;
+            let it = items[i]; it.y += 4;
+            ctx.fillStyle = it.isBomb ? '#18181b' : '#fedb00';
+            ctx.beginPath(); ctx.arc(it.x, it.y, 14, 0, Math.PI * 2); ctx.fill();
 
-            if (it.isBomb) drawBomb(it.x, it.y);
-            else drawBanana(it.x, it.y);
-
-            if (it.y + it.radius > basket.y && it.y - it.radius < basket.y + basket.height &&
-                it.x + it.radius > basket.x && it.x - it.radius < basket.x + basket.width) {
-                if (it.isBomb) {
-                    lives--;
-                    if (lives <= 0) endGame();
-                } else {
-                    score += 10;
-                }
-                items.splice(i, 1);
-                continue;
+            if (it.y > basket.y && it.y < basket.y + 40 && it.x > basket.x && it.x < basket.x + 65) {
+                if (it.isBomb) { lives--; if (lives <= 0) endGame(); } else score += 10;
+                items.splice(i, 1); continue;
             }
-
-            if (it.y > canvas.height + 25) {
-                if (!it.isBomb) {
-                    lives--;
-                    if (lives <= 0) endGame();
-                }
-                items.splice(i, 1);
-            }
+            if (it.y > canvas.height + 20) { if (!it.isBomb) { lives--; if (lives <= 0) endGame(); } items.splice(i, 1); }
         }
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 18px Fredoka, Arial, sans-serif';
-        ctx.fillText(`BANANAS: ${score}`, 15, 25);
-        ctx.fillText(`LIVES: ${lives}`, canvas.width - 95, 25);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 16px sans-serif';
+        ctx.fillText(`BANANAS: ${score}`, 15, 25); ctx.fillText(`LIVES: ${lives}`, canvas.width - 90, 25);
     }
 
     async function endGame() {
-        isPlaying = false;
-        clearInterval(gameLoop);
-
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.fillStyle = '#fedb00';
-        ctx.font = 'bold 30px Fredoka, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 20);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '20px Fredoka, sans-serif';
-        ctx.fillText(`Caught: ${score} Bananas!`, canvas.width / 2, canvas.height / 2 + 15);
+        isPlaying = false; clearInterval(gameLoop);
+        ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fedb00'; ctx.font = 'bold 26px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2);
         ctx.textAlign = 'left';
-
         document.getElementById('start-game-btn').style.display = 'inline-block';
         document.getElementById('start-game-btn').innerText = 'Play Again';
-
-        const res = await fetch('/api/highscore', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ score })
-        });
+        const res = await fetch('/api/highscore', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ score }) });
         const data = await res.json();
         document.getElementById('user-highscore').innerText = data.highScore;
     }
 
     loadProfile();
     loadPosts();
+    loadMessages();
 </script>
 </body>
 </html>
