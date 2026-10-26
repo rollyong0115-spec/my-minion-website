@@ -16,29 +16,37 @@
             align-items: center;
             background: #0f172a;
             position: relative;
-            overflow-x: hidden;
+            overflow: hidden;
             padding: 20px;
         }
 
-        /* --- 1. RELIABLE MINION BACKGROUND --- */
-        .funny-bg {
+        /* --- 1. FULLSCREEN TRAILER VIDEO BACKGROUND --- */
+        .video-background {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            /* High-res cinematic Minion theme backdrop that never expires */
-            background-image: url('https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?auto=format&fit=crop&w=1600&q=80');
-            background-size: cover;
-            background-position: center;
-            filter: blur(2px) brightness(0.4);
-            transform: scale(1.05);
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
             z-index: 1;
+            pointer-events: none;
+        }
+        .video-background iframe {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 100vw; height: 56.25vw; /* 16:9 Aspect Ratio */
+            min-height: 100vh; min-width: 177.77vh;
+            transform: translate(-50%, -50%) scale(1.1);
+            filter: brightness(0.65) contrast(1.05);
+            pointer-events: none;
         }
 
         /* Dark Vignette Overlay */
         .overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: radial-gradient(circle at center, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.88) 100%);
             z-index: 2;
+            pointer-events: none;
         }
 
         /* --- 2. FOREGROUND CARD --- */
@@ -52,35 +60,129 @@
             max-width: 400px;
         }
 
-        /* Funny Minion Avatar */
-        .funny-header-gif {
+        /* --- INTERACTIVE MINION CIRCULAR BADGE --- */
+        .minion-circle {
             width: 120px;
             height: 120px;
+            background: #fedb00;
             border-radius: 50%;
             border: 4px solid #fedb00;
             box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 20px rgba(254, 219, 0, 0.5);
-            margin-bottom: -50px;
-            z-index: 15;
-            background-color: #fedb00;
+            position: relative;
+            margin-bottom: -45px;
+            z-index: 20;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .funny-header-gif img {
+
+        /* Minion Hair */
+        .hair {
+            position: absolute;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 3px;
+        }
+        .hair div { width: 3px; height: 10px; background: #18181b; }
+        .hair div:nth-child(1) { transform: rotate(-15deg); }
+        .hair div:nth-child(3) { transform: rotate(15deg); }
+
+        /* Goggle Strap */
+        .strap {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            height: 16px;
+            background: #18181b;
+            position: absolute;
+            top: 45px;
         }
 
-        /* Clean Card */
+        /* Silver Goggle Rim */
+        .goggle-rim {
+            width: 56px;
+            height: 56px;
+            background: #d4d4d8;
+            border: 5px solid #52525b;
+            border-radius: 50%;
+            position: absolute;
+            top: 25px;
+            left: calc(50% - 28px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+
+        /* Eye & Eye-lid (closes on password) */
+        .eye-socket {
+            width: 36px;
+            height: 36px;
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .eyelid {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 0%;
+            background: #fedb00;
+            border-bottom: 3px solid #18181b;
+            transition: height 0.22s ease-in-out;
+            z-index: 5;
+        }
+        .pupil-track {
+            width: 16px;
+            height: 16px;
+            background: #854d0e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.05s ease-out;
+        }
+        .pupil-dot {
+            width: 8px;
+            height: 8px;
+            background: #09090b;
+            border-radius: 50%;
+            position: relative;
+        }
+        .pupil-dot::after {
+            content: '';
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 1px; left: 1px;
+        }
+
+        /* Minion Smile */
+        .mouth {
+            width: 24px;
+            height: 10px;
+            border-bottom: 3px solid #18181b;
+            border-radius: 0 0 24px 24px;
+            position: absolute;
+            bottom: 16px;
+            left: calc(50% - 12px);
+        }
+
+        /* --- THE CARD --- */
         .card {
             background: rgba(255, 255, 255, 0.96);
             border: 4px solid #fedb00;
             width: 100%;
-            padding: 60px 30px 28px 30px;
+            padding: 55px 28px 24px 28px;
             border-radius: 24px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
             text-align: center;
             color: #1e3a8a;
         }
@@ -111,7 +213,7 @@
 
         button.submit-btn {
             width: 100%;
-            padding: 14px;
+            padding: 13px;
             background: #fedb00;
             color: #1e3a8a;
             border: 2px solid #ca8a04;
@@ -119,7 +221,7 @@
             cursor: pointer;
             font-size: 16px;
             font-weight: 700;
-            margin-top: 12px;
+            margin-top: 10px;
             font-family: inherit;
             box-shadow: 0 4px 0 #ca8a04;
             transition: all 0.1s ease;
@@ -127,12 +229,12 @@
         button.submit-btn:hover { background: #fde047; transform: translateY(-2px); box-shadow: 0 6px 0 #ca8a04; }
         button.submit-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #ca8a04; }
 
-        .toggle-box { margin-top: 16px; font-size: 14px; color: #64748b; }
+        .toggle-box { margin-top: 14px; font-size: 14px; color: #64748b; }
         .toggle-box a { color: #2563eb; font-weight: 700; text-decoration: underline; cursor: pointer; }
-        .message { margin-top: 10px; font-size: 13px; font-weight: 600; min-height: 18px; }
+        .message { margin-top: 8px; font-size: 13px; font-weight: 600; min-height: 18px; }
 
         .gibberish-box {
-            margin-top: 15px;
+            margin-top: 14px;
             background: #fef08a;
             border: 2px dashed #ca8a04;
             padding: 8px 12px;
@@ -141,22 +243,39 @@
             color: #854d0e;
             cursor: pointer;
             user-select: none;
-            transition: transform 0.1s;
         }
-        .gibberish-box:hover { transform: scale(1.02); background: #fde047; }
+        .gibberish-box:hover { background: #fde047; }
     </style>
 </head>
 <body>
 
-    <!-- 1. Background -->
-    <div class="funny-bg"></div>
+    <!-- 1. Trailer Video Background (Despicable Me 4 Official Trailer) -->
+    <div class="video-background">
+        <iframe 
+            src="https://www.youtube.com/embed/bCcVSW-c3nA?autoplay=1&mute=1&controls=0&loop=1&playlist=bCcVSW-c3nA&playsinline=1&modestbranding=1" 
+            frameborder="0" 
+            allow="autoplay; encrypted-media" 
+            allowfullscreen>
+        </iframe>
+    </div>
     <div class="overlay"></div>
 
-    <!-- 2. Login Card -->
+    <!-- 2. Login Form Wrapper -->
     <div class="login-wrapper">
-        <!-- Minion Avatar Header (Guaranteed to Load!) -->
-        <div class="funny-header-gif">
-            <img src="https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?auto=format&fit=crop&w=300&q=80" alt="Minion Bob">
+
+        <!-- INTERACTIVE MINION CIRCLE (Eye tracks mouse, closes on password) -->
+        <div class="minion-circle">
+            <div class="hair"><div></div><div></div><div></div></div>
+            <div class="strap"></div>
+            <div class="goggle-rim">
+                <div class="eye-socket" id="eye-socket">
+                    <div class="eyelid" id="eyelid"></div>
+                    <div class="pupil-track" id="pupil">
+                        <div class="pupil-dot"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mouth"></div>
         </div>
 
         <div class="card">
@@ -188,7 +307,36 @@
 
 <script>
     let isLogin = true;
+    let isPasswordFocused = false;
 
+    // --- INTERACTIVE EYE LOGIC ---
+    const eyeSocket = document.getElementById('eye-socket');
+    const pupil = document.getElementById('pupil');
+    const eyelid = document.getElementById('eyelid');
+    const passwordInput = document.getElementById('password');
+
+    // 1. Pupil tracks mouse cursor
+    window.addEventListener('mousemove', (e) => {
+        if (isPasswordFocused) return;
+        const rect = eyeSocket.getBoundingClientRect();
+        const eyeX = rect.left + rect.width / 2;
+        const eyeY = rect.top + rect.height / 2;
+        const angle = Math.atan2(e.clientY - eyeY, e.clientX - eyeX);
+        const distance = Math.min(6, Math.hypot(e.clientX - eyeX, e.clientY - eyeY) / 14);
+        pupil.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
+    });
+
+    // 2. Closes eyes completely when typing password ("No peeking!")
+    passwordInput.addEventListener('focus', () => {
+        isPasswordFocused = true;
+        eyelid.style.height = '100%';
+    });
+    passwordInput.addEventListener('blur', () => {
+        isPasswordFocused = false;
+        eyelid.style.height = '0%';
+    });
+
+    // Quotes
     const quotes = [
         '"BEE-DOO! BEE-DOO! 🚨"',
         '"BANANAAAAAA! 🍌"',
@@ -196,8 +344,7 @@
         '"Tulaliloo ti amo! ❤️"',
         '"Underwear... hehehe! 😂"',
         '"Gelato! Papple! 🍦"',
-        '"Muak muak muak! 😘"',
-        '"Kampai! 🥂"'
+        '"Muak muak muak! 😘"'
     ];
 
     function randomQuote() {
