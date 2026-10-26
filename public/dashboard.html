@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gru's Lab - Feed & Profile</title>
+    <title>Gru's Lab - Feed, Profile & Notifications</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Fredoka', cursive, sans-serif; background: #e2e8f0; margin: 0; color: #1e293b; }
 
-        /* --- NAVBAR --- */
         .navbar {
             background: #fedb00; border-bottom: 3px solid #1e3a8a; padding: 10px 20px;
             display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
@@ -24,23 +23,38 @@
         .nav-tab-btn:hover { background: rgba(255, 255, 255, 0.8); }
         .nav-tab-btn.active { background: #1e3a8a; color: #fedb00; border-color: #1e3a8a; }
 
-        .nav-user { display: flex; align-items: center; gap: 8px; }
+        .nav-user { display: flex; align-items: center; gap: 8px; position: relative; }
         .arcade-btn { background: #10b981; color: white; border: 2px solid #065f46; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 13px; }
         .logout-btn { background: #ef4444; color: white; border: 2px solid #991b1b; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 13px; }
 
-        /* --- PROFILE VIEW (FACEBOOK STYLE) --- */
-        #view-profile { display: none; }
-        
-        .back-nav-bar {
-            max-width: 950px; margin: 12px auto 0 auto; padding: 0 15px;
+        /* Notification Bell */
+        .notif-bell-btn {
+            background: white; border: 2px solid #1e3a8a; border-radius: 50%; width: 38px; height: 38px;
+            cursor: pointer; font-size: 17px; display: flex; align-items: center; justify-content: center; position: relative;
         }
+        .notif-badge {
+            position: absolute; top: -4px; right: -4px; background: #ef4444; color: white;
+            border-radius: 10px; font-size: 10px; font-weight: bold; padding: 2px 5px; display: none;
+        }
+        .notif-dropdown {
+            display: none; position: absolute; top: 48px; right: 80px; width: 320px;
+            background: white; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            border: 2px solid #cbd5e1; z-index: 1000; overflow: hidden;
+        }
+        .notif-header { background: #1e3a8a; color: #fedb00; padding: 10px 14px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
+        .notif-list { max-height: 300px; overflow-y: auto; }
+        .notif-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 12px; cursor: pointer; transition: background 0.1s; }
+        .notif-item:hover { background: #fef9c3; }
+        .notif-item.unread { background: #eff6ff; font-weight: bold; }
+
+        /* Profile View */
+        #view-profile { display: none; }
+        .back-nav-bar { max-width: 950px; margin: 12px auto 0 auto; padding: 0 15px; }
         .back-btn {
             background: white; border: 2px solid #cbd5e1; padding: 8px 16px; border-radius: 12px;
             font-weight: 700; font-family: inherit; font-size: 14px; color: #1e3a8a; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            display: inline-flex; align-items: center; gap: 6px;
         }
-        .back-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
-
         .profile-container {
             max-width: 950px; margin: 12px auto 20px auto; background: white;
             box-shadow: 0 4px 15px rgba(0,0,0,0.06); border-radius: 20px; overflow: hidden;
@@ -51,55 +65,36 @@
             background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
             background-size: cover; background-position: center;
         }
-        .profile-header-content {
-            padding: 0 25px 20px 25px; position: relative;
-            display: flex; flex-direction: column; align-items: flex-start;
-        }
-        .avatar-wrapper {
-            position: relative; margin-top: -75px; margin-bottom: 12px;
-        }
+        .profile-header-content { padding: 0 25px 20px 25px; position: relative; display: flex; flex-direction: column; }
+        .avatar-wrapper { position: relative; margin-top: -75px; margin-bottom: 12px; }
         .avatar-img {
             width: 140px; height: 140px; border-radius: 50%;
             border: 5px solid #ffffff; background: #fedb00;
             object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 60px;
+            display: flex; align-items: center; justify-content: center; font-size: 60px;
         }
-        .profile-title-bar {
-            width: 100%; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px;
-        }
+        .profile-title-bar { width: 100%; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px; }
         .profile-names h1 { margin: 0; font-size: 26px; color: #0f172a; }
         .profile-names p { margin: 3px 0 0 0; color: #64748b; font-size: 14px; }
         .profile-bio-text { margin: 10px 0 0 0; color: #334155; font-size: 15px; font-style: italic; max-width: 600px; }
-        
-        .profile-details-pills {
-            display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; font-size: 13px; color: #475569;
-        }
+        .profile-details-pills { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; font-size: 13px; color: #475569; }
         .pill { display: flex; align-items: center; gap: 5px; background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
 
-        .edit-fb-btn {
-            background: #e2e8f0; color: #0f172a; border: none; padding: 10px 18px;
-            border-radius: 10px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 14px;
-            display: flex; align-items: center; gap: 6px;
-        }
-        .edit-fb-btn:hover { background: #cbd5e1; }
+        /* Action Buttons */
+        .fb-action-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 15px; width: 100%; }
+        .fb-btn-blue { background: #1877f2; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
+        .fb-btn-gray { background: #e4e6eb; color: #050505; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
+        .fb-btn-red { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; padding: 10px 16px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 13px; cursor: pointer; }
 
-        /* Profile Mini Banner on Feed View */
-        .feed-profile-strip {
-            background: white; border-radius: 16px; padding: 14px 18px; margin-bottom: 18px;
-            border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04); cursor: pointer; transition: transform 0.1s;
-        }
-        .feed-profile-strip:hover { transform: translateY(-2px); border-color: #fedb00; }
-        .strip-left { display: flex; align-items: center; gap: 12px; }
-        .strip-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #fedb00; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 2px solid #1e3a8a; }
-
-        /* --- FEED VIEW LAYOUT --- */
-        .container {
-            max-width: 980px; margin: 20px auto; display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 0 15px;
-        }
+        /* Feed Layout */
+        .container { max-width: 980px; margin: 20px auto; display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 0 15px; }
         .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 2px solid #cbd5e1; margin-bottom: 20px; }
         .card-header { font-size: 17px; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #fedb00; padding-bottom: 8px; margin-bottom: 15px; }
+
+        .member-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 10px; cursor: pointer; transition: background 0.1s; margin-bottom: 5px; }
+        .member-item:hover { background: #f1f5f9; }
+        .member-info { display: flex; align-items: center; gap: 8px; }
+        .member-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: #fedb00; display: flex; align-items: center; justify-content: center; font-size: 16px; }
 
         /* Post Creation */
         .create-post textarea { width: 100%; height: 75px; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px; font-family: inherit; resize: none; outline: none; }
@@ -107,12 +102,13 @@
         .img-preview { max-width: 100%; max-height: 180px; border-radius: 8px; margin-top: 8px; display: none; border: 2px dashed #cbd5e1; }
         .post-btn { background: #2563eb; color: white; border: 2px solid #1e3a8a; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 700; font-family: inherit; margin-top: 10px; width: 100%; }
 
-        /* Posts */
+        /* Post Card */
         .post-card { background: white; border-radius: 16px; padding: 18px; margin-bottom: 16px; border: 2px solid #cbd5e1; }
         .post-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-        .post-user-info { display: flex; align-items: center; gap: 10px; }
+        .post-user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .post-avatar-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #fedb00; border: 2px solid #1e3a8a; display: flex; align-items: center; justify-content: center; font-size: 20px; }
         .post-author { font-weight: 700; color: #1e3a8a; font-size: 15px; }
+        .post-author:hover { text-decoration: underline; }
         .post-time { font-size: 11px; color: #94a3b8; }
         .edited-tag { font-size: 11px; color: #94a3b8; font-style: italic; }
         .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
@@ -126,7 +122,8 @@
         /* Comments */
         .comment-item { background: #f8fafc; padding: 8px 12px; border-radius: 10px; margin-bottom: 6px; font-size: 13px; border: 1px solid #f1f5f9; }
         .comment-header { display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .comment-author { font-weight: 700; color: #1e3a8a; }
+        .comment-author { font-weight: 700; color: #1e3a8a; cursor: pointer; }
+        .comment-author:hover { text-decoration: underline; }
         .replies-list { margin-left: 20px; margin-top: 6px; border-left: 2px solid #fedb00; padding-left: 10px; }
         .reply-item { background: #ffffff; padding: 6px 10px; border-radius: 8px; margin-bottom: 4px; font-size: 12px; border: 1px solid #e2e8f0; }
         .reply-box { margin-left: 20px; margin-top: 6px; display: none; gap: 6px; }
@@ -136,12 +133,12 @@
         .add-comment input { flex: 1; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 13px; }
         .add-comment button { background: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: inherit; }
 
-        /* Messenger Chat */
+        /* Messenger */
         .chat-container { display: flex; flex-direction: column; height: 380px; }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
         .chat-bubble { background: #f1f5f9; padding: 8px 12px; border-radius: 12px; font-size: 13px; max-width: 90%; }
         .chat-bubble.mine { background: #dbeafe; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .chat-sender { font-size: 11px; font-weight: bold; color: #1e3a8a; margin-bottom: 2px; }
+        .chat-sender { font-size: 11px; font-weight: bold; color: #1e3a8a; margin-bottom: 2px; cursor: pointer; }
         .chat-time { font-size: 10px; color: #94a3b8; margin-top: 3px; text-align: right; }
         .chat-input-bar { display: flex; gap: 6px; margin-top: 10px; }
         .chat-input-bar input { flex: 1; padding: 9px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; }
@@ -160,13 +157,14 @@
             .cover-photo-wrapper { height: 180px; }
             .avatar-img { width: 110px; height: 110px; font-size: 45px; }
             .avatar-wrapper { margin-top: -55px; }
-            .nav-tab-btn span { display: none; } /* Show only icons on small screens */
+            .nav-tab-btn span { display: none; }
+            .notif-dropdown { right: 10px; width: 290px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- TOP NAVBAR WITH TABS -->
+    <!-- TOP NAVBAR -->
     <div class="navbar">
         <div class="nav-logo" onclick="switchView('feed')">
             <span>&#127820;</span> MinionFeed
@@ -176,37 +174,41 @@
             <button class="nav-tab-btn active" id="tab-feed" onclick="switchView('feed')">
                 &#127968; <span>News Feed</span>
             </button>
-            <button class="nav-tab-btn" id="tab-profile" onclick="switchView('profile')">
+            <button class="nav-tab-btn" id="tab-profile" onclick="viewMyOwnProfile()">
                 &#128100; <span>My Profile</span>
             </button>
         </div>
 
         <div class="nav-user">
+            <!-- Notification Bell -->
+            <button class="notif-bell-btn" onclick="toggleNotifs()">
+                &#128276;
+                <span class="notif-badge" id="notif-badge">0</span>
+            </button>
+
+            <!-- Notification Dropdown -->
+            <div class="notif-dropdown" id="notif-dropdown">
+                <div class="notif-header">
+                    <span>Notifications &#128276;</span>
+                    <span style="cursor:pointer;font-size:11px;" onclick="markNotifsRead()">Mark all as read</span>
+                </div>
+                <div class="notif-list" id="notif-list">
+                    <div style="padding:15px;text-align:center;color:#64748b;font-size:12px;">No notifications yet.</div>
+                </div>
+            </div>
+
             <button class="arcade-btn" onclick="openGame()">&#127918; Arcade</button>
             <button class="logout-btn" onclick="logout()">&#128075;</button>
         </div>
     </div>
 
-    <!-- VIEW 1: NEWS FEED (HOME) -->
+    <!-- VIEW 1: NEWS FEED -->
     <div id="view-feed">
         <div class="container">
-            <!-- Left: Feed -->
             <div>
-                <!-- Clickable Profile Strip -->
-                <div class="feed-profile-strip" onclick="switchView('profile')">
-                    <div class="strip-left">
-                        <div class="strip-avatar" id="feed-strip-avatar">&#127820;</div>
-                        <div>
-                            <div style="font-weight: 700; color: #0f172a;" id="feed-strip-name">My Profile</div>
-                            <div style="font-size: 12px; color: #64748b;">View your Facebook-style profile & bio &rarr;</div>
-                        </div>
-                    </div>
-                    <button class="nav-tab-btn" style="background:#f1f5f9; font-size: 12px;">View Profile</button>
-                </div>
-
                 <div class="card create-post">
                     <div class="card-header">Create Post &#129514;</div>
-                    <textarea id="post-text" placeholder="What's on your mind? (Paste image with Ctrl+V)"></textarea>
+                    <textarea id="post-text" placeholder="What's on your mind? Mention someone with @username! (Paste image with Ctrl+V)"></textarea>
                     <input type="text" id="post-image" placeholder="Or paste an Image/GIF link here">
                     <img id="pasted-preview" class="img-preview" alt="Preview">
                     <button class="post-btn" onclick="publishPost()">Post to Feed &#128640;</button>
@@ -214,14 +216,21 @@
                 <div id="posts-container"></div>
             </div>
 
-            <!-- Right: Messenger Chat -->
+            <!-- Sidebar -->
             <div>
+                <!-- Crew Directory -->
+                <div class="card">
+                    <div class="card-header">&#128101; Minion Crew Members</div>
+                    <div id="members-list" style="max-height: 180px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- Chatroom -->
                 <div class="card">
                     <div class="card-header">&#128172; Lab Messenger</div>
                     <div class="chat-container">
                         <div class="chat-messages" id="chat-messages"></div>
                         <div class="chat-input-bar">
-                            <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()">
+                            <input type="text" id="chat-input" placeholder="Type a message or @mention..." onkeypress="if(event.key==='Enter') sendChat()">
                             <button class="chat-send-btn" onclick="sendChat()">Send</button>
                         </div>
                     </div>
@@ -230,9 +239,8 @@
         </div>
     </div>
 
-    <!-- VIEW 2: PROFILE PAGE (FACEBOOK STYLE) -->
+    <!-- VIEW 2: PROFILE VIEW -->
     <div id="view-profile">
-        <!-- Prominent Back to News Feed Button -->
         <div class="back-nav-bar">
             <button class="back-btn" onclick="switchView('feed')">
                 &larr; Back to News Feed
@@ -260,17 +268,14 @@
                         </div>
                     </div>
 
-                    <button class="edit-fb-btn" onclick="openProfileModal()">
-                        &#9999;&#65039; Edit Profile
-                    </button>
+                    <div id="profile-actions-area" class="fb-action-row"></div>
                 </div>
             </div>
         </div>
 
-        <!-- User's Posts Section -->
         <div style="max-width: 950px; margin: 0 auto 30px auto; padding: 0 15px;">
-            <div class="card-header" style="font-size: 19px;">My Activity & Posts</div>
-            <div id="my-posts-container"></div>
+            <div class="card-header" style="font-size: 19px;" id="profile-posts-title">Activity & Posts</div>
+            <div id="profile-posts-container"></div>
         </div>
     </div>
 
@@ -279,22 +284,16 @@
         <div class="modal-box">
             <span class="close-btn" onclick="closeProfileModal()">&times;</span>
             <h2 style="color: #1e3a8a; margin: 0 0 10px 0;">Edit Your Profile</h2>
-
             <label>&#128247; Profile Picture:</label>
             <input type="file" id="upload-avatar" accept="image/*">
-
             <label>&#128444;&#65039; Cover Background Photo:</label>
             <input type="file" id="upload-cover" accept="image/*">
-
             <label>Full Name:</label>
             <input type="text" id="edit-name">
-
             <label>Bio (About You):</label>
-            <textarea id="edit-bio" rows="2" placeholder="Describe yourself..."></textarea>
-
+            <textarea id="edit-bio" rows="2"></textarea>
             <label>&#128205; Where are you from? (Location):</label>
-            <input type="text" id="edit-location" placeholder="e.g. Manila, Philippines">
-
+            <input type="text" id="edit-location">
             <label>Minion Role:</label>
             <select id="edit-role">
                 <option value="Rocket Scientist">🚀 Rocket Scientist</option>
@@ -303,7 +302,6 @@
                 <option value="Gru's Favorite">⭐ Gru's Favorite</option>
                 <option value="Secret Spy">🕵️ Secret Spy</option>
             </select>
-
             <button class="save-modal-btn" onclick="saveProfile()">Save Changes &#10004;</button>
         </div>
     </div>
@@ -320,6 +318,7 @@
 
 <script>
     let currentUser = null;
+    let viewingUsername = null;
     let allPosts = [];
     let pastedImageBase64 = '';
     let newAvatarBase64 = null;
@@ -330,7 +329,6 @@
         haha: String.fromCodePoint(0x1F602), rocket: String.fromCodePoint(0x1F680)
     };
 
-    // --- TAB VIEW SWITCHING (FEED vs PROFILE) ---
     function switchView(viewName) {
         const feedView = document.getElementById('view-feed');
         const profileView = document.getElementById('view-profile');
@@ -342,7 +340,6 @@
             profileView.style.display = 'block';
             tabProfile.classList.add('active');
             tabFeed.classList.remove('active');
-            renderMyPosts();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
             profileView.style.display = 'none';
@@ -353,7 +350,167 @@
         }
     }
 
-    // Client-side photo resizer
+    function viewMyOwnProfile() {
+        if (currentUser) openUserProfile(currentUser.username);
+    }
+
+    async function openUserProfile(username) {
+        viewingUsername = username;
+        const res = await fetch(`/api/users/${username}`);
+        if (!res.ok) return;
+        const profile = await res.json();
+
+        document.getElementById('user-fullname').innerText = profile.fullName;
+        document.getElementById('user-handle').innerText = '@' + profile.username;
+        document.getElementById('user-bio').innerText = `"${profile.bio || 'Banana lover'}"`;
+        document.getElementById('user-location').innerText = profile.location || "Gru's Secret Lab";
+        document.getElementById('user-role').innerText = profile.role || 'Minion';
+        document.getElementById('user-highscore').innerText = profile.highScore || 0;
+
+        const avatarEl = document.getElementById('profile-avatar');
+        if (profile.avatar && profile.avatar.startsWith('data:image')) {
+            avatarEl.innerHTML = `<img src="${profile.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        } else {
+            avatarEl.innerHTML = profile.avatar || '🍌';
+        }
+
+        const coverEl = document.getElementById('profile-cover');
+        if (profile.coverPhoto && profile.coverPhoto.startsWith('data:image')) {
+            coverEl.style.backgroundImage = `url('${profile.coverPhoto}')`;
+        } else {
+            coverEl.style.backgroundImage = `linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)`;
+        }
+
+        const actionsArea = document.getElementById('profile-actions-area');
+        const isSelf = currentUser && currentUser.username.toLowerCase() === username.toLowerCase();
+
+        if (isSelf) {
+            actionsArea.innerHTML = `<button class="fb-btn-gray" onclick="openProfileModal()">&#9999;&#65039; Edit Profile</button>`;
+        } else {
+            actionsArea.innerHTML = `
+                <button class="fb-btn-blue" id="btn-friend" onclick="toggleFriend('${profile.username}')">
+                    ${profile.isFriend ? '&#10004; Friends' : '&#10133; Add Friend'}
+                </button>
+                <button class="fb-btn-gray" onclick="startDirectChat('${profile.fullName}')">&#128172; Message</button>
+                <button class="fb-btn-red" id="btn-block" onclick="toggleBlock('${profile.username}')">
+                    ${profile.isBlocked ? 'Unblock' : '&#128683; Block'}
+                </button>
+            `;
+        }
+
+        renderUserPosts(username);
+        switchView('profile');
+    }
+
+    async function toggleFriend(username) {
+        const res = await fetch(`/api/users/${username}/friend`, { method: 'POST' });
+        if (res.ok) {
+            const data = await res.json();
+            const btn = document.getElementById('btn-friend');
+            btn.innerHTML = data.isFriend ? '&#10004; Friends' : '&#10133; Add Friend';
+        }
+    }
+
+    async function toggleBlock(username) {
+        if (!confirm(`Toggle block for @${username}?`)) return;
+        const res = await fetch(`/api/users/${username}/block`, { method: 'POST' });
+        if (res.ok) {
+            const data = await res.json();
+            const btn = document.getElementById('btn-block');
+            btn.innerHTML = data.isBlocked ? 'Unblock' : '&#128683; Block';
+            loadPosts();
+            loadMessages();
+        }
+    }
+
+    function startDirectChat(fullName) {
+        switchView('feed');
+        const input = document.getElementById('chat-input');
+        input.value = `@${fullName} `;
+        input.focus();
+    }
+
+    // --- NOTIFICATIONS ---
+    function toggleNotifs() {
+        const drop = document.getElementById('notif-dropdown');
+        drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+        if (drop.style.display === 'block') markNotifsRead();
+    }
+
+    async function loadNotifications() {
+        const res = await fetch('/api/notifications');
+        if (!res.ok) return;
+        const notifs = await res.json();
+
+        const badge = document.getElementById('notif-badge');
+        const list = document.getElementById('notif-list');
+        const unreadCount = notifs.filter(n => !n.read).length;
+
+        if (unreadCount > 0) {
+            badge.innerText = unreadCount;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+
+        if (notifs.length === 0) {
+            list.innerHTML = '<div style="padding:15px;text-align:center;color:#64748b;font-size:12px;">No notifications yet.</div>';
+            return;
+        }
+
+        list.innerHTML = '';
+        notifs.forEach(n => {
+            const item = document.createElement('div');
+            item.className = `notif-item ${n.read ? '' : 'unread'}`;
+            item.onclick = () => {
+                document.getElementById('notif-dropdown').style.display = 'none';
+                openUserProfile(n.senderUsername);
+            };
+            item.innerHTML = `
+                <div>${n.text}</div>
+                <div style="font-size:10px;color:#94a3b8;margin-top:2px;">${new Date(n.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    async function markNotifsRead() {
+        await fetch('/api/notifications/read', { method: 'POST' });
+        document.getElementById('notif-badge').style.display = 'none';
+    }
+    setInterval(loadNotifications, 8000);
+
+    // Load Member list
+    async function loadMembers() {
+        const res = await fetch('/api/users');
+        if (!res.ok) return;
+        const users = await res.json();
+        const container = document.getElementById('members-list');
+        container.innerHTML = '';
+
+        users.forEach(u => {
+            const isMe = currentUser && u.username === currentUser.username;
+            const item = document.createElement('div');
+            item.className = 'member-item';
+            item.onclick = () => openUserProfile(u.username);
+            const avatarHtml = u.avatar && u.avatar.startsWith('data:image') 
+                ? `<img src="${u.avatar}" class="member-avatar">` 
+                : `<div class="member-avatar">${u.avatar || '🍌'}</div>`;
+            
+            item.innerHTML = `
+                <div class="member-info">
+                    ${avatarHtml}
+                    <div>
+                        <div style="font-weight:700;font-size:13px;color:#1e3a8a;">${u.fullName} ${isMe ? '(You)' : ''}</div>
+                        <div style="font-size:11px;color:#64748b;">@${u.username} &bull; ${u.role || 'Minion'}</div>
+                    </div>
+                </div>
+                <span style="font-size:12px;color:#2563eb;">View &rarr;</span>
+            `;
+            container.appendChild(item);
+        });
+    }
+
     function resizeImage(file, maxWidth, maxHeight) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -376,48 +533,16 @@
     }
 
     document.getElementById('upload-avatar').addEventListener('change', async (e) => {
-        if (e.target.files && e.target.files[0]) {
-            newAvatarBase64 = await resizeImage(e.target.files[0], 400, 400);
-        }
+        if (e.target.files && e.target.files[0]) newAvatarBase64 = await resizeImage(e.target.files[0], 400, 400);
     });
     document.getElementById('upload-cover').addEventListener('change', async (e) => {
-        if (e.target.files && e.target.files[0]) {
-            newCoverBase64 = await resizeImage(e.target.files[0], 1200, 500);
-        }
+        if (e.target.files && e.target.files[0]) newCoverBase64 = await resizeImage(e.target.files[0], 1200, 500);
     });
 
-    // Load Profile
     async function loadProfile() {
         const res = await fetch('/api/me');
         if (!res.ok) { window.location.href = '/index.html'; return; }
         currentUser = await res.json();
-
-        document.getElementById('user-fullname').innerText = currentUser.fullName;
-        document.getElementById('feed-strip-name').innerText = currentUser.fullName;
-        document.getElementById('user-handle').innerText = '@' + currentUser.username;
-        document.getElementById('user-bio').innerText = `"${currentUser.bio || 'Living life one banana at a time!'}"`;
-        document.getElementById('user-location').innerText = currentUser.location || "Gru's Secret Lab";
-        document.getElementById('user-role').innerText = currentUser.role || 'Minion';
-        document.getElementById('user-highscore').innerText = currentUser.highScore || 0;
-
-        // Render Avatar
-        const avatarEl = document.getElementById('profile-avatar');
-        const stripAvatar = document.getElementById('feed-strip-avatar');
-        if (currentUser.avatar && currentUser.avatar.startsWith('data:image')) {
-            avatarEl.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-            stripAvatar.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-        } else {
-            avatarEl.innerHTML = currentUser.avatar || '🍌';
-            stripAvatar.innerHTML = currentUser.avatar || '🍌';
-        }
-
-        // Render Cover
-        const coverEl = document.getElementById('profile-cover');
-        if (currentUser.coverPhoto && currentUser.coverPhoto.startsWith('data:image')) {
-            coverEl.style.backgroundImage = `url('${currentUser.coverPhoto}')`;
-        } else {
-            coverEl.style.backgroundImage = `linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)`;
-        }
     }
 
     function openProfileModal() {
@@ -449,8 +574,9 @@
 
         if (res.ok) {
             closeProfileModal();
-            loadProfile();
-            loadPosts();
+            await loadProfile();
+            openUserProfile(currentUser.username);
+            loadMembers();
         }
     }
 
@@ -462,14 +588,14 @@
         const box = document.getElementById('chat-messages');
         box.innerHTML = '';
         messages.forEach(m => {
-            const isMine = currentUser && m.sender === currentUser.fullName;
+            const isMine = currentUser && m.username === currentUser.username;
             const bubble = document.createElement('div');
             bubble.className = `chat-bubble ${isMine ? 'mine' : ''}`;
             const avatarHtml = m.avatar && m.avatar.startsWith('data:image') 
                 ? `<img src="${m.avatar}" style="width:16px;height:16px;border-radius:50%;vertical-align:middle;margin-right:4px;">` 
                 : `${m.avatar || '🍌'} `;
             bubble.innerHTML = `
-                <div class="chat-sender">${avatarHtml}${m.sender}</div>
+                <div class="chat-sender" onclick="openUserProfile('${m.username}')">${avatarHtml}${m.sender}</div>
                 <div>${m.text}</div>
                 <div class="chat-time">${m.time}</div>
             `;
@@ -517,13 +643,18 @@
         const commentsHtml = (post.comments || []).map(c => {
             const isMyComment = currentUser && c.username === currentUser.username;
             const repliesHtml = (c.replies || []).map(rep => `
-                <div class="reply-item"><b>${rep.author}:</b> ${rep.text}</div>
+                <div class="reply-item">
+                    <b onclick="openUserProfile('${rep.username}')" style="cursor:pointer;color:#1e3a8a;">${rep.author}:</b> ${rep.text}
+                </div>
             `).join('');
 
             return `
                 <div class="comment-item">
                     <div class="comment-header">
-                        <div><span class="comment-author">${c.author}:</span> ${c.text} ${c.edited ? '<span class="edited-tag">(edited)</span>' : ''}</div>
+                        <div>
+                            <span class="comment-author" onclick="openUserProfile('${c.username}')">${c.author}:</span> ${c.text} 
+                            ${c.edited ? '<span class="edited-tag">(edited)</span>' : ''}
+                        </div>
                         ${isMyComment ? `<span class="action-link" onclick="editComment('${post._id}', '${c._id}', '${c.text.replace(/'/g, "\\'")}')">Edit</span>` : ''}
                     </div>
                     <div><span class="action-link" onclick="toggleReplyBox('${post._id}', '${c._id}')">↩️ Reply</span></div>
@@ -539,7 +670,7 @@
         return `
             <div class="post-card">
                 <div class="post-top">
-                    <div class="post-user-info">
+                    <div class="post-user-info" onclick="openUserProfile('${post.username}')">
                         <div class="post-avatar-img">🍌</div>
                         <div>
                             <div class="post-author">${post.author}</div>
@@ -558,7 +689,7 @@
                 </div>
                 <div>${commentsHtml}</div>
                 <div class="add-comment">
-                    <input type="text" id="comment-${post._id}" placeholder="Write a comment...">
+                    <input type="text" id="comment-${post._id}" placeholder="Write a comment or @mention...">
                     <button onclick="addComment('${post._id}')">Send</button>
                 </div>
             </div>
@@ -574,22 +705,22 @@
         allPosts.forEach(post => {
             container.innerHTML += createPostCardHtml(post);
         });
-        if (document.getElementById('view-profile').style.display === 'block') {
-            renderMyPosts();
+        if (viewingUsername) {
+            renderUserPosts(viewingUsername);
         }
     }
 
-    function renderMyPosts() {
-        const myContainer = document.getElementById('my-posts-container');
-        if (!myContainer) return;
-        myContainer.innerHTML = '';
-        const myPosts = allPosts.filter(p => currentUser && p.username === currentUser.username);
-        if (myPosts.length === 0) {
-            myContainer.innerHTML = '<div style="background:white;padding:25px;border-radius:14px;text-align:center;color:#64748b;">No posts yet! Switch to the News Feed to make your first post.</div>';
+    function renderUserPosts(username) {
+        const container = document.getElementById('profile-posts-container');
+        if (!container) return;
+        container.innerHTML = '';
+        const userPosts = allPosts.filter(p => p.username === username);
+        if (userPosts.length === 0) {
+            container.innerHTML = '<div style="background:white;padding:25px;border-radius:14px;text-align:center;color:#64748b;">No posts from this Minion yet.</div>';
             return;
         }
-        myPosts.forEach(post => {
-            myContainer.innerHTML += createPostCardHtml(post);
+        userPosts.forEach(post => {
+            container.innerHTML += createPostCardHtml(post);
         });
     }
 
@@ -738,9 +869,13 @@
         document.getElementById('user-highscore').innerText = data.highScore;
     }
 
-    loadProfile();
-    loadPosts();
-    loadMessages();
+    (async () => {
+        await loadProfile();
+        loadPosts();
+        loadMessages();
+        loadMembers();
+        loadNotifications();
+    })();
 </script>
 </body>
 </html>
