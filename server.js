@@ -36,6 +36,8 @@ const UserSchema = new mongoose.Schema({
     coverPhoto: { type: String, default: '' },
     highScore: { type: Number, default: 0 },
     friends: [{ type: String }],
+    friendRequests: [{ type: String }], // Incoming requests
+    sentRequests: [{ type: String }],   // Outgoing requests
     blockedUsers: [{ type: String }],
     resetPasswordToken: String,
     resetPasswordExpires: Date,
@@ -114,7 +116,7 @@ function isStrongPassword(pwd) {
     return hasLetter && hasNumber && hasSymbol;
 }
 
-// --- SMART MENTION NOTIFICATIONS ---
+// --- FLEXIBLE MENTION MATCHING ---
 async function notifyMentions(text, sender) {
     if (!text) return;
     const matches = text.match(/@([a-zA-Z0-9_]+)/g);
@@ -124,8 +126,8 @@ async function notifyMentions(text, sender) {
         if (queryVal !== sender.username.toLowerCase()) {
             const userExists = await User.findOne({
                 $or: [
-                    { username: new RegExp(`^${queryVal}$`, 'i') },
-                    { fullName: new RegExp(`^${queryVal}$`, 'i') }
+                    { username: new RegExp(`^${queryVal}`, 'i') },
+                    { fullName: new RegExp(`^${queryVal}`, 'i') }
                 ]
             });
             if (userExists) {
@@ -140,92 +142,6 @@ async function notifyMentions(text, sender) {
         }
     }
 }
-
-// --- FORGOT & RESET PASSWORD ---
-app.post('/api/forgot-password', async (req, res) => {
-    try {
-        const { email } = req.body;
-        if (!email) return res.status(400).json({ error: 'Please enter your email.' });
-
-        const user = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
-        if (!user) return res.status(404).json({ error: 'No account found with this email!' });
-
-        const token = crypto.randomBytes(20).toString('hex');
-        user.resetPasswordToken = token;
-        user.resetPasswordExpires = Date.now() + 3600000;
-        await user.save();
-
-        const host = req.headers.host;
-        const protocol = req.headers['x-forwarded-proto'] || 'http';
-        const resetUrl = `${protocol}://${host}/reset-password.html?token=${token}`;
-
-        const { error } = await resend.emails.send({
-            from: 'Gru\'s Lab <onboarding@resend.dev>',
-            to: [user.email],
-            subject: '🍌 Gru’s Lab: Password Reset Link',
-            html: `
-                <h2>Password Reset Request</h2>
-                <p>Bello, ${user.fullName}!</p>
-                <p>Click the link below to set a new Banana Code password:</p>
-                <p><a href="${resetUrl}" style="background:#fedb00;color:#1e3a8a;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold;">Reset Password Now</a></p>
-                <p>This link expires in 1 hour.</p>
-            `
-        });
-
-        if (error) return res.status(500).json({ error: 'Failed to send reset email.' });
-        res.json({ message: 'Password reset link sent! Check your inbox 📧' });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error processing request.' });
-    }
-});
-
-app.post('/api/reset-password', async (req, res) => {
-    try {
-        const { token, newPassword } = req.body;
-        if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password required.' });
-
-        if (!isStrongPassword(newPassword)) {
-            return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers, and symbols.' });
-        }
-
-        const user = await User.findOne({
-            resetPasswordToken: token,
-            resetPasswordExpires: { $gt: Date.now() }
-        });
-
-        if (!user) return res.status(400).json({ error: 'Password reset link is invalid or has expired!' });
-
-        const isOldPassword = await bcrypt.compare(newPassword, user.password);
-        if (isOldPassword) {
-            return res.status(400).json({ error: 'You cannot use your old password! Please choose a new one.' });
-        }
-
-        user.password = await bcrypt.hash(newPassword, 10);
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
-        await user.save();
-
-        res.json({ message: 'Banana Code successfully reset! You can now log in.' });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to reset password.' });
-    }
-});
-
-// --- NOTIFICATION ROUTES ---
-app.get('/api/notifications', async (req, res) => {
-    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
-    const user = await User.findById(req.session.userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    const notifications = await Notification.find({ recipient: user.username }).sort({ createdAt: -1 }).limit(25);
-    res.json(notifications);
-});
-
-app.post('/api/notifications/read', async (req, res) => {
-    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
-    const user = await User.findById(req.session.userId);
-    if (user) await Notification.updateMany({ recipient: user.username, read: false }, { read: true });
-    res.json({ success: true });
-});
 
 // --- AUTH & USER ROUTES ---
 app.post('/api/register', async (req, res) => {
@@ -292,6 +208,8 @@ app.get('/api/me', async (req, res) => {
         coverPhoto: user.coverPhoto,
         highScore: user.highScore,
         friends: user.friends || [],
+        friendRequests: user.friendRequests || [],
+        sentRequests: user.sentRequests || [],
         blockedUsers: user.blockedUsers || [],
         joinedAt: user.joinedAt
     });
@@ -304,6 +222,8 @@ app.get('/api/users/:username', async (req, res) => {
 
     const currentUser = await User.findById(req.session.userId);
     const isFriend = currentUser.friends && currentUser.friends.includes(targetUser.username);
+    const requestSent = currentUser.sentRequests && currentUser.sentRequests.includes(targetUser.username);
+    const requestReceived = currentUser.friendRequests && currentUser.friendRequests.includes(targetUser.username);
     const isBlocked = currentUser.blockedUsers && currentUser.blockedUsers.includes(targetUser.username);
 
     res.json({
@@ -317,6 +237,8 @@ app.get('/api/users/:username', async (req, res) => {
         highScore: targetUser.highScore,
         joinedAt: targetUser.joinedAt,
         isFriend: !!isFriend,
+        requestSent: !!requestSent,
+        requestReceived: !!requestReceived,
         isBlocked: !!isBlocked
     });
 });
@@ -327,30 +249,96 @@ app.get('/api/users', async (req, res) => {
     res.json(users);
 });
 
+// --- FRIEND REQUEST WORKFLOW ---
 app.post('/api/users/:username/friend', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const currentUser = await User.findById(req.session.userId);
-    const targetUsername = req.params.username;
+    const targetUser = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    const targetUsername = targetUser.username;
+    if (currentUser.username === targetUsername) return res.status(400).json({ error: 'Cannot friend yourself' });
 
     if (!currentUser.friends) currentUser.friends = [];
-    const idx = currentUser.friends.indexOf(targetUsername);
+    if (!currentUser.sentRequests) currentUser.sentRequests = [];
+    if (!targetUser.friendRequests) targetUser.friendRequests = [];
 
-    let isFriend = false;
-    if (idx > -1) {
-        currentUser.friends.splice(idx, 1);
+    if (currentUser.friends.includes(targetUsername)) {
+        // Unfriend both
+        currentUser.friends = currentUser.friends.filter(u => u !== targetUsername);
+        targetUser.friends = targetUser.friends.filter(u => u !== currentUser.username);
+    } else if (currentUser.sentRequests.includes(targetUsername)) {
+        // Cancel request
+        currentUser.sentRequests = currentUser.sentRequests.filter(u => u !== targetUsername);
+        targetUser.friendRequests = targetUser.friendRequests.filter(u => u !== currentUser.username);
     } else {
-        currentUser.friends.push(targetUsername);
-        isFriend = true;
+        // Send request
+        currentUser.sentRequests.push(targetUsername);
+        targetUser.friendRequests.push(currentUser.username);
+
         await Notification.create({
             recipient: targetUsername,
             sender: currentUser.fullName,
             senderUsername: currentUser.username,
-            type: 'friend',
-            text: `${currentUser.fullName} added you to their Minion crew! 🍌`
+            type: 'friend_request',
+            text: `${currentUser.fullName} sent you a Minion crew request! 🍌`
         });
     }
+
     await currentUser.save();
-    res.json({ isFriend });
+    await targetUser.save();
+    res.json({ 
+        isFriend: currentUser.friends.includes(targetUsername), 
+        requestSent: currentUser.sentRequests.includes(targetUsername) 
+    });
+});
+
+app.post('/api/users/:username/accept-friend', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const currentUser = await User.findById(req.session.userId);
+    const senderUser = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
+    if (!senderUser) return res.status(404).json({ error: 'User not found' });
+
+    const senderUsername = senderUser.username;
+
+    currentUser.friendRequests = (currentUser.friendRequests || []).filter(u => u !== senderUsername);
+    senderUser.sentRequests = (senderUser.sentRequests || []).filter(u => u !== currentUser.username);
+
+    if (!currentUser.friends) currentUser.friends = [];
+    if (!currentUser.friends.includes(senderUsername)) currentUser.friends.push(senderUsername);
+
+    if (!senderUser.friends) senderUser.friends = [];
+    if (!senderUser.friends.includes(currentUser.username)) senderUser.friends.push(currentUser.username);
+
+    await currentUser.save();
+    await senderUser.save();
+
+    await Notification.create({
+        recipient: senderUsername,
+        sender: currentUser.fullName,
+        senderUsername: currentUser.username,
+        type: 'friend_accepted',
+        text: `${currentUser.fullName} accepted your Minion crew request! 🎉`
+    });
+
+    res.json({ success: true });
+});
+
+app.post('/api/users/:username/decline-friend', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const currentUser = await User.findById(req.session.userId);
+    const senderUser = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
+    if (!senderUser) return res.status(404).json({ error: 'User not found' });
+
+    const senderUsername = senderUser.username;
+
+    currentUser.friendRequests = (currentUser.friendRequests || []).filter(u => u !== senderUsername);
+    senderUser.sentRequests = (senderUser.sentRequests || []).filter(u => u !== currentUser.username);
+
+    await currentUser.save();
+    await senderUser.save();
+
+    res.json({ success: true });
 });
 
 app.post('/api/users/:username/block', async (req, res) => {
@@ -413,7 +401,22 @@ app.post('/api/highscore', async (req, res) => {
     res.json({ highScore: user ? user.highScore : 0 });
 });
 
-// --- MESSAGES ---
+// --- NOTIFICATIONS & MESSAGES & POSTS ---
+app.get('/api/notifications', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = await User.findById(req.session.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const notifications = await Notification.find({ recipient: user.username }).sort({ createdAt: -1 }).limit(25);
+    res.json(notifications);
+});
+
+app.post('/api/notifications/read', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = await User.findById(req.session.userId);
+    if (user) await Notification.updateMany({ recipient: user.username, read: false }, { read: true });
+    res.json({ success: true });
+});
+
 app.get('/api/messages', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const currentUser = await User.findById(req.session.userId);
@@ -439,7 +442,6 @@ app.post('/api/messages', async (req, res) => {
     res.json(newMsg);
 });
 
-// --- POSTS ---
 app.get('/api/posts', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const currentUser = await User.findById(req.session.userId);
