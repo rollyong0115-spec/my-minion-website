@@ -36,8 +36,8 @@ const UserSchema = new mongoose.Schema({
     coverPhoto: { type: String, default: '' },
     highScore: { type: Number, default: 0 },
     friends: [{ type: String }],
-    friendRequests: [{ type: String }], // Incoming requests
-    sentRequests: [{ type: String }],   // Outgoing requests
+    friendRequests: [{ type: String }],
+    sentRequests: [{ type: String }],
     blockedUsers: [{ type: String }],
     resetPasswordToken: String,
     resetPasswordExpires: Date,
@@ -50,6 +50,7 @@ const NotificationSchema = new mongoose.Schema({
     senderUsername: { type: String, required: true },
     type: { type: String, required: true },
     text: { type: String, required: true },
+    postId: { type: mongoose.Schema.Types.ObjectId, default: null },
     read: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });
@@ -116,18 +117,18 @@ function isStrongPassword(pwd) {
     return hasLetter && hasNumber && hasSymbol;
 }
 
-// --- FLEXIBLE MENTION MATCHING ---
-async function notifyMentions(text, sender) {
+// --- CASE-INSENSITIVE MENTION MATCHING ---
+async function notifyMentions(text, sender, postId = null) {
     if (!text) return;
     const matches = text.match(/@([a-zA-Z0-9_]+)/g);
     if (!matches) return;
     for (let m of matches) {
-        const queryVal = m.replace('@', '').toLowerCase();
-        if (queryVal !== sender.username.toLowerCase()) {
+        const queryVal = m.replace('@', '').trim();
+        if (queryVal.toLowerCase() !== sender.username.toLowerCase()) {
             const userExists = await User.findOne({
                 $or: [
-                    { username: new RegExp(`^${queryVal}`, 'i') },
-                    { fullName: new RegExp(`^${queryVal}`, 'i') }
+                    { username: { $regex: new RegExp(`^${queryVal}`, 'i') } },
+                    { fullName: { $regex: new RegExp(`^${queryVal}`, 'i') } }
                 ]
             });
             if (userExists) {
@@ -136,7 +137,8 @@ async function notifyMentions(text, sender) {
                     sender: sender.fullName,
                     senderUsername: sender.username,
                     type: 'mention',
-                    text: `${sender.fullName} mentioned you: "${text.substring(0, 40)}..."`
+                    text: `${sender.fullName} mentioned you: "${text.substring(0, 40)}..."`,
+                    postId: postId
                 });
             }
         }
@@ -264,15 +266,12 @@ app.post('/api/users/:username/friend', async (req, res) => {
     if (!targetUser.friendRequests) targetUser.friendRequests = [];
 
     if (currentUser.friends.includes(targetUsername)) {
-        // Unfriend both
         currentUser.friends = currentUser.friends.filter(u => u !== targetUsername);
         targetUser.friends = targetUser.friends.filter(u => u !== currentUser.username);
     } else if (currentUser.sentRequests.includes(targetUsername)) {
-        // Cancel request
         currentUser.sentRequests = currentUser.sentRequests.filter(u => u !== targetUsername);
         targetUser.friendRequests = targetUser.friendRequests.filter(u => u !== currentUser.username);
     } else {
-        // Send request
         currentUser.sentRequests.push(targetUsername);
         targetUser.friendRequests.push(currentUser.username);
 
@@ -438,7 +437,7 @@ app.post('/api/messages', async (req, res) => {
         text: text.trim()
     });
     await newMsg.save();
-    await notifyMentions(text, user);
+    await notifyMentions(text, user, null);
     res.json(newMsg);
 });
 
@@ -463,7 +462,7 @@ app.post('/api/posts', async (req, res) => {
         image: image || ''
     });
     await newPost.save();
-    if (text) await notifyMentions(text, user);
+    if (text) await notifyMentions(text, user, newPost._id);
     res.json(newPost);
 });
 
@@ -508,7 +507,7 @@ app.post('/api/posts/:id/comment', async (req, res) => {
         };
         post.comments.push(newComment);
         await post.save();
-        await notifyMentions(text, user);
+        await notifyMentions(text, user, post._id);
 
         if (post.username !== user.username) {
             await Notification.create({
@@ -516,7 +515,8 @@ app.post('/api/posts/:id/comment', async (req, res) => {
                 sender: user.fullName,
                 senderUsername: user.username,
                 type: 'reply',
-                text: `${user.fullName} commented on your post!`
+                text: `${user.fullName} commented on your post!`,
+                postId: post._id
             });
         }
         return res.json(post.comments[post.comments.length - 1]);
@@ -559,7 +559,7 @@ app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
     };
     comment.replies.push(newReply);
     await post.save();
-    await notifyMentions(text, user);
+    await notifyMentions(text, user, post._id);
 
     if (comment.username && comment.username !== user.username) {
         await Notification.create({
@@ -567,7 +567,8 @@ app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
             sender: user.fullName,
             senderUsername: user.username,
             type: 'reply',
-            text: `${user.fullName} replied to your comment!`
+            text: `${user.fullName} replied to your comment!`,
+            postId: post._id
         });
     }
     res.json(newReply);
