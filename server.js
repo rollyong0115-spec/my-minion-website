@@ -56,13 +56,13 @@ const CommentSchema = new mongoose.Schema({
     author: String,
     username: String,
     text: String,
-    time: { type: String, default: 'Just now' },
+    time: { type: String, default: () => new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) },
     edited: { type: Boolean, default: false },
     replies: [{
         author: String,
         username: String,
         text: String,
-        time: { type: String, default: 'Just now' }
+        time: { type: String, default: () => new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }
     }]
 });
 
@@ -79,7 +79,7 @@ const PostSchema = new mongoose.Schema({
         rocket: { type: Number, default: 0 }
     },
     comments: [CommentSchema],
-    time: { type: String, default: 'Just now' },
+    time: { type: String, default: () => new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) },
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -195,7 +195,6 @@ app.post('/api/reset-password', async (req, res) => {
 
         if (!user) return res.status(400).json({ error: 'Password reset link is invalid or has expired!' });
 
-        // Check if the user is trying to reuse their old password
         const isOldPassword = await bcrypt.compare(newPassword, user.password);
         if (isOldPassword) {
             return res.status(400).json({ error: 'You cannot use your old password! Please choose a new one.' });
@@ -460,7 +459,8 @@ app.post('/api/posts', async (req, res) => {
         author: user ? user.fullName : 'Minion',
         username: user ? user.username : 'minion',
         text: text || '',
-        image: image || ''
+        image: image || '',
+        time: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     });
     await newPost.save();
     if (text) await notifyMentions(text, user);
@@ -505,7 +505,7 @@ app.post('/api/posts/:id/comment', async (req, res) => {
             author: user ? user.fullName : 'Minion',
             username: user ? user.username : 'minion',
             text: text.trim(),
-            time: 'Just now'
+            time: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
         });
         await post.save();
         await notifyMentions(text, user);
@@ -556,7 +556,7 @@ app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
         author: user ? user.fullName : 'Minion',
         username: user ? user.username : 'minion',
         text: text.trim(),
-        time: 'Just now'
+        time: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
     comment.replies.push(newReply);
     await post.save();
