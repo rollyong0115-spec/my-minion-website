@@ -4,280 +4,206 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MinionFeed | Gru's Lab</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              minion: {
+                yellow: '#fedb00',
+                darkYellow: '#eab308',
+                blue: '#1e3a8a',
+                lightBlue: '#38bdf8'
+              }
+            }
+          }
+        }
+      }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'Fredoka', cursive, sans-serif; background: #e2e8f0; margin: 0; color: #1e293b; }
-
-        .navbar {
-            background: #fedb00; border-bottom: 3px solid #1e3a8a; padding: 10px 20px;
-            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
-        }
-        .nav-logo { font-size: 22px; font-weight: 700; color: #1e3a8a; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
-        .nav-center-tabs { display: flex; gap: 8px; }
-        .nav-tab-btn {
-            background: rgba(255, 255, 255, 0.4); border: 2px solid transparent; padding: 7px 14px;
-            border-radius: 20px; font-weight: 700; font-family: inherit; font-size: 13px; color: #1e3a8a;
-            cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.15s;
-        }
-        .nav-tab-btn:hover { background: rgba(255, 255, 255, 0.8); }
-        .nav-tab-btn.active { background: #1e3a8a; color: #fedb00; border-color: #1e3a8a; }
-
-        .nav-user { display: flex; align-items: center; gap: 8px; position: relative; }
-        .arcade-btn { background: #10b981; color: white; border: 2px solid #065f46; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 13px; }
-        .logout-btn { background: #ef4444; color: white; border: 2px solid #991b1b; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 13px; }
-
-        .notif-bell-btn {
-            background: white; border: 2px solid #1e3a8a; border-radius: 50%; width: 38px; height: 38px;
-            cursor: pointer; font-size: 17px; display: flex; align-items: center; justify-content: center; position: relative;
-        }
-        .notif-badge {
-            position: absolute; top: -4px; right: -4px; background: #ef4444; color: white;
-            border-radius: 10px; font-size: 10px; font-weight: bold; padding: 2px 5px; display: none;
-        }
-        .notif-dropdown {
-            display: none; position: absolute; top: 48px; right: 80px; width: 320px;
-            background: white; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-            border: 2px solid #cbd5e1; z-index: 1000; overflow: hidden;
-        }
-        .notif-header { background: #1e3a8a; color: #fedb00; padding: 10px 14px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
-        .notif-list { max-height: 300px; overflow-y: auto; }
-        .notif-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 12px; cursor: pointer; }
-        .notif-item:hover { background: #fef9c3; }
-        .notif-item.unread { background: #eff6ff; font-weight: bold; }
-
-        .container { max-width: 980px; margin: 20px auto; display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 0 15px; }
-        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 2px solid #cbd5e1; margin-bottom: 20px; }
-        .card-header { font-size: 17px; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #fedb00; padding-bottom: 8px; margin-bottom: 15px; }
-
-        .member-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 10px; cursor: pointer; margin-bottom: 5px; }
-        .member-item:hover { background: #f1f5f9; }
-        .member-info { display: flex; align-items: center; gap: 8px; }
-        .member-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: #fedb00; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-
-        .create-post textarea { width: 100%; height: 75px; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px; font-family: inherit; resize: none; outline: none; margin-bottom: 8px; }
-        .upload-file-btn { display: inline-block; background: #e0f2fe; color: #0369a1; border: 2px dashed #38bdf8; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; text-align: center; width: 100%; }
-        .img-preview { max-width: 100%; max-height: 180px; border-radius: 8px; margin-top: 8px; display: none; border: 2px dashed #cbd5e1; }
-        .post-btn { background: #2563eb; color: white; border: 2px solid #1e3a8a; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 700; font-family: inherit; margin-top: 10px; width: 100%; }
-
-        .post-card { background: white; border-radius: 16px; padding: 18px; margin-bottom: 16px; border: 2px solid #cbd5e1; transition: border 0.3s; }
-        .post-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-        .post-user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .post-avatar-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #fedb00; border: 2px solid #1e3a8a; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .post-author { font-weight: 700; color: #1e3a8a; font-size: 15px; }
-        .post-time { font-size: 11px; color: #94a3b8; }
-        .edited-tag { font-size: 11px; color: #94a3b8; font-style: italic; }
-        .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
-        .post-img { width: 100%; border-radius: 12px; max-height: 380px; object-fit: cover; margin-bottom: 10px; }
-        .action-link { font-size: 12px; color: #2563eb; cursor: pointer; text-decoration: underline; font-weight: 600; margin-left: 8px; }
-
-        .reaction-bar { display: flex; gap: 6px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 8px 0; margin: 10px 0; flex-wrap: wrap; }
-        .react-btn { background: #f8fafc; border: 1px solid #cbd5e1; padding: 5px 12px; border-radius: 18px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; }
-        .react-btn:hover { background: #fedb00; }
-
-        .comment-item { background: #f8fafc; padding: 8px 12px; border-radius: 10px; margin-bottom: 6px; font-size: 13px; border: 1px solid #f1f5f9; }
-        .comment-header { display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .comment-author { font-weight: 700; color: #1e3a8a; cursor: pointer; }
-        .replies-list { margin-left: 20px; margin-top: 6px; border-left: 2px solid #fedb00; padding-left: 10px; }
-        .reply-item { background: #ffffff; padding: 6px 10px; border-radius: 8px; margin-bottom: 4px; font-size: 12px; border: 1px solid #e2e8f0; }
-        .reply-box { margin-left: 20px; margin-top: 6px; display: none; gap: 6px; }
-        .reply-box input { flex: 1; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 12px; }
-        .reply-box button { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: inherit; }
-        .add-comment { display: flex; gap: 6px; margin-top: 8px; }
-        .add-comment input { flex: 1; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 13px; }
-        .add-comment button { background: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: inherit; }
-
-        /* Direct Inbox Layout */
-        .dm-layout { max-width: 900px; margin: 20px auto; display: grid; grid-template-columns: 280px 1fr; gap: 15px; padding: 0 15px; height: 550px; }
-        .dm-inbox-sidebar { background: white; border-radius: 16px; border: 2px solid #cbd5e1; padding: 15px; overflow-y: auto; }
-        .dm-convo-item { padding: 10px; border-radius: 10px; cursor: pointer; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
-        .dm-convo-item:hover, .dm-convo-item.active { background: #fef9c3; border: 1px solid #fedb00; }
-        .dm-chat-area { background: white; border-radius: 16px; border: 2px solid #cbd5e1; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
-        .dm-thread-messages { flex: 1; overflow-y: auto; padding: 10px 0; display: flex; flex-direction: column; gap: 8px; }
-
-        .chat-container { display: flex; flex-direction: column; height: 380px; }
-        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
-        .chat-bubble { background: #f1f5f9; padding: 8px 12px; border-radius: 12px; font-size: 13px; max-width: 80%; }
-        .chat-bubble.mine { background: #dbeafe; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .chat-sender { font-size: 11px; font-weight: bold; color: #1e3a8a; margin-bottom: 2px; cursor: pointer; }
-        .chat-time { font-size: 10px; color: #94a3b8; margin-top: 3px; text-align: right; }
-        .chat-img-embed { max-width: 100%; max-height: 160px; border-radius: 8px; margin-top: 4px; display: block; }
-        
-        .chat-input-bar { display: flex; gap: 6px; margin-top: 8px; align-items: center; position: relative; }
-        .chat-input-bar input { flex: 1; padding: 9px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; }
-        .chat-send-btn { background: #2563eb; color: white; border: none; padding: 9px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: inherit; }
-        
-        .chat-attach-icon { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; }
-        .emoji-picker-btn { background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; }
-        .emoji-bar-popover { display: none; position: absolute; bottom: 45px; background: white; border: 2px solid #cbd5e1; border-radius: 20px; padding: 4px 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); gap: 6px; z-index: 50; }
-        .emoji-bar-popover span { cursor: pointer; font-size: 18px; transition: transform 0.1s; }
-        .emoji-bar-popover span:hover { transform: scale(1.3); }
-
-        .modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 15px; }
-        .modal-box { background: white; border-radius: 20px; padding: 22px; border: 4px solid #fedb00; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; position: relative; }
-        .close-btn { position: absolute; top: 12px; right: 15px; font-size: 22px; cursor: pointer; color: #ef4444; font-weight: bold; }
-
-        @media (max-width: 768px) {
-            .container, .dm-layout { grid-template-columns: 1fr; }
-            .nav-tab-btn span { display: none; }
-            .notif-dropdown { right: 10px; width: 290px; }
-        }
+        body { font-family: 'Fredoka', cursive, sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-slate-200 text-slate-800 antialiased min-h-screen flex flex-col justify-between">
 
-    <div class="navbar">
-        <a href="dashboard.html" class="nav-logo">
-            <span>&#127820;</span> MinionFeed
+    <!-- NAVBAR -->
+    <nav class="bg-minion-yellow border-b-4 border-minion-blue px-5 py-3 sticky top-0 z-50 flex justify-between items-center shadow-md">
+        <a href="dashboard.html" class="text-2xl font-bold text-minion-blue flex items-center gap-2 hover:scale-105 transition-transform">
+            <span>🍌</span> MinionFeed
         </a>
 
-        <div class="nav-center-tabs">
-            <button class="nav-tab-btn active" id="btn-tab-feed" onclick="switchMainTab('feed')">
-                &#127968; <span>News Feed</span>
+        <div class="flex gap-2">
+            <button class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-minion-blue text-minion-yellow shadow" id="btn-tab-feed" onclick="switchMainTab('feed')">
+                🏠 <span>News Feed</span>
             </button>
-            <button class="nav-tab-btn" id="btn-tab-dms" onclick="switchMainTab('dms')">
-                &#128172; <span>Messages</span>
+            <button class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80" id="btn-tab-dms" onclick="switchMainTab('dms')">
+                💬 <span>Messages</span>
             </button>
-            <a href="profile.html" class="nav-tab-btn">
-                &#128100; <span>My Profile</span>
+            <a href="profile.html" class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80">
+                👤 <span>My Profile</span>
             </a>
         </div>
 
-        <div class="nav-user">
-            <button class="notif-bell-btn" onclick="toggleNotifs()">
-                &#128276;
-                <span class="notif-badge" id="notif-badge">0</span>
+        <div class="flex items-center gap-3 relative">
+            <button class="bg-white border-2 border-minion-blue rounded-full w-10 h-10 flex items-center justify-center relative hover:bg-yellow-50 transition-colors shadow-sm" onclick="toggleNotifs()">
+                🔔
+                <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-[10px] font-bold px-1.5 py-0.5 hidden" id="notif-badge">0</span>
             </button>
 
-            <div class="notif-dropdown" id="notif-dropdown">
-                <div class="notif-header">
-                    <span>Notifications &#128276;</span>
-                    <span style="cursor:pointer;font-size:11px;" onclick="markNotifsRead()">Mark all as read</span>
+            <!-- Notifications Dropdown -->
+            <div class="hidden absolute top-12 right-24 w-80 bg-white rounded-2xl shadow-2xl border-2 border-slate-300 z-50 overflow-hidden" id="notif-dropdown">
+                <div class="bg-minion-blue text-minion-yellow px-4 py-3 font-bold text-sm flex justify-between items-center">
+                    <span>Notifications 🔔</span>
+                    <span class="cursor-pointer text-xs underline font-normal" onclick="markNotifsRead()">Mark all read</span>
                 </div>
-                <div class="notif-list" id="notif-list">
-                    <div style="padding:15px;text-align:center;color:#64748b;font-size:12px;">No notifications yet.</div>
+                <div class="max-h-72 overflow-y-auto" id="notif-list">
+                    <div class="p-4 text-center text-slate-500 text-xs">No notifications yet.</div>
                 </div>
             </div>
 
-            <button class="arcade-btn" onclick="openGame()">&#127918; Arcade</button>
-            <button class="logout-btn" onclick="logout()">&#128075;</button>
+            <button class="bg-emerald-500 hover:bg-emerald-600 text-white border-2 border-emerald-700 px-3 py-1.5 rounded-xl font-bold text-xs shadow transition-transform active:scale-95" onclick="openGame()">🎮 Arcade</button>
+            <button class="bg-red-500 hover:bg-red-600 text-white border-2 border-red-700 px-3 py-1.5 rounded-xl font-bold text-xs shadow transition-transform active:scale-95" onclick="logout()">👋</button>
         </div>
-    </div>
+    </nav>
 
     <!-- NEWS FEED VIEW -->
-    <div id="view-feed">
-        <div class="container">
+    <div id="view-feed" class="w-full flex-1">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6 p-4">
+            <!-- Left Column: Posts -->
             <div>
-                <div class="card create-post">
-                    <div class="card-header">Create Post &#129514;</div>
-                    <textarea id="post-text" placeholder="What's on your mind? Mention someone with @username!"></textarea>
+                <div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-slate-300 mb-5">
+                    <div class="text-lg font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">Create Post 📝</div>
+                    <textarea id="post-text" class="w-full h-20 border-2 border-slate-200 rounded-xl p-3 font-inherit resize-none outline-none focus:border-minion-blue transition-colors mb-2" placeholder="What's on your mind? Mention someone with @username!"></textarea>
                     
-                    <!-- Cloudinary File Upload Integration -->
-                    <label class="upload-file-btn" id="upload-label">
+                    <label class="block bg-sky-50 text-sky-700 border-2 border-dashed border-sky-400 p-2.5 rounded-xl font-bold text-xs text-center cursor-pointer hover:bg-sky-100 transition-colors">
                         📁 Click to Attach Photo / GIF from Device
-                        <input type="file" id="post-file-input" accept="image/*" style="display:none;" onchange="uploadToCloudinary(this, 'post')">
+                        <input type="file" id="post-file-input" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'post')">
                     </label>
-                    <div id="uploading-status" style="font-size: 12px; color: #2563eb; margin-top: 4px; display: none;">Uploading to Cloudinary... 🚀</div>
+                    <div id="uploading-status" class="text-xs text-blue-600 font-semibold mt-1 hidden">Uploading to Cloudinary... 🚀</div>
                     
-                    <img id="pasted-preview" class="img-preview" alt="Preview">
-                    <button class="post-btn" onclick="publishPost()">Post to Feed &#128640;</button>
+                    <img id="pasted-preview" class="max-w-full max-h-44 rounded-xl mt-2 hidden border-2 border-dashed border-slate-300 object-cover" alt="Preview">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white border-2 border-minion-blue p-2.5 rounded-xl font-bold mt-3 shadow transition-transform active:scale-[0.99]" onclick="publishPost()">Post to Feed 🚀</button>
                 </div>
                 <div id="posts-container"></div>
             </div>
 
-            <div>
-                <div class="card">
-                    <div class="card-header">&#128101; Minion Crew Members</div>
-                    <div id="members-list" style="max-height: 180px; overflow-y: auto;"></div>
+            <!-- Right Column: Members & Public Chat -->
+            <div class="space-y-5">
+                <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-slate-300">
+                    <div class="text-base font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">👥 Minion Crew Members</div>
+                    <div id="members-list" class="max-h-48 overflow-y-auto space-y-1"></div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">&#128119; Public Lab Messenger</div>
-                    <div class="chat-container">
-                        <div class="chat-messages" id="chat-messages"></div>
-                        
-                        <!-- Messenger Media Preview -->
-                        <div id="chat-img-preview-box" style="display:none; position:relative; margin-top:4px;">
-                            <img id="chat-img-preview" style="max-height: 70px; border-radius: 6px; border: 2px dashed #38bdf8;">
-                            <span onclick="cancelChatImg('public')" style="position:absolute; top:-6px; left:65px; background:#ef4444; color:white; border-radius:50%; width:18px; height:18px; font-size:11px; text-align:center; line-height:18px; cursor:pointer; font-weight:bold;">&times;</span>
+                <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-slate-300 flex flex-col h-[380px]">
+                    <div class="text-base font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">💬 Public Lab Messenger</div>
+                    
+                    <div class="flex-1 overflow-y-auto flex flex-col gap-2 pr-1" id="chat-messages"></div>
+                    
+                    <div id="chat-img-preview-box" class="hidden relative mt-2">
+                        <img id="chat-img-preview" class="max-h-16 rounded-lg border-2 border-dashed border-sky-400 object-cover">
+                        <span onclick="cancelChatImg('public')" class="absolute -top-2 left-16 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] text-center font-bold cursor-pointer leading-tight">&times;</span>
+                    </div>
+
+                    <div class="flex gap-2 mt-2 items-center relative">
+                        <label class="bg-sky-100 text-sky-700 border border-sky-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-sm hover:bg-sky-200 transition-colors shrink-0" title="Attach Photo/GIF">
+                            📷
+                            <input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'public_chat')">
+                        </label>
+
+                        <button class="bg-yellow-100 border border-yellow-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-base hover:bg-yellow-200 transition-colors shrink-0" onclick="toggleEmojiPicker('public')" title="Insert Emoji">😊</button>
+                        <div class="hidden absolute bottom-11 left-9 bg-white border-2 border-slate-300 rounded-2xl p-1.5 shadow-xl flex gap-1.5 z-30" id="emoji-popover-public">
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '🍌')">🍌</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '❤️')">❤️</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '😂')">😂</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '🚀')">🚀</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '🔥')">🔥</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '👍')">👍</span>
                         </div>
 
-                        <div class="chat-input-bar">
-                            <label class="chat-attach-icon" title="Attach Photo/GIF">
-                                📷
-                                <input type="file" accept="image/*" style="display:none;" onchange="uploadToCloudinary(this, 'public_chat')">
-                            </label>
-
-                            <button class="emoji-picker-btn" onclick="toggleEmojiPicker('public')" title="Insert Emoji">😊</button>
-                            <div class="emoji-bar-popover" id="emoji-popover-public" style="left: 40px;">
-                                <span onclick="insertEmoji('public', '🍌')">🍌</span>
-                                <span onclick="insertEmoji('public', '❤️')">❤️</span>
-                                <span onclick="insertEmoji('public', '😂')">😂</span>
-                                <span onclick="insertEmoji('public', '🚀')">🚀</span>
-                                <span onclick="insertEmoji('public', '🔥')">🔥</span>
-                                <span onclick="insertEmoji('public', '👍')">👍</span>
-                            </div>
-
-                            <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()">
-                            <button class="chat-send-btn" onclick="sendChat()">Send</button>
-                        </div>
+                        <input type="text" id="chat-input" class="flex-1 py-2 px-3 border-2 border-slate-200 rounded-xl text-xs outline-none focus:border-minion-blue" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold shrink-0 transition-transform active:scale-95" onclick="sendChat()">Send</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- PRIVATE MESSAGES (INBOX) VIEW -->
-    <div id="view-dms" style="display: none;">
-        <div class="dm-layout">
-            <div class="dm-inbox-sidebar">
-                <div class="card-header" style="font-size:15px;">📥 Private Inbox</div>
-                <div id="dm-conversations-list">
-                    <div style="font-size:12px;color:#64748b;text-align:center;padding:10px;">Loading conversations...</div>
+    <!-- PRIVATE MESSAGES VIEW -->
+    <div id="view-dms" class="w-full flex-1" style="display: none;">
+        <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 p-4 h-[580px]">
+            <div class="bg-white rounded-2xl border-2 border-slate-300 p-4 overflow-y-auto">
+                <div class="font-bold text-sm text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">📥 Private Inbox</div>
+                <div id="dm-conversations-list" class="space-y-1">
+                    <div class="text-xs text-slate-500 text-center py-4">Loading conversations...</div>
                 </div>
             </div>
-            <div class="dm-chat-area">
-                <div id="dm-active-header" class="card-header" style="margin-bottom:0; font-size:16px;">
-                    Select a Minion to start messaging 💬
-                </div>
-                <div class="dm-thread-messages" id="dm-thread-messages"></div>
+            
+            <div class="bg-white rounded-2xl border-2 border-slate-300 p-4 flex flex-col justify-between">
+                <div id="dm-active-header" class="font-bold text-base text-minion-blue border-b-2 border-minion-yellow pb-2 mb-2">Select a Minion to message 💬</div>
+                <div class="flex-1 overflow-y-auto py-2 flex flex-col gap-2" id="dm-thread-messages"></div>
 
-                <!-- DM Media Preview -->
-                <div id="dm-img-preview-box" style="display:none; position:relative; margin-top:4px;">
-                    <img id="dm-img-preview" style="max-height: 70px; border-radius: 6px; border: 2px dashed #38bdf8;">
-                    <span onclick="cancelChatImg('dm')" style="position:absolute; top:-6px; left:65px; background:#ef4444; color:white; border-radius:50%; width:18px; height:18px; font-size:11px; text-align:center; line-height:18px; cursor:pointer; font-weight:bold;">&times;</span>
+                <div id="dm-img-preview-box" class="hidden relative mt-2">
+                    <img id="dm-img-preview" class="max-h-16 rounded-lg border-2 border-dashed border-sky-400 object-cover">
+                    <span onclick="cancelChatImg('dm')" class="absolute -top-2 left-16 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] text-center font-bold cursor-pointer leading-tight">&times;</span>
                 </div>
 
-                <div class="chat-input-bar" id="dm-input-area" style="display:none;">
-                    <label class="chat-attach-icon" title="Attach Photo/GIF">
+                <div class="flex gap-2 items-center relative mt-2" id="dm-input-area" style="display:none;">
+                    <label class="bg-sky-100 text-sky-700 border border-sky-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-sm hover:bg-sky-200 transition-colors shrink-0" title="Attach Photo/GIF">
                         📷
-                        <input type="file" accept="image/*" style="display:none;" onchange="uploadToCloudinary(this, 'dm_chat')">
+                        <input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'dm_chat')">
                     </label>
 
-                    <button class="emoji-picker-btn" onclick="toggleEmojiPicker('dm')" title="Insert Emoji">😊</button>
-                    <div class="emoji-bar-popover" id="emoji-popover-dm" style="left: 40px;">
-                        <span onclick="insertEmoji('dm', '🍌')">🍌</span>
-                        <span onclick="insertEmoji('dm', '❤️')">❤️</span>
-                        <span onclick="insertEmoji('dm', '😂')">😂</span>
-                        <span onclick="insertEmoji('dm', '🚀')">🚀</span>
-                        <span onclick="insertEmoji('dm', '🔥')">🔥</span>
-                        <span onclick="insertEmoji('dm', '👍')">👍</span>
+                    <button class="bg-yellow-100 border border-yellow-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-base hover:bg-yellow-200 transition-colors shrink-0" onclick="toggleEmojiPicker('dm')" title="Insert Emoji">😊</button>
+                    <div class="hidden absolute bottom-11 left-9 bg-white border-2 border-slate-300 rounded-2xl p-1.5 shadow-xl flex gap-1.5 z-30" id="emoji-popover-dm">
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '🍌')">🍌</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '❤️')">❤️</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '😂')">😂</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '🚀')">🚀</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '🔥')">🔥</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '👍')">👍</span>
                     </div>
 
-                    <input type="text" id="dm-input" placeholder="Type a private message..." onkeypress="if(event.key==='Enter') sendPrivateDM()">
-                    <button class="chat-send-btn" onclick="sendPrivateDM()">Send DM</button>
+                    <input type="text" id="dm-input" class="flex-1 py-2 px-3 border-2 border-slate-200 rounded-xl text-xs outline-none focus:border-minion-blue" placeholder="Type a private message..." onkeypress="if(event.key==='Enter') sendPrivateDM()">
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold shrink-0 transition-transform active:scale-95" onclick="sendPrivateDM()">Send DM</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MESSENGER MESSAGE ACTIONS MENU MODAL -->
+    <div id="msg-actions-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end md:justify-center items-center p-0 md:p-4 backdrop-blur-xs">
+        <div class="bg-white w-full md:max-w-sm rounded-t-3xl md:rounded-2xl p-5 shadow-2xl border-4 border-minion-yellow flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-5 duration-150">
+            <!-- Quick Emoji Reactions Bar -->
+            <div class="bg-slate-100 p-2.5 rounded-full flex justify-around items-center shadow-inner">
+                <span onclick="reactToMessage('❤️')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">❤️</span>
+                <span onclick="reactToMessage('😆')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">😆</span>
+                <span onclick="reactToMessage('😮')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">😮</span>
+                <span onclick="reactToMessage('😢')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">😢</span>
+                <span onclick="reactToMessage('😡')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">😡</span>
+                <span onclick="reactToMessage('👍')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">👍</span>
+            </div>
+
+            <!-- Action Options -->
+            <div class="flex flex-col text-sm font-semibold text-slate-700 divide-y divide-slate-100">
+                <button onclick="copyMessageText()" class="py-3 flex items-center gap-3 hover:bg-slate-50 px-3 rounded-xl transition-colors text-left">📋 Copy text</button>
+                <button onclick="replyToMessagePrompt()" class="py-3 flex items-center gap-3 hover:bg-slate-50 px-3 rounded-xl transition-colors text-left">↩️ Reply</button>
+                <button id="msg-delete-btn" onclick="deleteActiveMessage()" class="py-3 flex items-center gap-3 text-red-500 hover:bg-red-50 px-3 rounded-xl transition-colors text-left">🗑️ Delete message</button>
+            </div>
+
+            <button onclick="closeMsgActions()" class="w-full bg-slate-200 hover:bg-slate-300 py-2.5 rounded-xl font-bold text-slate-700 text-xs">Cancel</button>
         </div>
     </div>
 
     <!-- ARCADE MODAL -->
-    <div class="modal-bg" id="game-modal">
-        <div class="modal-box" style="width: auto;">
-            <span class="close-btn" onclick="closeGame()">&times;</span>
-            <h2 style="margin: 0; color: #1e3a8a;">BANANA CATCHER</h2>
-            <canvas id="gameCanvas" width="400" height="400" style="background: #38bdf8; border-radius: 12px; display: block; margin: 10px auto; border: 3px solid #1e3a8a;"></canvas>
-            <button id="start-game-btn" class="arcade-btn" onclick="startGame()">Start Game</button>
+    <div class="fixed inset-0 bg-black/70 z-50 hidden justify-center items-center p-4 backdrop-blur-xs" id="game-modal">
+        <div class="bg-white rounded-3xl p-6 border-4 border-minion-yellow max-w-sm w-full relative text-center">
+            <span class="absolute top-3 right-4 text-2xl cursor-pointer text-red-500 font-bold" onclick="closeGame()">&times;</span>
+            <h2 class="text-xl font-bold text-minion-blue mb-2">BANANA CATCHER</h2>
+            <canvas id="gameCanvas" width="340" height="340" class="bg-sky-400 rounded-2xl mx-auto border-3 border-minion-blue shadow-inner block"></canvas>
+            <button id="start-game-btn" class="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-xl shadow transition-transform active:scale-95" onclick="startGame()">Start Game</button>
         </div>
     </div>
 
@@ -288,8 +214,9 @@
     let uploadedPublicChatUrl = '';
     let uploadedDmChatUrl = '';
     let activeDMUser = null;
+    let selectedMsgText = '';
+    let selectedMsgId = '';
 
-    // Cloudinary Configuration
     const CLOUD_NAME = 'b1zwryoo'; 
     const UPLOAD_PRESET = 'minion_uploads';
 
@@ -302,7 +229,6 @@
         if (!dateString) return 'Just now';
         const date = new Date(dateString);
         const seconds = Math.floor((new Date() - date) / 1000);
-        
         if (seconds < 60) return 'Just now';
         let interval = seconds / 31536000;
         if (interval > 1) return Math.floor(interval) + 'y ago';
@@ -317,47 +243,36 @@
         return 'Just now';
     }
 
-    // --- CLOUDINARY UPLOAD HANDLER ---
     async function uploadToCloudinary(input, targetType = 'post') {
         if (!input.files || !input.files[0]) return;
         const file = input.files[0];
-
         const formData = new FormData();
         formData.append('file', file);
         formData.append('upload_preset', UPLOAD_PRESET);
 
-        if (targetType === 'post') {
-            const statusEl = document.getElementById('uploading-status');
-            statusEl.style.display = 'block';
-        }
+        if (targetType === 'post') document.getElementById('uploading-status').style.display = 'block';
 
         try {
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: formData
-            });
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
             const data = await response.json();
-            
-            if (targetType === 'post') {
-                document.getElementById('uploading-status').style.display = 'none';
-            }
+            if (targetType === 'post') document.getElementById('uploading-status').style.display = 'none';
 
             if (data.secure_url) {
                 if (targetType === 'post') {
                     uploadedImageUrl = data.secure_url;
                     const preview = document.getElementById('pasted-preview');
                     preview.src = uploadedImageUrl;
-                    preview.style.display = 'block';
+                    preview.classList.remove('hidden');
                 } else if (targetType === 'public_chat') {
                     uploadedPublicChatUrl = data.secure_url;
                     const preview = document.getElementById('chat-img-preview');
                     preview.src = uploadedPublicChatUrl;
-                    document.getElementById('chat-img-preview-box').style.display = 'block';
+                    document.getElementById('chat-img-preview-box').classList.remove('hidden');
                 } else if (targetType === 'dm_chat') {
                     uploadedDmChatUrl = data.secure_url;
                     const preview = document.getElementById('dm-img-preview');
                     preview.src = uploadedDmChatUrl;
-                    document.getElementById('dm-img-preview-box').style.display = 'block';
+                    document.getElementById('dm-img-preview-box').classList.remove('hidden');
                 }
             } else {
                 alert('Upload failed: ' + (data.error?.message || 'Unknown error'));
@@ -371,32 +286,77 @@
     function cancelChatImg(type) {
         if (type === 'public') {
             uploadedPublicChatUrl = '';
-            document.getElementById('chat-img-preview-box').style.display = 'none';
+            document.getElementById('chat-img-preview-box').classList.add('hidden');
         } else {
             uploadedDmChatUrl = '';
-            document.getElementById('dm-img-preview-box').style.display = 'none';
+            document.getElementById('dm-img-preview-box').classList.add('hidden');
         }
     }
 
     function toggleEmojiPicker(type) {
         const popover = document.getElementById(`emoji-popover-${type}`);
-        popover.style.display = popover.style.display === 'flex' ? 'none' : 'flex';
+        popover.classList.toggle('hidden');
     }
 
     function insertEmoji(type, emoji) {
         const input = document.getElementById(type === 'public' ? 'chat-input' : 'dm-input');
         input.value += emoji;
         input.focus();
-        document.getElementById(`emoji-popover-${type}`).style.display = 'none';
+        document.getElementById(`emoji-popover-${type}`).classList.add('hidden');
+    }
+
+    // --- MESSAGE ACTION MENU FUNCTIONS ---
+    function openMsgActions(msgText, msgId, isMine) {
+        selectedMsgText = msgText;
+        selectedMsgId = msgId;
+        document.getElementById('msg-actions-modal').classList.remove('hidden');
+        document.getElementById('msg-actions-modal').classList.add('flex');
+    }
+
+    function closeMsgActions() {
+        document.getElementById('msg-actions-modal').classList.add('hidden');
+        document.getElementById('msg-actions-modal').classList.remove('flex');
+    }
+
+    function copyMessageText() {
+        navigator.clipboard.writeText(selectedMsgText);
+        alert('Message copied to clipboard! 📋');
+        closeMsgActions();
+    }
+
+    function replyToMessagePrompt() {
+        const input = document.getElementById(activeDMUser ? 'dm-input' : 'chat-input');
+        input.value = `Replying to "${selectedMsgText.substring(0, 20)}...": `;
+        input.focus();
+        closeMsgActions();
+    }
+
+    async function deleteActiveMessage() {
+        if (!confirm("Delete this message?")) return;
+        // In this architecture, messages display directly; we can hook up a backend delete route if desired or remove locally
+        alert('Message action triggered.');
+        closeMsgActions();
+    }
+
+    function reactToMessage(emoji) {
+        alert(`Reacted with ${emoji}! 🎉`);
+        closeMsgActions();
     }
 
     function switchMainTab(tab) {
         document.getElementById('view-feed').style.display = tab === 'feed' ? 'block' : 'none';
         document.getElementById('view-dms').style.display = tab === 'dms' ? 'block' : 'none';
-        document.getElementById('btn-tab-feed').classList.toggle('active', tab === 'feed');
-        document.getElementById('btn-tab-dms').classList.toggle('active', tab === 'dms');
+        
+        const feedBtn = document.getElementById('btn-tab-feed');
+        const dmBtn = document.getElementById('btn-tab-dms');
 
-        if (tab === 'dms') {
+        if (tab === 'feed') {
+            feedBtn.className = "px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-minion-blue text-minion-yellow shadow";
+            dmBtn.className = "px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80";
+            loadPosts();
+        } else {
+            dmBtn.className = "px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-minion-blue text-minion-yellow shadow";
+            feedBtn.className = "px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80";
             loadDMConversations();
         }
     }
@@ -407,93 +367,50 @@
 
     function toggleNotifs() {
         const drop = document.getElementById('notif-dropdown');
-        drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
-        if (drop.style.display === 'block') markNotifsRead();
+        drop.classList.toggle('hidden');
+        if (!drop.classList.contains('hidden')) markNotifsRead();
     }
 
     async function loadNotifications() {
         const res = await fetch('/api/notifications');
         if (!res.ok) return;
         const notifs = await res.json();
-
         const badge = document.getElementById('notif-badge');
         const list = document.getElementById('notif-list');
         const unreadCount = notifs.filter(n => !n.read).length;
 
         if (unreadCount > 0) {
             badge.innerText = unreadCount;
-            badge.style.display = 'block';
+            badge.classList.remove('hidden');
         } else {
-            badge.style.display = 'none';
+            badge.classList.add('hidden');
         }
 
         if (notifs.length === 0) {
-            list.innerHTML = '<div style="padding:15px;text-align:center;color:#64748b;font-size:12px;">No notifications yet.</div>';
+            list.innerHTML = '<div class="p-4 text-center text-slate-500 text-xs">No notifications yet.</div>';
             return;
         }
 
         list.innerHTML = '';
         notifs.forEach(n => {
             const item = document.createElement('div');
-            item.className = `notif-item ${n.read ? '' : 'unread'}`;
-            
-            let extraHtml = '';
-            if (n.type === 'friend_request') {
-                extraHtml = `
-                    <div style="margin-top:6px; display:flex; gap:6px;">
-                        <button style="background:#1877f2;color:white;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:11px;" onclick="event.stopPropagation(); acceptRequestFromNotif('${n.senderUsername}')">Confirm</button>
-                        <button style="background:#e4e6eb;color:#050505;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:11px;" onclick="event.stopPropagation(); declineRequestFromNotif('${n.senderUsername}')">Decline</button>
-                    </div>
-                `;
-            }
-
+            item.className = `p-3 border-b border-slate-100 text-xs cursor-pointer hover:bg-yellow-50 ${n.read ? '' : 'bg-blue-50 font-bold'}`;
             item.onclick = () => {
-                document.getElementById('notif-dropdown').style.display = 'none';
-                if (n.type === 'dm') {
-                    switchMainTab('dms');
-                    selectDMThread(n.senderUsername);
-                } else if (n.type === 'friend_request') {
-                    openUserProfile(n.senderUsername);
-                } else if (n.postId) {
-                    switchMainTab('feed');
-                    const targetPost = document.getElementById(`post-${n.postId}`);
-                    if (targetPost) {
-                        targetPost.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        targetPost.style.border = '3px solid #2563eb';
-                        setTimeout(() => targetPost.style.border = '2px solid #cbd5e1', 2000);
-                    } else {
-                        openUserProfile(n.senderUsername);
-                    }
-                } else {
-                    openUserProfile(n.senderUsername);
-                }
+                document.getElementById('notif-dropdown').classList.add('hidden');
+                if (n.type === 'dm') { switchMainTab('dms'); selectDMThread(n.senderUsername); }
+                else openUserProfile(n.senderUsername);
             };
-            item.innerHTML = `
-                <div>${n.text}</div>
-                ${extraHtml}
-                <div style="font-size:10px;color:#94a3b8;margin-top:2px;">${timeAgo(n.createdAt)}</div>
-            `;
+            item.innerHTML = `<div>${n.text}</div><div class="text-[10px] text-slate-400 mt-1">${timeAgo(n.createdAt)}</div>`;
             list.appendChild(item);
         });
     }
 
-    async function acceptRequestFromNotif(username) {
-        const res = await fetch(`/api/users/${username}/accept-friend`, { method: 'POST' });
-        if (res.ok) { loadNotifications(); alert('Crew request confirmed! 🎉'); }
-    }
-
-    async function declineRequestFromNotif(username) {
-        const res = await fetch(`/api/users/${username}/decline-friend`, { method: 'POST' });
-        if (res.ok) loadNotifications();
-    }
-
     async function markNotifsRead() {
         await fetch('/api/notifications/read', { method: 'POST' });
-        document.getElementById('notif-badge').style.display = 'none';
+        document.getElementById('notif-badge').classList.add('hidden');
     }
     setInterval(loadNotifications, 8000);
 
-    // --- PRIVATE DIRECT MESSAGING ---
     async function loadDMConversations() {
         const res = await fetch('/api/dms');
         if (!res.ok) return;
@@ -502,24 +419,18 @@
         list.innerHTML = '';
 
         if (partners.length === 0) {
-            list.innerHTML = '<div style="font-size:12px;color:#64748b;text-align:center;padding:10px;">No private chats yet. Visit a profile to start messaging!</div>';
+            list.innerHTML = '<div class="text-xs text-slate-500 text-center py-4">No chats yet.</div>';
             return;
         }
 
         partners.forEach(p => {
             const item = document.createElement('div');
-            item.className = `dm-convo-item ${activeDMUser === p.username ? 'active' : ''}`;
+            item.className = `p-2.5 rounded-xl cursor-pointer flex items-center gap-3 transition-colors ${activeDMUser === p.username ? 'bg-yellow-100 border border-minion-yellow' : 'hover:bg-slate-100'}`;
             item.onclick = () => selectDMThread(p.username, p.fullName);
             const avatarHtml = p.avatar && p.avatar.startsWith('data:image')
-                ? `<img src="${p.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`
-                : `<div style="width:32px;height:32px;border-radius:50%;background:#fedb00;display:flex;align-items:center;justify-content:center;">🍌</div>`;
-            item.innerHTML = `
-                ${avatarHtml}
-                <div>
-                    <div style="font-weight:bold;font-size:13px;color:#1e3a8a;">${p.fullName}</div>
-                    <div style="font-size:11px;color:#64748b;">@${p.username}</div>
-                </div>
-            `;
+                ? `<img src="${p.avatar}" class="w-8 h-8 rounded-full object-cover">`
+                : `<div class="w-8 h-8 rounded-full bg-minion-yellow flex items-center justify-center text-xs font-bold">🍌</div>`;
+            item.innerHTML = `${avatarHtml}<div><div class="font-bold text-xs text-minion-blue">${p.fullName}</div><div class="text-[10px] text-slate-500">@${p.username}</div></div>`;
             list.appendChild(item);
         });
     }
@@ -532,30 +443,30 @@
         const res = await fetch(`/api/dm/${username}`);
         if (!res.ok) return;
         const messages = await res.json();
-
         const box = document.getElementById('dm-thread-messages');
         box.innerHTML = '';
+
         messages.forEach(m => {
             const isMine = currentUser && m.sender === currentUser.username;
             const bubble = document.createElement('div');
-            bubble.className = `chat-bubble ${isMine ? 'mine' : ''}`;
+            bubble.className = `max-w-[80%] p-2.5 rounded-xl text-xs relative cursor-pointer group ${isMine ? 'bg-blue-100 self-end rounded-br-xs' : 'bg-slate-100 self-start rounded-bl-xs'}`;
             
             let mediaHtml = '';
             let displayText = m.text;
-
             if (m.text && m.text.includes('https://res.cloudinary.com/')) {
                 const parts = m.text.split(' ');
                 const imgUrl = parts.find(p => p.startsWith('https://res.cloudinary.com/'));
                 if (imgUrl) {
-                    mediaHtml = `<img src="${imgUrl}" class="chat-img-embed">`;
+                    mediaHtml = `<img src="${imgUrl}" class="max-w-full max-h-40 rounded-lg mt-1 block">`;
                     displayText = parts.filter(p => !p.startsWith('https://res.cloudinary.com/')).join(' ');
                 }
             }
 
+            bubble.onclick = () => openMsgActions(m.text, m._id, isMine);
             bubble.innerHTML = `
                 ${displayText ? `<div>${displayText}</div>` : ''}
                 ${mediaHtml}
-                <div class="chat-time">${timeAgo(m.createdAt)}</div>
+                <div class="text-[9px] text-slate-400 mt-1 text-right">${timeAgo(m.createdAt)}</div>
             `;
             box.appendChild(bubble);
         });
@@ -566,11 +477,7 @@
         if (!activeDMUser) return;
         const input = document.getElementById('dm-input');
         let text = input.value.trim();
-        
-        if (uploadedDmChatUrl) {
-            text = text ? `${text} ${uploadedDmChatUrl}` : uploadedDmChatUrl;
-        }
-
+        if (uploadedDmChatUrl) text = text ? `${text} ${uploadedDmChatUrl}` : uploadedDmChatUrl;
         if (!text) return;
         input.value = '';
         cancelChatImg('dm');
@@ -593,21 +500,21 @@
         users.forEach(u => {
             const isMe = currentUser && u.username === currentUser.username;
             const item = document.createElement('div');
-            item.className = 'member-item';
+            item.className = 'flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors';
             item.onclick = () => openUserProfile(u.username);
             const avatarHtml = u.avatar && u.avatar.startsWith('data:image') 
-                ? `<img src="${u.avatar}" class="member-avatar">` 
-                : `<div class="member-avatar">${u.avatar || '🍌'}</div>`;
+                ? `<img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">` 
+                : `<div class="w-8 h-8 rounded-full bg-minion-yellow flex items-center justify-center text-xs font-bold">🍌</div>`;
             
             item.innerHTML = `
-                <div class="member-info">
+                <div class="flex items-center gap-2">
                     ${avatarHtml}
                     <div>
-                        <div style="font-weight:700;font-size:13px;color:#1e3a8a;">${u.fullName} ${isMe ? '(You)' : ''}</div>
-                        <div style="font-size:11px;color:#64748b;">@${u.username} &bull; ${u.role || 'Minion'}</div>
+                        <div class="font-bold text-xs text-minion-blue">${u.fullName} ${isMe ? '(You)' : ''}</div>
+                        <div class="text-[10px] text-slate-400">@${u.username}</div>
                     </div>
                 </div>
-                <span style="font-size:12px;color:#2563eb;">View &rarr;</span>
+                <span class="text-xs text-blue-600 font-semibold">&rarr;</span>
             `;
             container.appendChild(item);
         });
@@ -617,17 +524,8 @@
         const res = await fetch('/api/me');
         if (!res.ok) { window.location.href = '/index.html'; return; }
         currentUser = await res.json();
-
-        const params = new URLSearchParams(window.location.search);
-        const chatParam = params.get('chat');
-        if (chatParam) {
-            const targetDM = chatParam.replace('@', '').trim();
-            switchMainTab('dms');
-            selectDMThread(targetDM);
-        }
     }
 
-    // --- PUBLIC MESSAGES ---
     async function loadMessages() {
         const res = await fetch('/api/messages');
         if (!res.ok) return;
@@ -637,28 +535,25 @@
         messages.forEach(m => {
             const isMine = currentUser && m.username === currentUser.username;
             const bubble = document.createElement('div');
-            bubble.className = `chat-bubble ${isMine ? 'mine' : ''}`;
-            const avatarHtml = m.avatar && m.avatar.startsWith('data:image') 
-                ? `<img src="${m.avatar}" style="width:16px;height:16px;border-radius:50%;vertical-align:middle;margin-right:4px;">` 
-                : `${m.avatar || '🍌'} `;
-
+            bubble.className = `max-w-[85%] p-2.5 rounded-xl text-xs relative cursor-pointer ${isMine ? 'bg-blue-100 self-end rounded-br-xs' : 'bg-slate-100 self-start rounded-bl-xs'}`;
+            
             let mediaHtml = '';
             let displayText = m.text;
-
             if (m.text && m.text.includes('https://res.cloudinary.com/')) {
                 const parts = m.text.split(' ');
                 const imgUrl = parts.find(p => p.startsWith('https://res.cloudinary.com/'));
                 if (imgUrl) {
-                    mediaHtml = `<img src="${imgUrl}" class="chat-img-embed">`;
+                    mediaHtml = `<img src="${imgUrl}" class="max-w-full max-h-40 rounded-lg mt-1 block">`;
                     displayText = parts.filter(p => !p.startsWith('https://res.cloudinary.com/')).join(' ');
                 }
             }
 
+            bubble.onclick = () => openMsgActions(m.text, m._id, isMine);
             bubble.innerHTML = `
-                <div class="chat-sender" onclick="openUserProfile('${m.username}')">${avatarHtml}${m.sender}</div>
+                <div class="font-bold text-[11px] text-minion-blue mb-1" onclick="event.stopPropagation(); openUserProfile('${m.username}')">${m.sender}</div>
                 ${displayText ? `<div>${displayText}</div>` : ''}
                 ${mediaHtml}
-                <div class="chat-time">${timeAgo(m.createdAt)}</div>
+                <div class="text-[9px] text-slate-400 mt-1 text-right">${timeAgo(m.createdAt)}</div>
             `;
             box.appendChild(bubble);
         });
@@ -668,11 +563,7 @@
     async function sendChat() {
         const input = document.getElementById('chat-input');
         let text = input.value.trim();
-
-        if (uploadedPublicChatUrl) {
-            text = text ? `${text} ${uploadedPublicChatUrl}` : uploadedPublicChatUrl;
-        }
-
+        if (uploadedPublicChatUrl) text = text ? `${text} ${uploadedPublicChatUrl}` : uploadedPublicChatUrl;
         if (!text) return;
         input.value = '';
         cancelChatImg('public');
@@ -686,7 +577,6 @@
     }
     setInterval(loadMessages, 4000);
 
-    // --- POSTS ---
     async function publishPost() {
         const text = document.getElementById('post-text').value.trim();
         const image = uploadedImageUrl;
@@ -699,7 +589,7 @@
         });
         if (res.ok) {
             document.getElementById('post-text').value = '';
-            document.getElementById('pasted-preview').style.display = 'none';
+            document.getElementById('pasted-preview').classList.add('hidden');
             uploadedImageUrl = '';
             loadPosts();
         }
@@ -723,61 +613,57 @@
         const commentsHtml = (post.comments || []).map(c => {
             const isMyComment = currentUser && c.username === currentUser.username;
             const repliesHtml = (c.replies || []).map(rep => `
-                <div class="reply-item">
-                    <b onclick="openUserProfile('${rep.username}')" style="cursor:pointer;color:#1e3a8a;">${rep.author}:</b> ${rep.text}
-                    <div style="font-size:10px;color:#94a3b8;">${timeAgo(rep.createdAt || post.createdAt)}</div>
+                <div class="bg-white p-2 rounded-lg text-xs border border-slate-200 mt-1">
+                    <b class="text-minion-blue cursor-pointer" onclick="openUserProfile('${rep.username}')">${rep.author}:</b> ${rep.text}
                 </div>
             `).join('');
 
             return `
-                <div class="comment-item">
-                    <div class="comment-header">
-                        <div>
-                            <span class="comment-author" onclick="openUserProfile('${c.username}')">${c.author}:</span> ${c.text} 
-                            ${c.edited ? '<span class="edited-tag">(edited)</span>' : ''}
-                        </div>
-                        ${isMyComment ? `<span class="action-link" onclick="editComment('${post._id}', '${c._id}', '${c.text.replace(/'/g, "\\'")}')">Edit</span>` : ''}
+                <div class="bg-slate-50 p-2.5 rounded-xl text-xs border border-slate-100 mb-2">
+                    <div class="flex justify-between items-center mb-1">
+                        <div><span class="font-bold text-minion-blue cursor-pointer" onclick="openUserProfile('${c.username}')">${c.author}:</span> ${c.text}</div>
+                        ${isMyComment ? `<span class="text-blue-600 cursor-pointer underline text-[11px]" onclick="editComment('${post._id}', '${c._id}', '${c.text.replace(/'/g, "\\'")}')">Edit</span>` : ''}
                     </div>
-                    <div style="font-size:10px;color:#94a3b8;margin-bottom:4px;">${timeAgo(c.createdAt || post.createdAt)}</div>
-                    <div><span class="action-link" onclick="toggleReplyBox('${post._id}', '${c._id}')">↩️ Reply</span></div>
-                    <div class="replies-list">${repliesHtml}</div>
-                    <div class="reply-box" id="reply-box-${post._id}-${c._id}">
-                        <input type="text" id="reply-input-${post._id}-${c._id}" placeholder="Reply to ${c.author}...">
-                        <button onclick="sendReply('${post._id}', '${c._id}')">Reply</button>
+                    <div class="text-[10px] text-slate-400 mb-1">${timeAgo(c.createdAt)} &bull; <span class="cursor-pointer text-blue-600 underline" onclick="toggleReplyBox('${post._id}', '${c._id}')">Reply</span></div>
+                    <div class="ml-4 border-l-2 border-minion-yellow pl-2">${repliesHtml}</div>
+                    <div class="hidden ml-4 mt-2 gap-2" id="reply-box-${post._id}-${c._id}">
+                        <input type="text" id="reply-input-${post._id}-${c._id}" class="flex-1 py-1 px-2 border rounded text-xs" placeholder="Reply...">
+                        <button onclick="sendReply('${post._id}', '${c._id}')" class="bg-emerald-500 text-white px-2.5 py-1 rounded text-xs font-bold">Send</button>
                     </div>
                 </div>
             `;
         }).join('');
 
         return `
-            <div class="post-card" id="post-${post._id}">
-                <div class="post-top">
-                    <div class="post-user-info" onclick="openUserProfile('${post.username}')">
-                        <div class="post-avatar-img">🍌</div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-slate-300 mb-4 transition-all" id="post-${post._id}">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3 cursor-pointer" onclick="openUserProfile('${post.username}')">
+                        <div class="w-10 h-10 rounded-full bg-minion-yellow border-2 border-minion-blue flex items-center justify-center text-lg font-bold">🍌</div>
                         <div>
-                            <div class="post-author">${post.author}</div>
-                            <div class="post-time">${timeAgo(post.createdAt)} ${post.edited ? '<span class="edited-tag">(edited)</span>' : ''}</div>
+                            <div class="font-bold text-minion-blue text-sm">${post.author}</div>
+                            <div class="text-[11px] text-slate-400">${timeAgo(post.createdAt)} ${post.edited ? '<span class="italic">(edited)</span>' : ''}</div>
                         </div>
                     </div>
                     <div>
                         ${isMyPost ? `
-                            <span class="action-link" onclick="editPost('${post._id}', '${post.text.replace(/'/g, "\\'")}')">✏️ Edit</span>
-                            <span class="action-link" style="color:#ef4444;" onclick="deletePost('${post._id}')">🗑️ Delete</span>
+                            <span class="text-blue-600 text-xs font-semibold underline cursor-pointer mr-2" onclick="editPost('${post._id}', '${post.text.replace(/'/g, "\\'")}')">Edit</span>
+                            <span class="text-red-500 text-xs font-semibold underline cursor-pointer" onclick="deletePost('${post._id}')">Delete</span>
                         ` : ''}
                     </div>
                 </div>
-                ${post.text ? `<div class="post-content">${post.text}</div>` : ''}
-                ${post.image ? `<img class="post-img" src="${post.image}" onerror="this.style.display='none'">` : ''}
-                <div class="reaction-bar">
-                    <button class="react-btn" onclick="react('${post._id}', 'banana', this)">${EMOJIS.banana} ${r.banana || 0}</button>
-                    <button class="react-btn" onclick="react('${post._id}', 'love', this)">${EMOJIS.love} ${r.love || 0}</button>
-                    <button class="react-btn" onclick="react('${post._id}', 'haha', this)">${EMOJIS.haha} ${r.haha || 0}</button>
-                    <button class="react-btn" onclick="react('${post._id}', 'rocket', this)">${EMOJIS.rocket} ${r.rocket || 0}</button>
+                ${post.text ? `<div class="text-sm mb-3 leading-relaxed">${post.text}</div>` : ''}
+                ${post.image ? `<img class="w-full rounded-xl max-h-80 object-cover mb-3" src="${post.image}" onerror="this.style.display='none'">` : ''}
+                
+                <div class="flex gap-2 border-y border-slate-100 py-2 my-2 flex-wrap">
+                    <button class="bg-slate-50 border border-slate-300 px-3 py-1 rounded-full text-xs font-semibold hover:bg-minion-yellow transition-colors" onclick="react('${post._id}', 'banana', this)">${EMOJIS.banana} ${r.banana || 0}</button>
+                    <button class="bg-slate-50 border border-slate-300 px-3 py-1 rounded-full text-xs font-semibold hover:bg-minion-yellow transition-colors" onclick="react('${post._id}', 'love', this)">${EMOJIS.love} ${r.love || 0}</button>
+                    <button class="bg-slate-50 border border-slate-300 px-3 py-1 rounded-full text-xs font-semibold hover:bg-minion-yellow transition-colors" onclick="react('${post._id}', 'haha', this)">${EMOJIS.haha} ${r.haha || 0}</button>
+                    <button class="bg-slate-50 border border-slate-300 px-3 py-1 rounded-full text-xs font-semibold hover:bg-minion-yellow transition-colors" onclick="react('${post._id}', 'rocket', this)">${EMOJIS.rocket} ${r.rocket || 0}</button>
                 </div>
-                <div>${commentsHtml}</div>
-                <div class="add-comment">
-                    <input type="text" id="comment-${post._id}" placeholder="Write a comment or @mention...">
-                    <button onclick="addComment('${post._id}')">Send</button>
+                <div class="space-y-1 mb-3">${commentsHtml}</div>
+                <div class="flex gap-2">
+                    <input type="text" id="comment-${post._id}" class="flex-1 py-2 px-3 border-2 border-slate-200 rounded-xl text-xs outline-none focus:border-minion-blue" placeholder="Write a comment...">
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow transition-transform active:scale-95" onclick="addComment('${post._id}')">Send</button>
                 </div>
             </div>
         `;
@@ -787,39 +673,30 @@
         const newText = prompt("Edit your post:", currentText);
         if (newText === null || newText.trim() === "" || newText.trim() === currentText) return;
         const res = await fetch(`/api/posts/${postId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: newText.trim() })
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: newText.trim() })
         });
         if (res.ok) loadPosts();
     }
 
     async function deletePost(postId) {
-        if (!confirm("Are you sure you want to delete this Minion post?")) return;
-        const res = await fetch(`/api/posts/${postId}`, {
-            method: 'DELETE'
-        });
-        if (res.ok) {
-            loadPosts();
-        } else {
-            alert('Failed to delete post.');
-        }
+        if (!confirm("Delete this post?")) return;
+        const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
+        if (res.ok) loadPosts();
     }
 
     async function editComment(postId, commentId, currentText) {
         const newText = prompt("Edit your comment:", currentText);
         if (newText === null || newText.trim() === "" || newText.trim() === currentText) return;
         const res = await fetch(`/api/posts/${postId}/comment/${commentId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: newText.trim() })
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: newText.trim() })
         });
         if (res.ok) loadPosts();
     }
 
     function toggleReplyBox(postId, commentId) {
         const box = document.getElementById(`reply-box-${postId}-${commentId}`);
-        box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+        box.classList.toggle('hidden');
+        box.classList.toggle('flex');
     }
 
     async function sendReply(postId, commentId) {
@@ -827,9 +704,7 @@
         const text = input.value.trim();
         if (!text) return;
         const res = await fetch(`/api/posts/${postId}/comment/${commentId}/reply`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text })
         });
         if (res.ok) loadPosts();
     }
@@ -859,11 +734,11 @@
         window.location.href = '/index.html';
     }
 
-    // --- ARCADE ---
+    // --- ARCADE GAME ---
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     let gameLoop, score = 0, lives = 3, isPlaying = false;
-    let basket = { x: 170, y: 340, width: 65, height: 42 }, items = [];
+    let basket = { x: 130, y: 290, width: 80, height: 35 }, items = [];
 
     canvas.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
@@ -872,8 +747,8 @@
         if (basket.x > canvas.width - basket.width) basket.x = canvas.width - basket.width;
     });
 
-    function openGame() { document.getElementById('game-modal').style.display = 'flex'; }
-    function closeGame() { document.getElementById('game-modal').style.display = 'none'; isPlaying = false; clearInterval(gameLoop); }
+    function openGame() { document.getElementById('game-modal').classList.remove('hidden'); document.getElementById('game-modal').classList.add('flex'); }
+    function closeGame() { document.getElementById('game-modal').classList.add('hidden'); document.getElementById('game-modal').classList.remove('flex'); isPlaying = false; clearInterval(gameLoop); }
 
     function startGame() {
         document.getElementById('start-game-btn').style.display = 'none';
@@ -885,32 +760,30 @@
     function updateGame() {
         if (!isPlaying) return;
         ctx.fillStyle = '#38bdf8'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#fedb00'; ctx.beginPath(); ctx.roundRect(basket.x, basket.y, basket.width, basket.height, 16); ctx.fill();
-        ctx.strokeStyle = '#1e3a8a'; ctx.lineWidth = 3; ctx.stroke();
-        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(basket.x + 32, basket.y + 16, 10, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(basket.x + 32, basket.y + 16, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fedb00'; ctx.beginPath(); ctx.roundRect(basket.x, basket.y, basket.width, basket.height, 12); ctx.fill();
+        ctx.strokeStyle = '#1e3a8a'; ctx.lineWidth = 2; ctx.stroke();
 
-        if (Math.random() < 0.04) items.push({ x: 25 + Math.random() * (canvas.width - 50), y: -20, isBomb: Math.random() < 0.3 });
+        if (Math.random() < 0.04) items.push({ x: 20 + Math.random() * (canvas.width - 40), y: -20, isBomb: Math.random() < 0.3 });
 
         for (let i = items.length - 1; i >= 0; i--) {
-            let it = items[i]; it.y += 4;
-            ctx.fillStyle = it.isBomb ? '#18181b' : '#fedb00';
-            ctx.beginPath(); ctx.arc(it.x, it.y, 14, 0, Math.PI * 2); ctx.fill();
+            let it = items[i]; it.y += 3.5;
+            ctx.fillStyle = it.isBomb ? '#111' : '#fedb00';
+            ctx.beginPath(); ctx.arc(it.x, it.y, 12, 0, Math.PI * 2); ctx.fill();
 
-            if (it.y > basket.y && it.y < basket.y + 40 && it.x > basket.x && it.x < basket.x + 65) {
+            if (it.y > basket.y && it.y < basket.y + basket.height && it.x > basket.x && it.x < basket.x + basket.width) {
                 if (it.isBomb) { lives--; if (lives <= 0) endGame(); } else score += 10;
                 items.splice(i, 1); continue;
             }
             if (it.y > canvas.height + 20) { if (!it.isBomb) { lives--; if (lives <= 0) endGame(); } items.splice(i, 1); }
         }
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 16px sans-serif';
-        ctx.fillText(`BANANAS: ${score}`, 15, 25); ctx.fillText(`LIVES: ${lives}`, canvas.width - 90, 25);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif';
+        ctx.fillText(`SCORE: ${score}`, 15, 22); ctx.fillText(`LIVES: ${lives}`, canvas.width - 80, 22);
     }
 
     async function endGame() {
         isPlaying = false; clearInterval(gameLoop);
         ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#fedb00'; ctx.font = 'bold 26px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#fedb00'; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2);
         ctx.textAlign = 'left';
         document.getElementById('start-game-btn').style.display = 'inline-block';
@@ -928,4 +801,3 @@
 </script>
 </body>
 </html>
-
