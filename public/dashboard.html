@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gru's Lab - Feed & Profile</title>
+    <title>MinionFeed | Gru's Lab</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -13,12 +13,12 @@
             background: #fedb00; border-bottom: 3px solid #1e3a8a; padding: 10px 20px;
             display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
         }
-        .nav-logo { font-size: 22px; font-weight: 700; color: #1e3a8a; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .nav-logo { font-size: 22px; font-weight: 700; color: #1e3a8a; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
         .nav-center-tabs { display: flex; gap: 8px; }
         .nav-tab-btn {
             background: rgba(255, 255, 255, 0.4); border: 2px solid transparent; padding: 7px 14px;
             border-radius: 20px; font-weight: 700; font-family: inherit; font-size: 13px; color: #1e3a8a;
-            cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s;
+            cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.15s;
         }
         .nav-tab-btn:hover { background: rgba(255, 255, 255, 0.8); }
         .nav-tab-btn.active { background: #1e3a8a; color: #fedb00; border-color: #1e3a8a; }
@@ -45,44 +45,6 @@
         .notif-item { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; font-size: 12px; cursor: pointer; }
         .notif-item:hover { background: #fef9c3; }
         .notif-item.unread { background: #eff6ff; font-weight: bold; }
-
-        /* Profile View */
-        #view-profile { display: none; }
-        .back-nav-bar { max-width: 950px; margin: 12px auto 0 auto; padding: 0 15px; }
-        .back-btn {
-            background: white; border: 2px solid #cbd5e1; padding: 8px 16px; border-radius: 12px;
-            font-weight: 700; font-family: inherit; font-size: 14px; color: #1e3a8a; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 6px;
-        }
-        .profile-container {
-            max-width: 950px; margin: 12px auto 20px auto; background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06); border-radius: 20px; overflow: hidden;
-            border: 2px solid #cbd5e1; position: relative;
-        }
-        .cover-photo-wrapper {
-            position: relative; width: 100%; height: 260px;
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            background-size: cover; background-position: center;
-        }
-        .profile-header-content { padding: 0 25px 20px 25px; position: relative; display: flex; flex-direction: column; }
-        .avatar-wrapper { position: relative; margin-top: -75px; margin-bottom: 12px; }
-        .avatar-img {
-            width: 140px; height: 140px; border-radius: 50%;
-            border: 5px solid #ffffff; background: #fedb00;
-            object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            display: flex; align-items: center; justify-content: center; font-size: 60px;
-        }
-        .profile-title-bar { width: 100%; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px; }
-        .profile-names h1 { margin: 0; font-size: 26px; color: #0f172a; }
-        .profile-names p { margin: 3px 0 0 0; color: #64748b; font-size: 14px; }
-        .profile-bio-text { margin: 10px 0 0 0; color: #334155; font-size: 15px; font-style: italic; max-width: 600px; }
-        .profile-details-pills { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; font-size: 13px; color: #475569; }
-        .pill { display: flex; align-items: center; gap: 5px; background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
-
-        .fb-action-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 15px; width: 100%; }
-        .fb-btn-blue { background: #1877f2; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
-        .fb-btn-gray { background: #e4e6eb; color: #050505; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
-        .fb-btn-red { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; padding: 10px 16px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 13px; cursor: pointer; }
 
         /* Feed Layout */
         .container { max-width: 980px; margin: 20px auto; display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 0 15px; }
@@ -139,16 +101,10 @@
         /* Modals */
         .modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 15px; }
         .modal-box { background: white; border-radius: 20px; padding: 22px; border: 4px solid #fedb00; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; position: relative; }
-        .modal-box label { display: block; font-size: 12px; font-weight: bold; color: #475569; margin: 10px 0 3px 0; text-align: left; }
-        .modal-box input, .modal-box select, .modal-box textarea { width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 13px; outline: none; }
-        .save-modal-btn { background: #fedb00; border: 2px solid #ca8a04; padding: 12px; border-radius: 10px; font-weight: bold; font-family: inherit; width: 100%; cursor: pointer; margin-top: 15px; font-size: 15px; }
         .close-btn { position: absolute; top: 12px; right: 15px; font-size: 22px; cursor: pointer; color: #ef4444; font-weight: bold; }
 
         @media (max-width: 768px) {
             .container { grid-template-columns: 1fr; }
-            .cover-photo-wrapper { height: 180px; }
-            .avatar-img { width: 110px; height: 110px; font-size: 45px; }
-            .avatar-wrapper { margin-top: -55px; }
             .nav-tab-btn span { display: none; }
             .notif-dropdown { right: 10px; width: 290px; }
         }
@@ -157,17 +113,17 @@
 <body>
 
     <div class="navbar">
-        <div class="nav-logo" onclick="switchView('feed')">
+        <a href="dashboard.html" class="nav-logo">
             <span>&#127820;</span> MinionFeed
-        </div>
+        </a>
 
         <div class="nav-center-tabs">
-            <button class="nav-tab-btn active" id="tab-feed" onclick="switchView('feed')">
+            <a href="dashboard.html" class="nav-tab-btn active" id="tab-feed">
                 &#127968; <span>News Feed</span>
-            </button>
-            <button class="nav-tab-btn" id="tab-profile" onclick="viewMyOwnProfile()">
+            </a>
+            <a href="profile.html" class="nav-tab-btn" id="tab-profile">
                 &#128100; <span>My Profile</span>
-            </button>
+            </a>
         </div>
 
         <div class="nav-user">
@@ -191,7 +147,7 @@
         </div>
     </div>
 
-    <!-- VIEW 1: NEWS FEED -->
+    <!-- NEWS FEED VIEW -->
     <div id="view-feed">
         <div class="container">
             <div>
@@ -225,87 +181,6 @@
         </div>
     </div>
 
-    <!-- VIEW 2: PROFILE VIEW -->
-    <div id="view-profile">
-        <div class="back-nav-bar">
-            <button class="back-btn" onclick="switchView('feed')">
-                &larr; Back to News Feed
-            </button>
-        </div>
-
-        <div class="profile-container">
-            <div class="cover-photo-wrapper" id="profile-cover"></div>
-
-            <div class="profile-header-content">
-                <div class="avatar-wrapper">
-                    <div class="avatar-img" id="profile-avatar">&#127820;</div>
-                </div>
-
-                <div class="profile-title-bar">
-                    <div class="profile-names">
-                        <h1 id="user-fullname">Loading Name...</h1>
-                        <p id="user-handle">@username</p>
-                        <p class="profile-bio-text" id="user-bio">"Living life one banana at a time!"</p>
-                        
-                        <div class="profile-details-pills">
-                            <div class="pill">&#128231; <span id="user-display-email">...</span></div>
-                            <div class="pill">&#128205; <span id="user-location">Gru's Secret Lab</span></div>
-                            <div class="pill">&#128640; <span id="user-role">Rocket Scientist</span></div>
-                            <div class="pill">&#127942; Record: <span id="user-highscore">0</span> &#127820;</div>
-                        </div>
-                    </div>
-
-                    <div id="profile-actions-area" class="fb-action-row"></div>
-                </div>
-            </div>
-        </div>
-
-        <div style="max-width: 950px; margin: 0 auto 30px auto; padding: 0 15px;">
-            <div class="card-header" style="font-size: 19px;" id="profile-posts-title">Activity & Posts</div>
-            <div id="profile-posts-container"></div>
-        </div>
-    </div>
-
-    <!-- EDIT PROFILE MODAL -->
-    <div class="modal-bg" id="profile-modal">
-        <div class="modal-box">
-            <span class="close-btn" onclick="closeProfileModal()">&times;</span>
-            <h2 style="color: #1e3a8a; margin: 0 0 10px 0;">Edit Your Information</h2>
-
-            <label>&#128231; Email Address (used for password reset):</label>
-            <input type="email" id="edit-email" placeholder="e.g. realemail@gmail.com">
-
-            <label>&#128241; Contact Phone Number:</label>
-            <input type="tel" id="edit-phone" placeholder="e.g. 09123456789">
-
-            <label>Full Name:</label>
-            <input type="text" id="edit-name">
-
-            <label>&#128247; Profile Picture:</label>
-            <input type="file" id="upload-avatar" accept="image/*">
-
-            <label>&#128444;&#65039; Cover Background Photo:</label>
-            <input type="file" id="upload-cover" accept="image/*">
-
-            <label>Bio (About You):</label>
-            <textarea id="edit-bio" rows="2"></textarea>
-
-            <label>&#128205; Where are you from? (Location):</label>
-            <input type="text" id="edit-location">
-
-            <label>Minion Role:</label>
-            <select id="edit-role">
-                <option value="Rocket Scientist">🚀 Rocket Scientist</option>
-                <option value="Banana Guard">🍌 Banana Guard</option>
-                <option value="Evil Infiltrator">🧪 Evil Infiltrator</option>
-                <option value="Gru's Favorite">⭐ Gru's Favorite</option>
-                <option value="Secret Spy">🕵️ Secret Spy</option>
-            </select>
-
-            <button class="save-modal-btn" onclick="saveProfile()">Save Changes &#10004;</button>
-        </div>
-    </div>
-
     <!-- ARCADE MODAL -->
     <div class="modal-bg" id="game-modal">
         <div class="modal-box" style="width: auto;">
@@ -318,18 +193,14 @@
 
 <script>
     let currentUser = null;
-    let viewingUsername = null;
     let allPosts = [];
     let pastedImageBase64 = '';
-    let newAvatarBase64 = null;
-    let newCoverBase64 = null;
 
     const EMOJIS = {
         banana: String.fromCodePoint(0x1F34C), love: String.fromCodePoint(0x2764),
         haha: String.fromCodePoint(0x1F602), rocket: String.fromCodePoint(0x1F680)
     };
 
-    // --- FACEBOOK-STYLE RELATIVE TIME FUNCTION ---
     function timeAgo(dateString) {
         if (!dateString) return 'Just now';
         const date = new Date(dateString);
@@ -349,112 +220,9 @@
         return 'Just now';
     }
 
-    function switchView(viewName) {
-        const feedView = document.getElementById('view-feed');
-        const profileView = document.getElementById('view-profile');
-        const tabFeed = document.getElementById('tab-feed');
-        const tabProfile = document.getElementById('tab-profile');
-
-        if (viewName === 'profile') {
-            feedView.style.display = 'none';
-            profileView.style.display = 'block';
-            tabProfile.classList.add('active');
-            tabFeed.classList.remove('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-            profileView.style.display = 'none';
-            feedView.style.display = 'block';
-            tabFeed.classList.add('active');
-            tabProfile.classList.remove('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }
-
-    function viewMyOwnProfile() {
-        if (currentUser) openUserProfile(currentUser.username);
-    }
-
-    async function openUserProfile(username) {
-        viewingUsername = username;
-        const res = await fetch(`/api/users/${username}`);
-        if (!res.ok) return;
-        const profile = await res.json();
-
-        document.getElementById('user-fullname').innerText = profile.fullName;
-        document.getElementById('user-handle').innerText = '@' + profile.username;
-        document.getElementById('user-bio').innerText = `"${profile.bio || 'Banana lover'}"`;
-        document.getElementById('user-location').innerText = profile.location || "Gru's Secret Lab";
-        document.getElementById('user-role').innerText = profile.role || 'Minion';
-        document.getElementById('user-highscore').innerText = profile.highScore || 0;
-
-        const emailEl = document.getElementById('user-display-email');
-        if (currentUser && currentUser.username.toLowerCase() === username.toLowerCase()) {
-            emailEl.innerText = currentUser.email;
-        } else {
-            emailEl.innerText = 'Minion Member';
-        }
-
-        const avatarEl = document.getElementById('profile-avatar');
-        if (profile.avatar && profile.avatar.startsWith('data:image')) {
-            avatarEl.innerHTML = `<img src="${profile.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-        } else {
-            avatarEl.innerHTML = profile.avatar || '🍌';
-        }
-
-        const coverEl = document.getElementById('profile-cover');
-        if (profile.coverPhoto && profile.coverPhoto.startsWith('data:image')) {
-            coverEl.style.backgroundImage = `url('${profile.coverPhoto}')`;
-        } else {
-            coverEl.style.backgroundImage = `linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)`;
-        }
-
-        const actionsArea = document.getElementById('profile-actions-area');
-        const isSelf = currentUser && currentUser.username.toLowerCase() === username.toLowerCase();
-
-        if (isSelf) {
-            actionsArea.innerHTML = `<button class="fb-btn-gray" onclick="openProfileModal()">&#9999;&#65039; Edit Profile & Info</button>`;
-        } else {
-            actionsArea.innerHTML = `
-                <button class="fb-btn-blue" id="btn-friend" onclick="toggleFriend('${profile.username}')">
-                    ${profile.isFriend ? '&#10004; Friends' : '&#10133; Add Friend'}
-                </button>
-                <button class="fb-btn-gray" onclick="startDirectChat('${profile.fullName}')">&#128172; Message</button>
-                <button class="fb-btn-red" id="btn-block" onclick="toggleBlock('${profile.username}')">
-                    ${profile.isBlocked ? 'Unblock' : '&#128683; Block'}
-                </button>
-            `;
-        }
-
-        renderUserPosts(username);
-        switchView('profile');
-    }
-
-    async function toggleFriend(username) {
-        const res = await fetch(`/api/users/${username}/friend`, { method: 'POST' });
-        if (res.ok) {
-            const data = await res.json();
-            const btn = document.getElementById('btn-friend');
-            btn.innerHTML = data.isFriend ? '&#10004; Friends' : '&#10133; Add Friend';
-        }
-    }
-
-    async function toggleBlock(username) {
-        if (!confirm(`Toggle block for @${username}?`)) return;
-        const res = await fetch(`/api/users/${username}/block`, { method: 'POST' });
-        if (res.ok) {
-            const data = await res.json();
-            const btn = document.getElementById('btn-block');
-            btn.innerHTML = data.isBlocked ? 'Unblock' : '&#128683; Block';
-            loadPosts();
-            loadMessages();
-        }
-    }
-
-    function startDirectChat(fullName) {
-        switchView('feed');
-        const input = document.getElementById('chat-input');
-        input.value = `@${fullName} `;
-        input.focus();
+    // --- DEDICATED PROFILE REDIRECT ---
+    function openUserProfile(username) {
+        window.location.href = `profile.html?user=${username}`;
     }
 
     function toggleNotifs() {
@@ -536,85 +304,16 @@
         });
     }
 
-    function resizeImage(file, maxWidth, maxHeight) {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width, height = img.height;
-                    if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
-                    if (height > maxHeight) { width = Math.round((width * maxHeight) / height); height = maxHeight; }
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.85));
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    document.getElementById('upload-avatar').addEventListener('change', async (e) => {
-        if (e.target.files && e.target.files[0]) newAvatarBase64 = await resizeImage(e.target.files[0], 400, 400);
-    });
-    document.getElementById('upload-cover').addEventListener('change', async (e) => {
-        if (e.target.files && e.target.files[0]) newCoverBase64 = await resizeImage(e.target.files[0], 1200, 500);
-    });
-
     async function loadProfile() {
         const res = await fetch('/api/me');
         if (!res.ok) { window.location.href = '/index.html'; return; }
         currentUser = await res.json();
-    }
 
-    function openProfileModal() {
-        document.getElementById('edit-name').value = currentUser.fullName;
-        document.getElementById('edit-email').value = currentUser.email || '';
-        document.getElementById('edit-phone').value = currentUser.phone || '';
-        document.getElementById('edit-bio').value = currentUser.bio || '';
-        document.getElementById('edit-location').value = currentUser.location || '';
-        document.getElementById('edit-role').value = currentUser.role || 'Rocket Scientist';
-        newAvatarBase64 = null;
-        newCoverBase64 = null;
-        document.getElementById('profile-modal').style.display = 'flex';
-    }
-    function closeProfileModal() { document.getElementById('profile-modal').style.display = 'none'; }
-
-    async function saveProfile() {
-        const fullName = document.getElementById('edit-name').value.trim();
-        const email = document.getElementById('edit-email').value.trim();
-        const phone = document.getElementById('edit-phone').value.trim();
-        const bio = document.getElementById('edit-bio').value.trim();
-        const location = document.getElementById('edit-location').value.trim();
-        const role = document.getElementById('edit-role').value;
-
-        if (!email) {
-            alert('Email cannot be empty!');
-            return;
-        }
-
-        let payload = { fullName, email, phone, bio, location, role };
-        if (newAvatarBase64) payload.avatar = newAvatarBase64;
-        if (newCoverBase64) payload.coverPhoto = newCoverBase64;
-
-        const res = await fetch('/api/profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-            closeProfileModal();
-            await loadProfile();
-            openUserProfile(currentUser.username);
-            loadMembers();
-            alert('Your profile and email have been successfully updated! 🍌');
-        } else {
-            alert(data.error || 'Failed to update profile');
+        // Check for chat query parameter from profile message button
+        const params = new URLSearchParams(window.location.search);
+        const chatParam = params.get('chat');
+        if (chatParam) {
+            document.getElementById('chat-input').value = chatParam + ' ';
         }
     }
 
@@ -743,23 +442,6 @@
         const container = document.getElementById('posts-container');
         container.innerHTML = '';
         allPosts.forEach(post => {
-            container.innerHTML += createPostCardHtml(post);
-        });
-        if (viewingUsername) {
-            renderUserPosts(viewingUsername);
-        }
-    }
-
-    function renderUserPosts(username) {
-        const container = document.getElementById('profile-posts-container');
-        if (!container) return;
-        container.innerHTML = '';
-        const userPosts = allPosts.filter(p => p.username === username);
-        if (userPosts.length === 0) {
-            container.innerHTML = '<div style="background:white;padding:25px;border-radius:14px;text-align:center;color:#64748b;">No posts from this Minion yet.</div>';
-            return;
-        }
-        userPosts.forEach(post => {
             container.innerHTML += createPostCardHtml(post);
         });
     }
@@ -906,7 +588,6 @@
         document.getElementById('start-game-btn').innerText = 'Play Again';
         const res = await fetch('/api/highscore', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ score }) });
         const data = await res.json();
-        document.getElementById('user-highscore').innerText = data.highScore;
     }
 
     (async () => {
