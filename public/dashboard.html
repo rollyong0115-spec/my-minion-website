@@ -333,7 +333,6 @@
 
     async function deleteActiveMessage() {
         if (!confirm("Delete this message?")) return;
-        // In this architecture, messages display directly; we can hook up a backend delete route if desired or remove locally
         alert('Message action triggered.');
         closeMsgActions();
     }
@@ -462,11 +461,14 @@
                 }
             }
 
-            bubble.onclick = () => openMsgActions(m.text, m._id, isMine);
+            bubble.onclick = (e) => { e.stopPropagation(); openMsgActions(m.text, m._id, isMine); };
+            bubble.oncontextmenu = (e) => { e.preventDefault(); openMsgActions(m.text, m._id, isMine); };
+
             bubble.innerHTML = `
                 ${displayText ? `<div>${displayText}</div>` : ''}
                 ${mediaHtml}
                 <div class="text-[9px] text-slate-400 mt-1 text-right">${timeAgo(m.createdAt)}</div>
+                <div class="absolute -top-2 right-2 hidden group-hover:block bg-white border border-slate-300 rounded-full px-1.5 shadow text-[10px]">⚙️</div>
             `;
             box.appendChild(bubble);
         });
@@ -535,7 +537,7 @@
         messages.forEach(m => {
             const isMine = currentUser && m.username === currentUser.username;
             const bubble = document.createElement('div');
-            bubble.className = `max-w-[85%] p-2.5 rounded-xl text-xs relative cursor-pointer ${isMine ? 'bg-blue-100 self-end rounded-br-xs' : 'bg-slate-100 self-start rounded-bl-xs'}`;
+            bubble.className = `max-w-[85%] p-2.5 rounded-xl text-xs relative cursor-pointer group ${isMine ? 'bg-blue-100 self-end rounded-br-xs' : 'bg-slate-100 self-start rounded-bl-xs'}`;
             
             let mediaHtml = '';
             let displayText = m.text;
@@ -548,12 +550,15 @@
                 }
             }
 
-            bubble.onclick = () => openMsgActions(m.text, m._id, isMine);
+            bubble.onclick = (e) => { e.stopPropagation(); openMsgActions(m.text, m._id, isMine); };
+            bubble.oncontextmenu = (e) => { e.preventDefault(); openMsgActions(m.text, m._id, isMine); };
+
             bubble.innerHTML = `
                 <div class="font-bold text-[11px] text-minion-blue mb-1" onclick="event.stopPropagation(); openUserProfile('${m.username}')">${m.sender}</div>
                 ${displayText ? `<div>${displayText}</div>` : ''}
                 ${mediaHtml}
                 <div class="text-[9px] text-slate-400 mt-1 text-right">${timeAgo(m.createdAt)}</div>
+                <div class="absolute -top-2 right-2 hidden group-hover:block bg-white border border-slate-300 rounded-full px-1.5 shadow text-[10px]">⚙️</div>
             `;
             box.appendChild(bubble);
         });
