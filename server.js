@@ -154,7 +154,6 @@ app.post('/api/forgot-password', async (req, res) => {
         const protocol = req.headers['x-forwarded-proto'] || 'http';
         const resetUrl = `${protocol}://${host}/reset-password.html?token=${token}`;
 
-        // Send real email via Resend Web API
         const { data, error } = await resend.emails.send({
             from: 'Gru\'s Lab <onboarding@resend.dev>',
             to: [user.email],
@@ -195,6 +194,12 @@ app.post('/api/reset-password', async (req, res) => {
         });
 
         if (!user) return res.status(400).json({ error: 'Password reset link is invalid or has expired!' });
+
+        // Check if the user is trying to reuse their old password
+        const isOldPassword = await bcrypt.compare(newPassword, user.password);
+        if (isOldPassword) {
+            return res.status(400).json({ error: 'You cannot use your old password! Please choose a new one.' });
+        }
 
         user.password = await bcrypt.hash(newPassword, 10);
         user.resetPasswordToken = undefined;
