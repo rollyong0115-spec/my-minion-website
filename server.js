@@ -408,12 +408,11 @@ app.post('/api/highscore', async (req, res) => {
     res.json({ highScore: user ? user.highScore : 0 });
 });
 
-// --- PRIVATE DIRECT MESSAGES (FB / mBasic style) ---
+// --- PRIVATE DIRECT MESSAGES ---
 app.get('/api/dms', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const currentUser = await User.findById(req.session.userId);
     
-    // Find all users who have exchanged DMs with the current user
     const dms = await PrivateMessage.find({
         $or: [{ sender: currentUser.username }, { recipient: currentUser.username }]
     }).sort({ createdAt: -1 });
@@ -550,6 +549,17 @@ app.put('/api/posts/:id', async (req, res) => {
     post.edited = true;
     await post.save();
     res.json(post);
+});
+
+app.delete('/api/posts/:id', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = await User.findById(req.session.userId);
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    if (post.username !== user.username) return res.status(403).json({ error: 'Not allowed to delete' });
+
+    await Post.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
 });
 
 app.post('/api/posts/:id/react', async (req, res) => {
