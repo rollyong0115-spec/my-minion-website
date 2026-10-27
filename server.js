@@ -160,26 +160,11 @@ app.post('/api/forgot-password', async (req, res) => {
         const protocol = req.headers['x-forwarded-proto'] || 'http';
         const resetUrl = `${protocol}://${host}/reset-password.html?token=${token}`;
 
-        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-            await transporter.sendMail({
-                to: user.email,
-                from: process.env.EMAIL_USER,
-                subject: '🍌 Gru’s Lab: Password Reset Link',
-                html: `
-                    <h2>Password Reset Request</h2>
-                    <p>Bello, ${user.fullName}!</p>
-                    <p>Click the link below to set a new Banana Code password:</p>
-                    <p><a href="${resetUrl}" style="background:#fedb00;color:#1e3a8a;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold;">Reset Password Now</a></p>
-                    <p>This link expires in 1 hour.</p>
-                `
-            });
-            res.json({ message: 'Password reset link has been sent to your email!' });
-        } else {
-            res.json({
-                message: 'Reset link generated! (Configure EMAIL_USER in Render to send via Gmail):',
-                resetUrl: resetUrl
-            });
-        }
+        // Bypasses Render's free tier SMTP block by returning the link directly to the modal
+        res.json({
+            message: 'Banana Code reset link generated successfully!',
+            resetUrl: resetUrl
+        });
     } catch (err) {
         res.status(500).json({ error: 'Server error processing request.' });
     }
@@ -373,7 +358,6 @@ app.post('/api/users/:username/block', async (req, res) => {
     res.json({ isBlocked });
 });
 
-// UPDATE PROFILE (Allows updating Email, Phone, Name, Bio, Location)
 app.post('/api/profile', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const { fullName, email, phone, bio, location, role, avatar, coverPhoto } = req.body;
@@ -383,7 +367,6 @@ app.post('/api/profile', async (req, res) => {
     if (fullName) user.fullName = fullName.trim();
     if (phone !== undefined) user.phone = phone.trim();
 
-    // Check if new email is already taken by someone else
     if (email && email.trim().toLowerCase() !== user.email.toLowerCase()) {
         const emailExists = await User.findOne({
             email: new RegExp(`^${email.trim()}$`, 'i'),
