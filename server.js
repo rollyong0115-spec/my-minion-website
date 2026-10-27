@@ -93,10 +93,18 @@ const MessageSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
+const PrivateMessageSchema = new mongoose.Schema({
+    sender: { type: String, required: true },
+    recipient: { type: String, required: true },
+    text: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
 const User = mongoose.model('User', UserSchema);
 const Notification = mongoose.model('Notification', NotificationSchema);
 const Post = mongoose.model('Post', PostSchema);
 const Message = mongoose.model('Message', MessageSchema);
+const PrivateMessage = mongoose.model('PrivateMessage', PrivateMessageSchema);
 
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
@@ -117,7 +125,7 @@ function isStrongPassword(pwd) {
     return hasLetter && hasNumber && hasSymbol;
 }
 
-// --- CASE-INSENSITIVE MENTION MATCHING ---
+// --- MENTION NOTIFICATIONS ---
 async function notifyMentions(text, sender, postId = null) {
     if (!text) return;
     const matches = text.match(/@([a-zA-Z0-9_]+)/g);
@@ -400,7 +408,69 @@ app.post('/api/highscore', async (req, res) => {
     res.json({ highScore: user ? user.highScore : 0 });
 });
 
-// --- NOTIFICATIONS & MESSAGES & POSTS ---
+// --- PRIVATE DIRECT MESSAGES (FB / mBasic style) ---
+app.get('/api/dms', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const currentUser = await User.findById(req.session.userId);
+    
+    // Find all users who have exchanged DMs with the current user
+    const dms = await PrivateMessage.find({
+        $or: [{ sender: currentUser.username }, { recipient: currentUser.username }]
+    }).sort({ createdAt: -1 });
+
+    const partnerUsernames = new Set();
+    dms.forEach(m => {
+        if (m.sender !== currentUser.username) partnerUsernames.add(m.sender);
+        if (m.recipient !== currentUser.username) partnerUsernames.add(m.recipient);
+    });
+
+    const partners = await User.find({ username: { $in: Array.from(partnerUsernames) } }, 'fullName username avatar role');
+    res.json(partners);
+});
+
+app.get('/api/dm/:username', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const currentUser = await User.findById(req.session.userId);
+    const partnerUsername = req.params.username;
+
+    const messages = await PrivateMessage.find({
+        $or: [
+            { sender: currentUser.username, recipient: partnerUsername },
+            { sender: partnerUsername, recipient: currentUser.username }
+        ]
+    }).sort({ createdAt: 1 });
+
+    res.json(messages);
+});
+
+app.post('/api/dm/:username', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ error: 'Message cannot be empty' });
+
+    const currentUser = await User.findById(req.session.userId);
+    const targetUser = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    const newDm = new PrivateMessage({
+        sender: currentUser.username,
+        recipient: targetUser.username,
+        text: text.trim()
+    });
+    await newDm.save();
+
+    await Notification.create({
+        recipient: targetUser.username,
+        sender: currentUser.fullName,
+        senderUsername: currentUser.username,
+        type: 'dm',
+        text: `💬 ${currentUser.fullName} sent you a private message!`
+    });
+
+    res.json(newDm);
+});
+
+// --- PUBLIC MESSAGES, NOTIFICATIONS & POSTS ---
 app.get('/api/notifications', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     const user = await User.findById(req.session.userId);
