@@ -2,7 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const crypto = require('crypto');
 const path = require('path');
 
@@ -20,13 +20,7 @@ if (MONGO_URI) {
     console.warn('⚠️ MONGO_URI not set!');
 }
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER || '',
-        pass: process.env.EMAIL_PASS || ''
-    }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // --- DATABASE SCHEMAS ---
 const UserSchema = new mongoose.Schema({
@@ -153,19 +147,35 @@ app.post('/api/forgot-password', async (req, res) => {
 
         const token = crypto.randomBytes(20).toString('hex');
         user.resetPasswordToken = token;
-        user.resetPasswordExpires = Date.now() + 3600000;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
         await user.save();
 
         const host = req.headers.host;
         const protocol = req.headers['x-forwarded-proto'] || 'http';
         const resetUrl = `${protocol}://${host}/reset-password.html?token=${token}`;
 
-        // Bypasses Render's free tier SMTP block by returning the link directly to the modal
-        res.json({
-            message: 'Banana Code reset link generated successfully!',
-            resetUrl: resetUrl
+        // Send real email via Resend Web API
+        const { data, error } = await resend.emails.send({
+            from: 'Gru\'s Lab <onboarding@resend.dev>',
+            to: [user.email],
+            subject: '🍌 Gru’s Lab: Password Reset Link',
+            html: `
+                <h2>Password Reset Request</h2>
+                <p>Bello, ${user.fullName}!</p>
+                <p>Click the link below to set a new Banana Code password:</p>
+                <p><a href="${resetUrl}" style="background:#fedb00;color:#1e3a8a;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold;">Reset Password Now</a></p>
+                <p>This link expires in 1 hour.</p>
+            `
         });
+
+        if (error) {
+            console.error('Resend Error:', error);
+            return res.status(500).json({ error: 'Failed to send reset email.' });
+        }
+
+        res.json({ message: 'Password reset link sent! Check your inbox 📧' });
     } catch (err) {
+        console.error('Server catch error:', err);
         res.status(500).json({ error: 'Server error processing request.' });
     }
 });
