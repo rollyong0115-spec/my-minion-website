@@ -46,7 +46,6 @@
         .notif-item:hover { background: #fef9c3; }
         .notif-item.unread { background: #eff6ff; font-weight: bold; }
 
-        /* Feed Layout */
         .container { max-width: 980px; margin: 20px auto; display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 0 15px; }
         .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 2px solid #cbd5e1; margin-bottom: 20px; }
         .card-header { font-size: 17px; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #fedb00; padding-bottom: 8px; margin-bottom: 15px; }
@@ -98,7 +97,6 @@
         .chat-input-bar input { flex: 1; padding: 9px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; }
         .chat-send-btn { background: #2563eb; color: white; border: none; padding: 9px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: inherit; }
 
-        /* Modals */
         .modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 15px; }
         .modal-box { background: white; border-radius: 20px; padding: 22px; border: 4px solid #fedb00; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; position: relative; }
         .close-btn { position: absolute; top: 12px; right: 15px; font-size: 22px; cursor: pointer; color: #ef4444; font-weight: bold; }
@@ -220,7 +218,6 @@
         return 'Just now';
     }
 
-    // --- DEDICATED PROFILE REDIRECT ---
     function openUserProfile(username) {
         window.location.href = `profile.html?user=${username}`;
     }
@@ -256,16 +253,43 @@
         notifs.forEach(n => {
             const item = document.createElement('div');
             item.className = `notif-item ${n.read ? '' : 'unread'}`;
+            
+            let extraHtml = '';
+            if (n.type === 'friend_request') {
+                extraHtml = `
+                    <div style="margin-top:6px; display:flex; gap:6px;">
+                        <button style="background:#1877f2;color:white;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:11px;" onclick="event.stopPropagation(); acceptRequestFromNotif('${n.senderUsername}')">Confirm</button>
+                        <button style="background:#e4e6eb;color:#050505;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:11px;" onclick="event.stopPropagation(); declineRequestFromNotif('${n.senderUsername}')">Decline</button>
+                    </div>
+                `;
+            }
+
             item.onclick = () => {
                 document.getElementById('notif-dropdown').style.display = 'none';
-                openUserProfile(n.senderUsername);
+                if (n.type !== 'friend_request') openUserProfile(n.senderUsername);
             };
             item.innerHTML = `
                 <div>${n.text}</div>
+                ${extraHtml}
                 <div style="font-size:10px;color:#94a3b8;margin-top:2px;">${timeAgo(n.createdAt)}</div>
             `;
             list.appendChild(item);
         });
+    }
+
+    async function acceptRequestFromNotif(username) {
+        const res = await fetch(`/api/users/${username}/accept-friend`, { method: 'POST' });
+        if (res.ok) {
+            loadNotifications();
+            alert('Crew request confirmed! 🎉');
+        }
+    }
+
+    async function declineRequestFromNotif(username) {
+        const res = await fetch(`/api/users/${username}/decline-friend`, { method: 'POST' });
+        if (res.ok) {
+            loadNotifications();
+        }
     }
 
     async function markNotifsRead() {
@@ -309,7 +333,6 @@
         if (!res.ok) { window.location.href = '/index.html'; return; }
         currentUser = await res.json();
 
-        // Check for chat query parameter from profile message button
         const params = new URLSearchParams(window.location.search);
         const chatParam = params.get('chat');
         if (chatParam) {
@@ -586,8 +609,7 @@
         ctx.textAlign = 'left';
         document.getElementById('start-game-btn').style.display = 'inline-block';
         document.getElementById('start-game-btn').innerText = 'Play Again';
-        const res = await fetch('/api/highscore', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ score }) });
-        const data = await res.json();
+        await fetch('/api/highscore', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ score }) });
     }
 
     (async () => {
