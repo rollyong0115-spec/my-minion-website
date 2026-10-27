@@ -354,7 +354,7 @@
         closeMsgActions();
     }
 
-    // Real Live Database Reaction
+    // Real Live Database Reaction (Alert removed!)
     async function reactToMessage(emoji) {
         if (!selectedMsgId) return;
         try {
@@ -367,6 +367,8 @@
                 closeMsgActions();
                 if (activeDMUser) selectDMThread(activeDMUser);
                 else loadMessages();
+            } else {
+                alert('Failed to save reaction.');
             }
         } catch (err) {
             console.error('Failed to react:', err);
@@ -492,13 +494,11 @@
                 }
             }
 
-            // Render Reply Banner Inside Bubble if it's a reply
             let replyHtml = '';
             if (m.replyTo) {
                 replyHtml = `<div class="bg-black/5 border-l-2 border-minion-blue px-2 py-1 rounded text-[10px] mb-1 italic text-slate-600">↩️ ${m.replyTo}</div>`;
             }
 
-            // Render Database Reactions Badges
             let reactionsHtml = '';
             if (m.reactions && Object.keys(m.reactions).length > 0) {
                 const badges = Object.entries(m.reactions).map(([emoji, count]) => 
