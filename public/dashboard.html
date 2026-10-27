@@ -1,3 +1,5 @@
+Here is the complete, fully updated code for public/dashboard.html with the clean chat formatting (which hides the raw Cloudinary link text and displays only your caption alongside the embedded picture, just like Messenger!).
+Copy and paste this entire code into your public/dashboard.html file, save it, and push it to GitHub:
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -541,14 +543,19 @@
             bubble.className = `chat-bubble ${isMine ? 'mine' : ''}`;
             
             let mediaHtml = '';
-            if (m.text.includes('https://res.cloudinary.com/')) {
+            let displayText = m.text;
+
+            if (m.text && m.text.includes('https://res.cloudinary.com/')) {
                 const parts = m.text.split(' ');
                 const imgUrl = parts.find(p => p.startsWith('https://res.cloudinary.com/'));
-                if (imgUrl) mediaHtml = `<img src="${imgUrl}" class="chat-img-embed">`;
+                if (imgUrl) {
+                    mediaHtml = `<img src="${imgUrl}" class="chat-img-embed">`;
+                    displayText = parts.filter(p => !p.startsWith('https://res.cloudinary.com/')).join(' ');
+                }
             }
 
             bubble.innerHTML = `
-                <div>${m.text}</div>
+                ${displayText ? `<div>${displayText}</div>` : ''}
                 ${mediaHtml}
                 <div class="chat-time">${timeAgo(m.createdAt)}</div>
             `;
@@ -638,15 +645,20 @@
                 : `${m.avatar || '🍌'} `;
 
             let mediaHtml = '';
-            if (m.text.includes('https://res.cloudinary.com/')) {
+            let displayText = m.text;
+
+            if (m.text && m.text.includes('https://res.cloudinary.com/')) {
                 const parts = m.text.split(' ');
                 const imgUrl = parts.find(p => p.startsWith('https://res.cloudinary.com/'));
-                if (imgUrl) mediaHtml = `<img src="${imgUrl}" class="chat-img-embed">`;
+                if (imgUrl) {
+                    mediaHtml = `<img src="${imgUrl}" class="chat-img-embed">`;
+                    displayText = parts.filter(p => !p.startsWith('https://res.cloudinary.com/')).join(' ');
+                }
             }
 
             bubble.innerHTML = `
                 <div class="chat-sender" onclick="openUserProfile('${m.username}')">${avatarHtml}${m.sender}</div>
-                <div>${m.text}</div>
+                ${displayText ? `<div>${displayText}</div>` : ''}
                 ${mediaHtml}
                 <div class="chat-time">${timeAgo(m.createdAt)}</div>
             `;
@@ -918,3 +930,4 @@
 </script>
 </body>
 </html>
+
