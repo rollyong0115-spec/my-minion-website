@@ -11,59 +11,32 @@
         theme: {
           extend: {
             colors: {
-              minion: {
-                yellow: '#fedb00',
-                darkYellow: '#eab308',
-                blue: '#1e3a8a',
-                lightBlue: '#38bdf8'
-              }
+              minion: { yellow: '#fedb00', darkYellow: '#eab308', blue: '#1e3a8a', lightBlue: '#38bdf8' }
             }
           }
         }
       }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Fredoka', cursive, sans-serif; }
-    </style>
+    <style> body { font-family: 'Fredoka', cursive, sans-serif; } </style>
 </head>
 <body class="bg-slate-200 text-slate-800 antialiased min-h-screen flex flex-col justify-between">
 
-    <!-- NAVBAR -->
     <nav class="bg-minion-yellow border-b-4 border-minion-blue px-5 py-3 sticky top-0 z-50 flex justify-between items-center shadow-md">
         <a href="dashboard.html" class="text-2xl font-bold text-minion-blue flex items-center gap-2 hover:scale-105 transition-transform">
             <span>🍌</span> MinionFeed
         </a>
-
         <div class="flex gap-2">
-            <button class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-minion-blue text-minion-yellow shadow" id="btn-tab-feed" onclick="switchMainTab('feed')">
-                🏠 <span>News Feed</span>
-            </button>
-            <button class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80" id="btn-tab-dms" onclick="switchMainTab('dms')">
-                💬 <span>Messages</span>
-            </button>
-            <a href="profile.html" class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80">
-                👤 <span>My Profile</span>
-            </a>
+            <button class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-minion-blue text-minion-yellow shadow" id="btn-tab-feed" onclick="switchMainTab('feed')">🏠 <span>News Feed</span></button>
+            <button class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80" id="btn-tab-dms" onclick="switchMainTab('dms')">💬 <span>Messages</span></button>
+            <a href="profile.html" class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80">👤 <span>My Profile</span></a>
         </div>
-
         <div class="flex items-center gap-3 relative">
-            <button class="bg-white border-2 border-minion-blue rounded-full w-10 h-10 flex items-center justify-center relative hover:bg-yellow-50 transition-colors shadow-sm" onclick="toggleNotifs()">
-                🔔
-                <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-[10px] font-bold px-1.5 py-0.5 hidden" id="notif-badge">0</span>
-            </button>
-
-            <!-- Notifications Dropdown -->
+            <button class="bg-white border-2 border-minion-blue rounded-full w-10 h-10 flex items-center justify-center relative hover:bg-yellow-50 transition-colors shadow-sm" onclick="toggleNotifs()">🔔<span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-[10px] font-bold px-1.5 py-0.5 hidden" id="notif-badge">0</span></button>
             <div class="hidden absolute top-12 right-24 w-80 bg-white rounded-2xl shadow-2xl border-2 border-slate-300 z-50 overflow-hidden" id="notif-dropdown">
-                <div class="bg-minion-blue text-minion-yellow px-4 py-3 font-bold text-sm flex justify-between items-center">
-                    <span>Notifications 🔔</span>
-                    <span class="cursor-pointer text-xs underline font-normal" onclick="markNotifsRead()">Mark all read</span>
-                </div>
-                <div class="max-h-72 overflow-y-auto" id="notif-list">
-                    <div class="p-4 text-center text-slate-500 text-xs">No notifications yet.</div>
-                </div>
+                <div class="bg-minion-blue text-minion-yellow px-4 py-3 font-bold text-sm flex justify-between items-center"><span>Notifications 🔔</span><span class="cursor-pointer text-xs underline font-normal" onclick="markNotifsRead()">Mark all read</span></div>
+                <div class="max-h-72 overflow-y-auto" id="notif-list"><div class="p-4 text-center text-slate-500 text-xs">No notifications yet.</div></div>
             </div>
-
             <button class="bg-emerald-500 hover:bg-emerald-600 text-white border-2 border-emerald-700 px-3 py-1.5 rounded-xl font-bold text-xs shadow transition-transform active:scale-95" onclick="openGame()">🎮 Arcade</button>
             <button class="bg-red-500 hover:bg-red-600 text-white border-2 border-red-700 px-3 py-1.5 rounded-xl font-bold text-xs shadow transition-transform active:scale-95" onclick="logout()">👋</button>
         </div>
@@ -72,25 +45,18 @@
     <!-- NEWS FEED VIEW -->
     <div id="view-feed" class="w-full flex-1">
         <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6 p-4">
-            <!-- Left Column: Posts -->
             <div>
                 <div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-slate-300 mb-5">
                     <div class="text-lg font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">Create Post 📝</div>
                     <textarea id="post-text" class="w-full h-20 border-2 border-slate-200 rounded-xl p-3 font-inherit resize-none outline-none focus:border-minion-blue transition-colors mb-2" placeholder="What's on your mind? Mention someone with @username!"></textarea>
-                    
-                    <label class="block bg-sky-50 text-sky-700 border-2 border-dashed border-sky-400 p-2.5 rounded-xl font-bold text-xs text-center cursor-pointer hover:bg-sky-100 transition-colors">
-                        📁 Click to Attach Photo / GIF from Device
-                        <input type="file" id="post-file-input" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'post')">
-                    </label>
+                    <label class="block bg-sky-50 text-sky-700 border-2 border-dashed border-sky-400 p-2.5 rounded-xl font-bold text-xs text-center cursor-pointer hover:bg-sky-100 transition-colors">📁 Click to Attach Photo / GIF from Device<input type="file" id="post-file-input" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'post')"></label>
                     <div id="uploading-status" class="text-xs text-blue-600 font-semibold mt-1 hidden">Uploading to Cloudinary... 🚀</div>
-                    
                     <img id="pasted-preview" class="max-w-full max-h-44 rounded-xl mt-2 hidden border-2 border-dashed border-slate-300 object-cover" alt="Preview">
                     <button class="w-full bg-blue-600 hover:bg-blue-700 text-white border-2 border-minion-blue p-2.5 rounded-xl font-bold mt-3 shadow transition-transform active:scale-[0.99]" onclick="publishPost()">Post to Feed 🚀</button>
                 </div>
                 <div id="posts-container"></div>
             </div>
 
-            <!-- Right Column: Members & Public Chat -->
             <div class="space-y-5">
                 <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-slate-300">
                     <div class="text-base font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">👥 Minion Crew Members</div>
@@ -99,26 +65,17 @@
 
                 <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-slate-300 flex flex-col h-[380px]">
                     <div class="text-base font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">💬 Public Lab Messenger</div>
-                    
                     <div class="flex-1 overflow-y-auto flex flex-col gap-2 pr-1" id="chat-messages"></div>
-                    
                     <div id="chat-img-preview-box" class="hidden relative mt-2">
                         <img id="chat-img-preview" class="max-h-16 rounded-lg border-2 border-dashed border-sky-400 object-cover">
                         <span onclick="cancelChatImg('public')" class="absolute -top-2 left-16 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] text-center font-bold cursor-pointer leading-tight">&times;</span>
                     </div>
-
-                    <!-- Reply Tag Preview Banner -->
                     <div id="reply-banner" class="hidden bg-yellow-50 border border-yellow-300 p-1.5 rounded-lg text-xs flex justify-between items-center mt-1">
                         <span id="reply-banner-text" class="truncate text-slate-700">Replying to message...</span>
                         <span onclick="cancelReply()" class="cursor-pointer text-red-500 font-bold px-1">&times;</span>
                     </div>
-
                     <div class="flex gap-2 mt-2 items-center relative">
-                        <label class="bg-sky-100 text-sky-700 border border-sky-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-sm hover:bg-sky-200 transition-colors shrink-0" title="Attach Photo/GIF">
-                            📷
-                            <input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'public_chat')">
-                        </label>
-
+                        <label class="bg-sky-100 text-sky-700 border border-sky-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-sm hover:bg-sky-200 transition-colors shrink-0" title="Attach Photo/GIF">📷<input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'public_chat')"></label>
                         <button class="bg-yellow-100 border border-yellow-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-base hover:bg-yellow-200 transition-colors shrink-0" onclick="toggleEmojiPicker('public')" title="Insert Emoji">😊</button>
                         <div class="hidden absolute bottom-11 left-9 bg-white border-2 border-slate-300 rounded-2xl p-1.5 shadow-xl flex gap-1.5 z-30" id="emoji-popover-public">
                             <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '🍌')">🍌</span>
@@ -128,7 +85,6 @@
                             <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '🔥')">🔥</span>
                             <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '👍')">👍</span>
                         </div>
-
                         <input type="text" id="chat-input" class="flex-1 py-2 px-3 border-2 border-slate-200 rounded-xl text-xs outline-none focus:border-minion-blue" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()">
                         <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold shrink-0 transition-transform active:scale-95" onclick="sendChat()">Send</button>
                     </div>
@@ -142,26 +98,17 @@
         <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 p-4 h-[580px]">
             <div class="bg-white rounded-2xl border-2 border-slate-300 p-4 overflow-y-auto">
                 <div class="font-bold text-sm text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">📥 Private Inbox</div>
-                <div id="dm-conversations-list" class="space-y-1">
-                    <div class="text-xs text-slate-500 text-center py-4">Loading conversations...</div>
-                </div>
+                <div id="dm-conversations-list" class="space-y-1"><div class="text-xs text-slate-500 text-center py-4">Loading conversations...</div></div>
             </div>
-            
             <div class="bg-white rounded-2xl border-2 border-slate-300 p-4 flex flex-col justify-between">
                 <div id="dm-active-header" class="font-bold text-base text-minion-blue border-b-2 border-minion-yellow pb-2 mb-2">Select a Minion to message 💬</div>
                 <div class="flex-1 overflow-y-auto py-2 flex flex-col gap-2" id="dm-thread-messages"></div>
-
                 <div id="dm-img-preview-box" class="hidden relative mt-2">
                     <img id="dm-img-preview" class="max-h-16 rounded-lg border-2 border-dashed border-sky-400 object-cover">
                     <span onclick="cancelChatImg('dm')" class="absolute -top-2 left-16 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] text-center font-bold cursor-pointer leading-tight">&times;</span>
                 </div>
-
                 <div class="flex gap-2 items-center relative mt-2" id="dm-input-area" style="display:none;">
-                    <label class="bg-sky-100 text-sky-700 border border-sky-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-sm hover:bg-sky-200 transition-colors shrink-0" title="Attach Photo/GIF">
-                        📷
-                        <input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'dm_chat')">
-                    </label>
-
+                    <label class="bg-sky-100 text-sky-700 border border-sky-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-sm hover:bg-sky-200 transition-colors shrink-0" title="Attach Photo/GIF">📷<input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'dm_chat')"></label>
                     <button class="bg-yellow-100 border border-yellow-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-base hover:bg-yellow-200 transition-colors shrink-0" onclick="toggleEmojiPicker('dm')" title="Insert Emoji">😊</button>
                     <div class="hidden absolute bottom-11 left-9 bg-white border-2 border-slate-300 rounded-2xl p-1.5 shadow-xl flex gap-1.5 z-30" id="emoji-popover-dm">
                         <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '🍌')">🍌</span>
@@ -171,7 +118,6 @@
                         <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '🔥')">🔥</span>
                         <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '👍')">👍</span>
                     </div>
-
                     <input type="text" id="dm-input" class="flex-1 py-2 px-3 border-2 border-slate-200 rounded-xl text-xs outline-none focus:border-minion-blue" placeholder="Type a private message..." onkeypress="if(event.key==='Enter') sendPrivateDM()">
                     <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold shrink-0 transition-transform active:scale-95" onclick="sendPrivateDM()">Send DM</button>
                 </div>
@@ -182,23 +128,19 @@
     <!-- MESSENGER MESSAGE ACTIONS MENU MODAL -->
     <div id="msg-actions-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end md:justify-center items-center p-0 md:p-4 backdrop-blur-xs">
         <div class="bg-white w-full md:max-w-sm rounded-t-3xl md:rounded-2xl p-5 shadow-2xl border-4 border-minion-yellow flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-5 duration-150">
-            <!-- Quick Emoji Reactions Bar -->
             <div class="bg-slate-100 p-2.5 rounded-full flex justify-around items-center shadow-inner">
-                <span onclick="reactToMessage('❤️')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">❤️</span>
-                <span onclick="reactToMessage('😆')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">😆</span>
-                <span onclick="reactToMessage('😮')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">😮</span>
-                <span onclick="reactToMessage('😢')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">😢</span>
-                <span onclick="reactToMessage('😡')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">😡</span>
-                <span onclick="reactToMessage('👍')" class="cursor-pointer text-2xl hover:scale-125 transition-transform">👍</span>
+                <span onclick="reactToMessage('❤️')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Love">❤️</span>
+                <span onclick="reactToMessage('😆')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Haha">😆</span>
+                <span onclick="reactToMessage('😮')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Wow">😮</span>
+                <span onclick="reactToMessage('😢')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Sad">😢</span>
+                <span onclick="reactToMessage('😡')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Angry">😡</span>
+                <span onclick="reactToMessage('👍')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Like">👍</span>
             </div>
-
-            <!-- Action Options -->
             <div class="flex flex-col text-sm font-semibold text-slate-700 divide-y divide-slate-100">
                 <button onclick="copyMessageText()" class="py-3 flex items-center gap-3 hover:bg-slate-50 px-3 rounded-xl transition-colors text-left">📋 Copy text</button>
                 <button onclick="replyToMessagePrompt()" class="py-3 flex items-center gap-3 hover:bg-slate-50 px-3 rounded-xl transition-colors text-left">↩️ Reply</button>
                 <button onclick="deleteActiveMessage()" class="py-3 flex items-center gap-3 text-red-500 hover:bg-red-50 px-3 rounded-xl transition-colors text-left">🗑️ Delete message</button>
             </div>
-
             <button onclick="closeMsgActions()" class="w-full bg-slate-200 hover:bg-slate-300 py-2.5 rounded-xl font-bold text-slate-700 text-xs">Cancel</button>
         </div>
     </div>
@@ -227,10 +169,7 @@
     const CLOUD_NAME = 'b1zwryoo'; 
     const UPLOAD_PRESET = 'minion_uploads';
 
-    const EMOJIS = {
-        banana: String.fromCodePoint(0x1F34C), love: String.fromCodePoint(0x2764),
-        haha: String.fromCodePoint(0x1F602), rocket: String.fromCodePoint(0x1F680)
-    };
+    const EMOJIS = { banana: String.fromCodePoint(0x1F34C), love: String.fromCodePoint(0x2764), haha: String.fromCodePoint(0x1F602), rocket: String.fromCodePoint(0x1F680) };
 
     function timeAgo(dateString) {
         if (!dateString) return 'Just now';
@@ -256,7 +195,6 @@
         const formData = new FormData();
         formData.append('file', file);
         formData.append('upload_preset', UPLOAD_PRESET);
-
         if (targetType === 'post') document.getElementById('uploading-status').style.display = 'block';
 
         try {
@@ -281,9 +219,7 @@
                     preview.src = uploadedDmChatUrl;
                     document.getElementById('dm-img-preview-box').classList.remove('hidden');
                 }
-            } else {
-                alert('Upload failed: ' + (data.error?.message || 'Unknown error'));
-            }
+            } else { alert('Upload failed: ' + (data.error?.message || 'Unknown error')); }
         } catch (err) {
             if (targetType === 'post') document.getElementById('uploading-status').style.display = 'none';
             alert('Cloudinary upload error.');
@@ -291,20 +227,11 @@
     }
 
     function cancelChatImg(type) {
-        if (type === 'public') {
-            uploadedPublicChatUrl = '';
-            document.getElementById('chat-img-preview-box').classList.add('hidden');
-        } else {
-            uploadedDmChatUrl = '';
-            document.getElementById('dm-img-preview-box').classList.add('hidden');
-        }
+        if (type === 'public') { uploadedPublicChatUrl = ''; document.getElementById('chat-img-preview-box').classList.add('hidden'); }
+        else { uploadedDmChatUrl = ''; document.getElementById('dm-img-preview-box').classList.add('hidden'); }
     }
 
-    function toggleEmojiPicker(type) {
-        const popover = document.getElementById(`emoji-popover-${type}`);
-        popover.classList.toggle('hidden');
-    }
-
+    function toggleEmojiPicker(type) { document.getElementById(`emoji-popover-${type}`).classList.toggle('hidden'); }
     function insertEmoji(type, emoji) {
         const input = document.getElementById(type === 'public' ? 'chat-input' : 'dm-input');
         input.value += emoji;
@@ -312,7 +239,6 @@
         document.getElementById(`emoji-popover-${type}`).classList.add('hidden');
     }
 
-    // --- MESSAGE ACTION MENU FUNCTIONS ---
     function openMsgActions(msgText, msgId, isMine) {
         selectedMsgText = msgText;
         selectedMsgId = msgId;
@@ -354,7 +280,7 @@
         closeMsgActions();
     }
 
-    // Real Live Database Reaction (Alert removed!)
+    // Sends reaction to MongoDB backend
     async function reactToMessage(emoji) {
         if (!selectedMsgId) return;
         try {
@@ -367,21 +293,15 @@
                 closeMsgActions();
                 if (activeDMUser) selectDMThread(activeDMUser);
                 else loadMessages();
-            } else {
-                alert('Failed to save reaction.');
-            }
-        } catch (err) {
-            console.error('Failed to react:', err);
-        }
+            } else { alert('Failed to save reaction.'); }
+        } catch (err) { console.error('Failed to react:', err); }
     }
 
     function switchMainTab(tab) {
         document.getElementById('view-feed').style.display = tab === 'feed' ? 'block' : 'none';
         document.getElementById('view-dms').style.display = tab === 'dms' ? 'block' : 'none';
-        
         const feedBtn = document.getElementById('btn-tab-feed');
         const dmBtn = document.getElementById('btn-tab-dms');
-
         if (tab === 'feed') {
             feedBtn.className = "px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-minion-blue text-minion-yellow shadow";
             dmBtn.className = "px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80";
@@ -393,10 +313,7 @@
         }
     }
 
-    function openUserProfile(username) {
-        window.location.href = `profile.html?user=${username}`;
-    }
-
+    function openUserProfile(username) { window.location.href = `profile.html?user=${username}`; }
     function toggleNotifs() {
         const drop = document.getElementById('notif-dropdown');
         drop.classList.toggle('hidden');
@@ -410,37 +327,19 @@
         const badge = document.getElementById('notif-badge');
         const list = document.getElementById('notif-list');
         const unreadCount = notifs.filter(n => !n.read).length;
-
-        if (unreadCount > 0) {
-            badge.innerText = unreadCount;
-            badge.classList.remove('hidden');
-        } else {
-            badge.classList.add('hidden');
-        }
-
-        if (notifs.length === 0) {
-            list.innerHTML = '<div class="p-4 text-center text-slate-500 text-xs">No notifications yet.</div>';
-            return;
-        }
-
+        if (unreadCount > 0) { badge.innerText = unreadCount; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+        if (notifs.length === 0) { list.innerHTML = '<div class="p-4 text-center text-slate-500 text-xs">No notifications yet.</div>'; return; }
         list.innerHTML = '';
         notifs.forEach(n => {
             const item = document.createElement('div');
             item.className = `p-3 border-b border-slate-100 text-xs cursor-pointer hover:bg-yellow-50 ${n.read ? '' : 'bg-blue-50 font-bold'}`;
-            item.onclick = () => {
-                document.getElementById('notif-dropdown').classList.add('hidden');
-                if (n.type === 'dm') { switchMainTab('dms'); selectDMThread(n.senderUsername); }
-                else openUserProfile(n.senderUsername);
-            };
+            item.onclick = () => { document.getElementById('notif-dropdown').classList.add('hidden'); if (n.type === 'dm') { switchMainTab('dms'); selectDMThread(n.senderUsername); } else openUserProfile(n.senderUsername); };
             item.innerHTML = `<div>${n.text}</div><div class="text-[10px] text-slate-400 mt-1">${timeAgo(n.createdAt)}</div>`;
             list.appendChild(item);
         });
     }
 
-    async function markNotifsRead() {
-        await fetch('/api/notifications/read', { method: 'POST' });
-        document.getElementById('notif-badge').classList.add('hidden');
-    }
+    async function markNotifsRead() { await fetch('/api/notifications/read', { method: 'POST' }); document.getElementById('notif-badge').classList.add('hidden'); }
     setInterval(loadNotifications, 8000);
 
     async function loadDMConversations() {
@@ -449,19 +348,12 @@
         const partners = await res.json();
         const list = document.getElementById('dm-conversations-list');
         list.innerHTML = '';
-
-        if (partners.length === 0) {
-            list.innerHTML = '<div class="text-xs text-slate-500 text-center py-4">No chats yet.</div>';
-            return;
-        }
-
+        if (partners.length === 0) { list.innerHTML = '<div class="text-xs text-slate-500 text-center py-4">No chats yet.</div>'; return; }
         partners.forEach(p => {
             const item = document.createElement('div');
             item.className = `p-2.5 rounded-xl cursor-pointer flex items-center gap-3 transition-colors ${activeDMUser === p.username ? 'bg-yellow-100 border border-minion-yellow' : 'hover:bg-slate-100'}`;
             item.onclick = () => selectDMThread(p.username, p.fullName);
-            const avatarHtml = p.avatar && p.avatar.startsWith('data:image')
-                ? `<img src="${p.avatar}" class="w-8 h-8 rounded-full object-cover">`
-                : `<div class="w-8 h-8 rounded-full bg-minion-yellow flex items-center justify-center text-xs font-bold">🍌</div>`;
+            const avatarHtml = p.avatar && p.avatar.startsWith('data:image') ? `<img src="${p.avatar}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-minion-yellow flex items-center justify-center text-xs font-bold">🍌</div>`;
             item.innerHTML = `${avatarHtml}<div><div class="font-bold text-xs text-minion-blue">${p.fullName}</div><div class="text-[10px] text-slate-500">@${p.username}</div></div>`;
             list.appendChild(item);
         });
@@ -495,15 +387,20 @@
             }
 
             let replyHtml = '';
-            if (m.replyTo) {
-                replyHtml = `<div class="bg-black/5 border-l-2 border-minion-blue px-2 py-1 rounded text-[10px] mb-1 italic text-slate-600">↩️ ${m.replyTo}</div>`;
-            }
+            if (m.replyTo) { replyHtml = `<div class="bg-black/5 border-l-2 border-minion-blue px-2 py-1 rounded text-[10px] mb-1 italic text-slate-600">↩️ ${m.replyTo}</div>`; }
 
+            // Renders reactions WITH WHO reacted (hover / tooltip or list)
             let reactionsHtml = '';
-            if (m.reactions && Object.keys(m.reactions).length > 0) {
-                const badges = Object.entries(m.reactions).map(([emoji, count]) => 
-                    `<span class="bg-white border border-slate-200 px-1.5 py-0.5 rounded-full text-[10px] shadow-xs">${emoji} ${count}</span>`
-                ).join('');
+            if (m.reactions && m.reactions.length > 0) {
+                const reactionMap = {};
+                m.reactions.forEach(r => {
+                    if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
+                    reactionMap[r.emoji].push(r.fullName);
+                });
+                const badges = Object.entries(reactionMap).map(([emoji, names]) => {
+                    const tooltipText = names.join(', ');
+                    return `<span title="Reacted by: ${tooltipText}" class="bg-white border border-slate-200 px-1.5 py-0.5 rounded-full text-[10px] shadow-xs cursor-pointer">${emoji} ${names.length}</span>`;
+                }).join('');
                 reactionsHtml = `<div class="flex gap-1 mt-1 flex-wrap">${badges}</div>`;
             }
 
@@ -529,7 +426,6 @@
         let text = input.value.trim();
         if (uploadedDmChatUrl) text = text ? `${text} ${uploadedDmChatUrl}` : uploadedDmChatUrl;
         if (!text) return;
-        
         const replyTo = activeReplyText;
         input.value = '';
         cancelChatImg('dm');
@@ -549,26 +445,13 @@
         const users = await res.json();
         const container = document.getElementById('members-list');
         container.innerHTML = '';
-
         users.forEach(u => {
             const isMe = currentUser && u.username === currentUser.username;
             const item = document.createElement('div');
             item.className = 'flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors';
             item.onclick = () => openUserProfile(u.username);
-            const avatarHtml = u.avatar && u.avatar.startsWith('data:image') 
-                ? `<img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">` 
-                : `<div class="w-8 h-8 rounded-full bg-minion-yellow flex items-center justify-center text-xs font-bold">🍌</div>`;
-            
-            item.innerHTML = `
-                <div class="flex items-center gap-2">
-                    ${avatarHtml}
-                    <div>
-                        <div class="font-bold text-xs text-minion-blue">${u.fullName} ${isMe ? '(You)' : ''}</div>
-                        <div class="text-[10px] text-slate-400">@${u.username}</div>
-                    </div>
-                </div>
-                <span class="text-xs text-blue-600 font-semibold">&rarr;</span>
-            `;
+            const avatarHtml = u.avatar && u.avatar.startsWith('data:image') ? `<img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-minion-yellow flex items-center justify-center text-xs font-bold">🍌</div>`;
+            item.innerHTML = `<div class="flex items-center gap-2">${avatarHtml}<div><div class="font-bold text-xs text-minion-blue">${u.fullName} ${isMe ? '(You)' : ''}</div><div class="text-[10px] text-slate-400">@${u.username}</div></div></div><span class="text-xs text-blue-600 font-semibold">&rarr;</span>`;
             container.appendChild(item);
         });
     }
@@ -602,15 +485,19 @@
             }
 
             let replyHtml = '';
-            if (m.replyTo) {
-                replyHtml = `<div class="bg-black/5 border-l-2 border-minion-blue px-2 py-1 rounded text-[10px] mb-1 italic text-slate-600">↩️ ${m.replyTo}</div>`;
-            }
+            if (m.replyTo) { replyHtml = `<div class="bg-black/5 border-l-2 border-minion-blue px-2 py-1 rounded text-[10px] mb-1 italic text-slate-600">↩️ ${m.replyTo}</div>`; }
 
             let reactionsHtml = '';
-            if (m.reactions && Object.keys(m.reactions).length > 0) {
-                const badges = Object.entries(m.reactions).map(([emoji, count]) => 
-                    `<span class="bg-white border border-slate-200 px-1.5 py-0.5 rounded-full text-[10px] shadow-xs">${emoji} ${count}</span>`
-                ).join('');
+            if (m.reactions && m.reactions.length > 0) {
+                const reactionMap = {};
+                m.reactions.forEach(r => {
+                    if (!reactionMap[r.emoji]) reactionMap[r.emoji] = [];
+                    reactionMap[r.emoji].push(r.fullName);
+                });
+                const badges = Object.entries(reactionMap).map(([emoji, names]) => {
+                    const tooltipText = names.join(', ');
+                    return `<span title="Reacted by: ${tooltipText}" class="bg-white border border-slate-200 px-1.5 py-0.5 rounded-full text-[10px] shadow-xs cursor-pointer">${emoji} ${names.length}</span>`;
+                }).join('');
                 reactionsHtml = `<div class="flex gap-1 mt-1 flex-wrap">${badges}</div>`;
             }
 
@@ -636,7 +523,6 @@
         let text = input.value.trim();
         if (uploadedPublicChatUrl) text = text ? `${text} ${uploadedPublicChatUrl}` : uploadedPublicChatUrl;
         if (!text) return;
-
         const replyTo = activeReplyText;
         input.value = '';
         cancelChatImg('public');
@@ -655,7 +541,6 @@
         const text = document.getElementById('post-text').value.trim();
         const image = uploadedImageUrl;
         if (!text && !image) return;
-
         const res = await fetch('/api/posts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -675,15 +560,12 @@
         allPosts = await res.json();
         const container = document.getElementById('posts-container');
         container.innerHTML = '';
-        allPosts.forEach(post => {
-            container.innerHTML += createPostCardHtml(post);
-        });
+        allPosts.forEach(post => { container.innerHTML += createPostCardHtml(post); });
     }
 
     function createPostCardHtml(post) {
         const r = post.reactions || { banana: 0, love: 0, haha: 0, rocket: 0 };
         const isMyPost = currentUser && post.username === currentUser.username;
-
         const commentsHtml = (post.comments || []).map(c => {
             const isMyComment = currentUser && c.username === currentUser.username;
             const repliesHtml = (c.replies || []).map(rep => `
@@ -718,16 +600,10 @@
                             <div class="text-[11px] text-slate-400">${timeAgo(post.createdAt)} ${post.edited ? '<span class="italic">(edited)</span>' : ''}</div>
                         </div>
                     </div>
-                    <div>
-                        ${isMyPost ? `
-                            <span class="text-blue-600 text-xs font-semibold underline cursor-pointer mr-2" onclick="editPost('${post._id}', '${post.text.replace(/'/g, "\\'")}')">Edit</span>
-                            <span class="text-red-500 text-xs font-semibold underline cursor-pointer" onclick="deletePost('${post._id}')">Delete</span>
-                        ` : ''}
-                    </div>
+                    <div>${isMyPost ? `<span class="text-blue-600 text-xs font-semibold underline cursor-pointer mr-2" onclick="editPost('${post._id}', '${post.text.replace(/'/g, "\\'")}')">Edit</span><span class="text-red-500 text-xs font-semibold underline cursor-pointer" onclick="deletePost('${post._id}')">Delete</span>` : ''}</div>
                 </div>
                 ${post.text ? `<div class="text-sm mb-3 leading-relaxed">${post.text}</div>` : ''}
                 ${post.image ? `<img class="w-full rounded-xl max-h-80 object-cover mb-3" src="${post.image}" onerror="this.style.display='none'">` : ''}
-                
                 <div class="flex gap-2 border-y border-slate-100 py-2 my-2 flex-wrap">
                     <button class="bg-slate-50 border border-slate-300 px-3 py-1 rounded-full text-xs font-semibold hover:bg-minion-yellow transition-colors" onclick="react('${post._id}', 'banana', this)">${EMOJIS.banana} ${r.banana || 0}</button>
                     <button class="bg-slate-50 border border-slate-300 px-3 py-1 rounded-full text-xs font-semibold hover:bg-minion-yellow transition-colors" onclick="react('${post._id}', 'love', this)">${EMOJIS.love} ${r.love || 0}</button>
@@ -746,69 +622,49 @@
     async function editPost(postId, currentText) {
         const newText = prompt("Edit your post:", currentText);
         if (newText === null || newText.trim() === "" || newText.trim() === currentText) return;
-        const res = await fetch(`/api/posts/${postId}`, {
-            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: newText.trim() })
-        });
+        const res = await fetch(`/api/posts/${postId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: newText.trim() }) });
         if (res.ok) loadPosts();
     }
-
     async function deletePost(postId) {
         if (!confirm("Delete this post?")) return;
         const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
         if (res.ok) loadPosts();
     }
-
     async function editComment(postId, commentId, currentText) {
         const newText = prompt("Edit your comment:", currentText);
         if (newText === null || newText.trim() === "" || newText.trim() === currentText) return;
-        const res = await fetch(`/api/posts/${postId}/comment/${commentId}`, {
-            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: newText.trim() })
-        });
+        const res = await fetch(`/api/posts/${postId}/comment/${commentId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: newText.trim() }) });
         if (res.ok) loadPosts();
     }
-
     function toggleReplyBox(postId, commentId) {
         const box = document.getElementById(`reply-box-${postId}-${commentId}`);
         box.classList.toggle('hidden');
         box.classList.toggle('flex');
     }
-
     async function sendReply(postId, commentId) {
         const input = document.getElementById(`reply-input-${postId}-${commentId}`);
         const text = input.value.trim();
         if (!text) return;
-        const res = await fetch(`/api/posts/${postId}/comment/${commentId}/reply`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text })
-        });
+        const res = await fetch(`/api/posts/${postId}/comment/${commentId}/reply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
         if (res.ok) loadPosts();
     }
-
     async function react(id, type, btn) {
-        const res = await fetch(`/api/posts/${id}/react`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type })
-        });
+        const res = await fetch(`/api/posts/${id}/react`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type }) });
         if (res.ok) {
             const data = await res.json();
             btn.innerText = `${EMOJIS[type]} ${data.reactions[type]}`;
         }
     }
-
     async function addComment(id) {
         const input = document.getElementById(`comment-${id}`);
         const text = input.value.trim();
         if (!text) return;
-        const res = await fetch(`/api/posts/${id}/comment`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text })
-        });
+        const res = await fetch(`/api/posts/${id}/comment`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
         if (res.ok) loadPosts();
     }
+    async function logout() { await fetch('/api/logout', { method: 'POST' }); window.location.href = '/index.html'; }
 
-    async function logout() {
-        await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/index.html';
-    }
-
-    // --- ARCADE GAME ---
+    // Arcade Game
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     let gameLoop, score = 0, lives = 3, isPlaying = false;
@@ -836,7 +692,6 @@
         ctx.fillStyle = '#38bdf8'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#fedb00'; ctx.beginPath(); ctx.roundRect(basket.x, basket.y, basket.width, basket.height, 12); ctx.fill();
         ctx.strokeStyle = '#1e3a8a'; ctx.lineWidth = 2; ctx.stroke();
-
         if (Math.random() < 0.04) items.push({ x: 20 + Math.random() * (canvas.width - 40), y: -20, isBomb: Math.random() < 0.3 });
 
         for (let i = items.length - 1; i >= 0; i--) {
