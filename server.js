@@ -56,13 +56,13 @@ const CommentSchema = new mongoose.Schema({
     author: String,
     username: String,
     text: String,
-    time: { type: String, default: () => new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) },
+    createdAt: { type: Date, default: Date.now },
     edited: { type: Boolean, default: false },
     replies: [{
         author: String,
         username: String,
         text: String,
-        time: { type: String, default: () => new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }
+        createdAt: { type: Date, default: Date.now }
     }]
 });
 
@@ -73,13 +73,12 @@ const PostSchema = new mongoose.Schema({
     image: String,
     edited: { type: Boolean, default: false },
     reactions: {
-        banana: { type: Number, default: 1 },
+        banana: { type: Number, default: 0 },
         love: { type: Number, default: 0 },
         haha: { type: Number, default: 0 },
         rocket: { type: Number, default: 0 }
     },
     comments: [CommentSchema],
-    time: { type: String, default: () => new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) },
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -88,7 +87,6 @@ const MessageSchema = new mongoose.Schema({
     username: String,
     avatar: String,
     text: String,
-    time: String,
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -116,13 +114,20 @@ function isStrongPassword(pwd) {
     return hasLetter && hasNumber && hasSymbol;
 }
 
+// --- SMART MENTION NOTIFICATIONS ---
 async function notifyMentions(text, sender) {
+    if (!text) return;
     const matches = text.match(/@([a-zA-Z0-9_]+)/g);
     if (!matches) return;
     for (let m of matches) {
-        const username = m.replace('@', '').toLowerCase();
-        if (username !== sender.username.toLowerCase()) {
-            const userExists = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
+        const queryVal = m.replace('@', '').toLowerCase();
+        if (queryVal !== sender.username.toLowerCase()) {
+            const userExists = await User.findOne({
+                $or: [
+                    { username: new RegExp(`^${queryVal}$`, 'i') },
+                    { fullName: new RegExp(`^${queryVal}$`, 'i') }
+                ]
+            });
             if (userExists) {
                 await Notification.create({
                     recipient: userExists.username,
@@ -147,14 +152,14 @@ app.post('/api/forgot-password', async (req, res) => {
 
         const token = crypto.randomBytes(20).toString('hex');
         user.resetPasswordToken = token;
-        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+        user.resetPasswordExpires = Date.now() + 3600000;
         await user.save();
 
         const host = req.headers.host;
         const protocol = req.headers['x-forwarded-proto'] || 'http';
         const resetUrl = `${protocol}://${host}/reset-password.html?token=${token}`;
 
-        const { data, error } = await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: 'Gru\'s Lab <onboarding@resend.dev>',
             to: [user.email],
             subject: '🍌 Gru’s Lab: Password Reset Link',
@@ -167,14 +172,9 @@ app.post('/api/forgot-password', async (req, res) => {
             `
         });
 
-        if (error) {
-            console.error('Resend Error:', error);
-            return res.status(500).json({ error: 'Failed to send reset email.' });
-        }
-
+        if (error) return res.status(500).json({ error: 'Failed to send reset email.' });
         res.json({ message: 'Password reset link sent! Check your inbox 📧' });
     } catch (err) {
-        console.error('Server catch error:', err);
         res.status(500).json({ error: 'Server error processing request.' });
     }
 });
@@ -432,8 +432,7 @@ app.post('/api/messages', async (req, res) => {
         sender: user ? user.fullName : 'Minion',
         username: user ? user.username : 'minion',
         avatar: user && user.avatar ? user.avatar : '🍌',
-        text: text.trim(),
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        text: text.trim()
     });
     await newMsg.save();
     await notifyMentions(text, user);
@@ -459,8 +458,7 @@ app.post('/api/posts', async (req, res) => {
         author: user ? user.fullName : 'Minion',
         username: user ? user.username : 'minion',
         text: text || '',
-        image: image || '',
-        time: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        image: image || ''
     });
     await newPost.save();
     if (text) await notifyMentions(text, user);
@@ -501,12 +499,12 @@ app.post('/api/posts/:id/comment', async (req, res) => {
     const user = await User.findById(req.session.userId);
     const post = await Post.findById(req.params.id);
     if (post && text) {
-        post.comments.push({
+        const newComment = {
             author: user ? user.fullName : 'Minion',
             username: user ? user.username : 'minion',
-            text: text.trim(),
-            time: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-        });
+            text: text.trim()
+        };
+        post.comments.push(newComment);
         await post.save();
         await notifyMentions(text, user);
 
@@ -555,8 +553,7 @@ app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
     const newReply = {
         author: user ? user.fullName : 'Minion',
         username: user ? user.username : 'minion',
-        text: text.trim(),
-        time: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        text: text.trim()
     };
     comment.replies.push(newReply);
     await post.save();
