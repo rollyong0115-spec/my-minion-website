@@ -69,7 +69,6 @@
         .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
         .post-img { width: 100%; border-radius: 12px; max-height: 380px; object-fit: cover; margin-bottom: 10px; }
 
-        /* Modal */
         .modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 15px; }
         .modal-box { background: white; border-radius: 20px; padding: 22px; border: 4px solid #fedb00; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; position: relative; }
         .modal-box label { display: block; font-size: 12px; font-weight: bold; color: #475569; margin: 10px 0 3px 0; text-align: left; }
@@ -246,10 +245,22 @@
         if (isSelf) {
             actionsArea.innerHTML = `<button class="fb-btn-gray" onclick="openProfileModal()">✏️ Edit Profile & Info</button>`;
         } else {
+            let friendBtnHtml = '';
+            if (profile.isFriend) {
+                friendBtnHtml = `<button class="fb-btn-blue" onclick="toggleFriend('${profile.username}')">✔ Crew Member</button>`;
+            } else if (profile.requestSent) {
+                friendBtnHtml = `<button class="fb-btn-gray" onclick="toggleFriend('${profile.username}')">⏳ Request Sent (Cancel)</button>`;
+            } else if (profile.requestReceived) {
+                friendBtnHtml = `
+                    <button class="fb-btn-blue" onclick="acceptRequest('${profile.username}')">✔ Confirm</button>
+                    <button class="fb-btn-red" onclick="declineRequest('${profile.username}')">✖ Decline</button>
+                `;
+            } else {
+                friendBtnHtml = `<button class="fb-btn-blue" onclick="toggleFriend('${profile.username}')">➕ Add to Crew</button>`;
+            }
+
             actionsArea.innerHTML = `
-                <button class="fb-btn-blue" id="btn-friend" onclick="toggleFriend('${profile.username}')">
-                    ${profile.isFriend ? '✔ Crew Member' : '➕ Add to Crew'}
-                </button>
+                ${friendBtnHtml}
                 <button class="fb-btn-gray" onclick="startDirectChat('${profile.username}')">💬 Message</button>
                 <button class="fb-btn-red" id="btn-block" onclick="toggleBlock('${profile.username}')">
                     ${profile.isBlocked ? 'Unblock' : '🚫 Block'}
@@ -292,19 +303,23 @@
 
     async function toggleFriend(username) {
         const res = await fetch(`/api/users/${username}/friend`, { method: 'POST' });
-        if (res.ok) {
-            const data = await res.json();
-            document.getElementById('btn-friend').innerHTML = data.isFriend ? '✔ Crew Member' : '➕ Add to Crew';
-        }
+        if (res.ok) location.reload();
+    }
+
+    async function acceptRequest(username) {
+        const res = await fetch(`/api/users/${username}/accept-friend`, { method: 'POST' });
+        if (res.ok) location.reload();
+    }
+
+    async function declineRequest(username) {
+        const res = await fetch(`/api/users/${username}/decline-friend`, { method: 'POST' });
+        if (res.ok) location.reload();
     }
 
     async function toggleBlock(username) {
         if (!confirm(`Toggle block for @${username}?`)) return;
         const res = await fetch(`/api/users/${username}/block`, { method: 'POST' });
-        if (res.ok) {
-            const data = await res.json();
-            document.getElementById('btn-block').innerHTML = data.isBlocked ? 'Unblock' : '🚫 Block';
-        }
+        if (res.ok) location.reload();
     }
 
     function openProfileModal() {
