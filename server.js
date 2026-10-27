@@ -7,7 +7,6 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -17,13 +16,11 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// MongoDB Connection
 mongoose.connect('mongodb://localhost:27017/minionfeed', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log('Connected to MongoDB')).catch(err => console.error('MongoDB connection error:', err));
 
-// --- SCHEMAS & MODELS ---
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -50,23 +47,23 @@ const postSchema = new mongoose.Schema({
 });
 const Post = mongoose.model('Post', postSchema);
 
-// Updated Message Schema with reactions map and replyTo support
+// Message schema storing who reacted with what emoji
 const messageSchema = new mongoose.Schema({
     sender: { type: String, required: true },
     username: { type: String, required: true },
-    recipient: { type: String }, // Optional for public chat, required for DMs
+    recipient: { type: String },
     text: { type: String, required: true },
     replyTo: { type: String },
-    reactions: {
-        type: Map,
-        of: Number,
-        default: {}
-    },
+    reactions: [{
+        emoji: String,
+        username: String,
+        fullName: String
+    }],
     createdAt: { type: Date, default: Date.now }
 });
 const Message = mongoose.model('Message', messageSchema);
 
-// --- AUTH ROUTES ---
+// Auth Routes
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password, fullName } = req.body;
@@ -77,9 +74,7 @@ app.post('/api/register', async (req, res) => {
         await user.save();
         req.session.user = { username: user.username, fullName: user.fullName };
         res.status(201).send('Registered successfully');
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    } catch (err) { res.status(500).send('Server error'); }
 });
 
 app.post('/api/login', async (req, res) => {
@@ -91,56 +86,31 @@ app.post('/api/login', async (req, res) => {
         }
         req.session.user = { username: user.username, fullName: user.fullName, avatar: user.avatar, role: user.role };
         res.send('Logged in successfully');
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    } catch (err) { res.status(500).send('Server error'); }
 });
 
-app.post('/api/logout', (req, res) => {
-    req.session.destroy(() => res.send('Logged out'));
-});
-
+app.post('/api/logout', (req, res) => { req.session.destroy(() => res.send('Logged out')); });
 app.get('/api/me', (req, res) => {
     if (!req.session.user) return res.status(401).send('Unauthorized');
     res.json(req.session.user);
 });
-
 app.get('/api/users', async (req, res) => {
-    try {
-        const users = await User.find({}, 'username fullName role avatar');
-        res.json(users);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    try { res.json(await User.find({}, 'username fullName role avatar')); } catch (err) { res.status(500).send('Server error'); }
 });
 
-// --- POSTS ROUTES ---
+// Posts Routes
 app.get('/api/posts', async (req, res) => {
-    try {
-        const posts = await Post.find().sort({ createdAt: -1 });
-        res.json(posts);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    try { res.json(await Post.find().sort({ createdAt: -1 })); } catch (err) { res.status(500).send('Server error'); }
 });
-
 app.post('/api/posts', async (req, res) => {
     try {
         if (!req.session.user) return res.status(401).send('Unauthorized');
         const { text, image } = req.body;
-        const post = new Post({
-            username: req.session.user.username,
-            author: req.session.user.fullName,
-            text,
-            image
-        });
+        const post = new Post({ username: req.session.user.username, author: req.session.user.fullName, text, image });
         await post.save();
         res.status(201).json(post);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    } catch (err) { res.status(500).send('Server error'); }
 });
-
 app.delete('/api/posts/:id', async (req, res) => {
     try {
         if (!req.session.user) return res.status(401).send('Unauthorized');
@@ -148,11 +118,8 @@ app.delete('/api/posts/:id', async (req, res) => {
         if (!post || post.username !== req.session.user.username) return res.status(403).send('Forbidden');
         await Post.findByIdAndDelete(req.params.id);
         res.send('Deleted');
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    } catch (err) { res.status(500).send('Server error'); }
 });
-
 app.post('/api/posts/:id/react', async (req, res) => {
     try {
         const { type } = req.body;
@@ -162,94 +129,53 @@ app.post('/api/posts/:id/react', async (req, res) => {
         post.markModified('reactions');
         await post.save();
         res.json(post);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    } catch (err) { res.status(500).send('Server error'); }
 });
-
 app.post('/api/posts/:id/comment', async (req, res) => {
     try {
         if (!req.session.user) return res.status(401).send('Unauthorized');
         const { text } = req.body;
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).send('Not found');
-        post.comments.push({
-            username: req.session.user.username,
-            author: req.session.user.fullName,
-            text
-        });
+        post.comments.push({ username: req.session.user.username, author: req.session.user.fullName, text });
         await post.save();
         res.status(201).json(post);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    } catch (err) { res.status(500).send('Server error'); }
 });
 
-// --- CHAT / MESSAGES ROUTES ---
+// Chat / Messages Routes
 app.get('/api/messages', async (req, res) => {
-    try {
-        const messages = await Message.find({ recipient: { $exists: false } }).sort({ createdAt: 1 });
-        res.json(messages);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    try { res.json(await Message.find({ recipient: { $exists: false } }).sort({ createdAt: 1 })); } catch (err) { res.status(500).send('Server error'); }
 });
-
 app.post('/api/messages', async (req, res) => {
     try {
         if (!req.session.user) return res.status(401).send('Unauthorized');
         const { text, replyTo } = req.body;
-        const msg = new Message({
-            sender: req.session.user.fullName,
-            username: req.session.user.username,
-            text,
-            replyTo
-        });
+        const msg = new Message({ sender: req.session.user.fullName, username: req.session.user.username, text, replyTo });
         await msg.save();
         res.status(201).json(msg);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    } catch (err) { res.status(500).send('Server error'); }
 });
-
-// Private DMs
 app.get('/api/dm/:username', async (req, res) => {
     try {
         if (!req.session.user) return res.status(401).send('Unauthorized');
         const me = req.session.user.username;
         const target = req.params.username;
-        const messages = await Message.find({
-            $or: [
-                { username: me, recipient: target },
-                { username: target, recipient: me }
-            ]
-        }).sort({ createdAt: 1 });
+        const messages = await Message.find({ $or: [{ username: me, recipient: target }, { username: target, recipient: me }] }).sort({ createdAt: 1 });
         res.json(messages);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    } catch (err) { res.status(500).send('Server error'); }
 });
-
 app.post('/api/dm/:username', async (req, res) => {
     try {
         if (!req.session.user) return res.status(401).send('Unauthorized');
         const me = req.session.user;
         const target = req.params.username;
         const { text, replyTo } = req.body;
-        const msg = new Message({
-            sender: me.fullName,
-            username: me.username,
-            recipient: target,
-            text,
-            replyTo
-        });
+        const msg = new Message({ sender: me.fullName, username: me.username, recipient: target, text, replyTo });
         await msg.save();
         res.status(201).json(msg);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    } catch (err) { res.status(500).send('Server error'); }
 });
-
 app.get('/api/dms', async (req, res) => {
     try {
         if (!req.session.user) return res.status(401).send('Unauthorized');
@@ -262,12 +188,10 @@ app.get('/api/dms', async (req, res) => {
         });
         const partners = await User.find({ username: { $in: Array.from(partnerUsernames) } }, 'username fullName avatar');
         res.json(partners);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+    } catch (err) { res.status(500).send('Server error'); }
 });
 
-// Real Database-backed Message Reaction Route
+// Working Reaction Route that records WHO reacted
 app.post('/api/messages/:id/react', async (req, res) => {
     try {
         if (!req.session.user) return res.status(401).send('Unauthorized');
@@ -275,25 +199,18 @@ app.post('/api/messages/:id/react', async (req, res) => {
         const msg = await Message.findById(req.params.id);
         if (!msg) return res.status(404).send('Message not found');
 
-        if (!msg.reactions) msg.reactions = new Map();
-        const currentCount = msg.reactions.get(emoji) || 0;
-        msg.reactions.set(emoji, currentCount + 1);
-        
+        if (!msg.reactions) msg.reactions = [];
+        // Remove existing reaction by this user if any, or toggle
+        msg.reactions = msg.reactions.filter(r => r.username !== req.session.user.username);
+        msg.reactions.push({ emoji, username: req.session.user.username, fullName: req.session.user.fullName });
+
         await msg.save();
-        res.json({ reactions: Object.fromEntries(msg.reactions) });
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
+        res.json(msg);
+    } catch (err) { res.status(500).send('Server error'); }
 });
 
-app.get('/api/notifications', async (req, res) => {
-    res.json([]);
-});
-app.post('/api/notifications/read', (req, res) => {
-    res.send('OK');
-});
-app.post('/api/highscore', (req, res) => {
-    res.send('OK');
-});
+app.get('/api/notifications', async (req, res) => { res.json([]); });
+app.post('/api/notifications/read', (req, res) => { res.send('OK'); });
+app.post('/api/highscore', (req, res) => { res.send('OK'); });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
