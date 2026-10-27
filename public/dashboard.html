@@ -87,9 +87,17 @@
         .add-comment input { flex: 1; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 13px; }
         .add-comment button { background: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: inherit; }
 
+        /* Direct Inbox Layout */
+        .dm-layout { max-width: 900px; margin: 20px auto; display: grid; grid-template-columns: 280px 1fr; gap: 15px; padding: 0 15px; height: 550px; }
+        .dm-inbox-sidebar { background: white; border-radius: 16px; border: 2px solid #cbd5e1; padding: 15px; overflow-y: auto; }
+        .dm-convo-item { padding: 10px; border-radius: 10px; cursor: pointer; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+        .dm-convo-item:hover, .dm-convo-item.active { background: #fef9c3; border: 1px solid #fedb00; }
+        .dm-chat-area { background: white; border-radius: 16px; border: 2px solid #cbd5e1; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
+        .dm-thread-messages { flex: 1; overflow-y: auto; padding: 10px 0; display: flex; flex-direction: column; gap: 8px; }
+
         .chat-container { display: flex; flex-direction: column; height: 380px; }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
-        .chat-bubble { background: #f1f5f9; padding: 8px 12px; border-radius: 12px; font-size: 13px; max-width: 90%; }
+        .chat-bubble { background: #f1f5f9; padding: 8px 12px; border-radius: 12px; font-size: 13px; max-width: 80%; }
         .chat-bubble.mine { background: #dbeafe; align-self: flex-end; border-bottom-right-radius: 2px; }
         .chat-sender { font-size: 11px; font-weight: bold; color: #1e3a8a; margin-bottom: 2px; cursor: pointer; }
         .chat-time { font-size: 10px; color: #94a3b8; margin-top: 3px; text-align: right; }
@@ -102,7 +110,7 @@
         .close-btn { position: absolute; top: 12px; right: 15px; font-size: 22px; cursor: pointer; color: #ef4444; font-weight: bold; }
 
         @media (max-width: 768px) {
-            .container { grid-template-columns: 1fr; }
+            .container, .dm-layout { grid-template-columns: 1fr; }
             .nav-tab-btn span { display: none; }
             .notif-dropdown { right: 10px; width: 290px; }
         }
@@ -116,10 +124,13 @@
         </a>
 
         <div class="nav-center-tabs">
-            <a href="dashboard.html" class="nav-tab-btn active" id="tab-feed">
+            <button class="nav-tab-btn active" id="btn-tab-feed" onclick="switchMainTab('feed')">
                 &#127968; <span>News Feed</span>
-            </a>
-            <a href="profile.html" class="nav-tab-btn" id="tab-profile">
+            </button>
+            <button class="nav-tab-btn" id="btn-tab-dms" onclick="switchMainTab('dms')">
+                &#128172; <span>Messages</span>
+            </button>
+            <a href="profile.html" class="nav-tab-btn">
                 &#128100; <span>My Profile</span>
             </a>
         </div>
@@ -166,7 +177,7 @@
                 </div>
 
                 <div class="card">
-                    <div class="card-header">&#128172; Lab Messenger</div>
+                    <div class="card-header">&#128119; Public Lab Messenger</div>
                     <div class="chat-container">
                         <div class="chat-messages" id="chat-messages"></div>
                         <div class="chat-input-bar">
@@ -174,6 +185,28 @@
                             <button class="chat-send-btn" onclick="sendChat()">Send</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRIVATE MESSAGES (INBOX) VIEW -->
+    <div id="view-dms" style="display: none;">
+        <div class="dm-layout">
+            <div class="dm-inbox-sidebar">
+                <div class="card-header" style="font-size:15px;">📥 Private Inbox</div>
+                <div id="dm-conversations-list">
+                    <div style="font-size:12px;color:#64748b;text-align:center;padding:10px;">Loading conversations...</div>
+                </div>
+            </div>
+            <div class="dm-chat-area">
+                <div id="dm-active-header" class="card-header" style="margin-bottom:0; font-size:16px;">
+                    Select a Minion to start messaging 💬
+                </div>
+                <div class="dm-thread-messages" id="dm-thread-messages"></div>
+                <div class="chat-input-bar" id="dm-input-area" style="display:none;">
+                    <input type="text" id="dm-input" placeholder="Type a private message..." onkeypress="if(event.key==='Enter') sendPrivateDM()">
+                    <button class="chat-send-btn" onclick="sendPrivateDM()">Send DM</button>
                 </div>
             </div>
         </div>
@@ -193,6 +226,7 @@
     let currentUser = null;
     let allPosts = [];
     let pastedImageBase64 = '';
+    let activeDMUser = null;
 
     const EMOJIS = {
         banana: String.fromCodePoint(0x1F34C), love: String.fromCodePoint(0x2764),
@@ -216,6 +250,17 @@
         interval = seconds / 60;
         if (interval > 1) return Math.floor(interval) + 'm ago';
         return 'Just now';
+    }
+
+    function switchMainTab(tab) {
+        document.getElementById('view-feed').style.display = tab === 'feed' ? 'block' : 'none';
+        document.getElementById('view-dms').style.display = tab === 'dms' ? 'block' : 'none';
+        document.getElementById('btn-tab-feed').classList.toggle('active', tab === 'feed');
+        document.getElementById('btn-tab-dms').classList.toggle('active', tab === 'dms');
+
+        if (tab === 'dms') {
+            loadDMConversations();
+        }
     }
 
     function openUserProfile(username) {
@@ -266,9 +311,13 @@
 
             item.onclick = () => {
                 document.getElementById('notif-dropdown').style.display = 'none';
-                if (n.type === 'friend_request') {
+                if (n.type === 'dm') {
+                    switchMainTab('dms');
+                    selectDMThread(n.senderUsername);
+                } else if (n.type === 'friend_request') {
                     openUserProfile(n.senderUsername);
                 } else if (n.postId) {
+                    switchMainTab('feed');
                     const targetPost = document.getElementById(`post-${n.postId}`);
                     if (targetPost) {
                         targetPost.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -292,17 +341,12 @@
 
     async function acceptRequestFromNotif(username) {
         const res = await fetch(`/api/users/${username}/accept-friend`, { method: 'POST' });
-        if (res.ok) {
-            loadNotifications();
-            alert('Crew request confirmed! 🎉');
-        }
+        if (res.ok) { loadNotifications(); alert('Crew request confirmed! 🎉'); }
     }
 
     async function declineRequestFromNotif(username) {
         const res = await fetch(`/api/users/${username}/decline-friend`, { method: 'POST' });
-        if (res.ok) {
-            loadNotifications();
-        }
+        if (res.ok) loadNotifications();
     }
 
     async function markNotifsRead() {
@@ -310,6 +354,76 @@
         document.getElementById('notif-badge').style.display = 'none';
     }
     setInterval(loadNotifications, 8000);
+
+    // --- PRIVATE DIRECT MESSAGING (mBasic / FB Inbox) ---
+    async function loadDMConversations() {
+        const res = await fetch('/api/dms');
+        if (!res.ok) return;
+        const partners = await res.json();
+        const list = document.getElementById('dm-conversations-list');
+        list.innerHTML = '';
+
+        if (partners.length === 0) {
+            list.innerHTML = '<div style="font-size:12px;color:#64748b;text-align:center;padding:10px;">No private chats yet. Visit a profile to start messaging!</div>';
+            return;
+        }
+
+        partners.forEach(p => {
+            const item = document.createElement('div');
+            item.className = `dm-convo-item ${activeDMUser === p.username ? 'active' : ''}`;
+            item.onclick = () => selectDMThread(p.username, p.fullName);
+            const avatarHtml = p.avatar && p.avatar.startsWith('data:image')
+                ? `<img src="${p.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`
+                : `<div style="width:32px;height:32px;border-radius:50%;background:#fedb00;display:flex;align-items:center;justify-content:center;">🍌</div>`;
+            item.innerHTML = `
+                ${avatarHtml}
+                <div>
+                    <div style="font-weight:bold;font-size:13px;color:#1e3a8a;">${p.fullName}</div>
+                    <div style="font-size:11px;color:#64748b;">@${p.username}</div>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    async function selectDMThread(username, fullName = '') {
+        activeDMUser = username;
+        document.getElementById('dm-active-header').innerText = `💬 Chat with @${username} ${fullName ? `(${fullName})` : ''}`;
+        document.getElementById('dm-input-area').style.display = 'flex';
+
+        const res = await fetch(`/api/dm/${username}`);
+        if (!res.ok) return;
+        const messages = await res.json();
+
+        const box = document.getElementById('dm-thread-messages');
+        box.innerHTML = '';
+        messages.forEach(m => {
+            const isMine = currentUser && m.sender === currentUser.username;
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${isMine ? 'mine' : ''}`;
+            bubble.innerHTML = `
+                <div>${m.text}</div>
+                <div class="chat-time">${timeAgo(m.createdAt)}</div>
+            `;
+            box.appendChild(bubble);
+        });
+        box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendPrivateDM() {
+        if (!activeDMUser) return;
+        const input = document.getElementById('dm-input');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+
+        const res = await fetch(`/api/dm/${activeDMUser}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        if (res.ok) selectDMThread(activeDMUser);
+    }
 
     async function loadMembers() {
         const res = await fetch('/api/users');
@@ -349,11 +463,13 @@
         const params = new URLSearchParams(window.location.search);
         const chatParam = params.get('chat');
         if (chatParam) {
-            document.getElementById('chat-input').value = chatParam + ' ';
+            const targetDM = chatParam.replace('@', '').trim();
+            switchMainTab('dms');
+            selectDMThread(targetDM);
         }
     }
 
-    // --- MESSAGES ---
+    // --- PUBLIC MESSAGES ---
     async function loadMessages() {
         const res = await fetch('/api/messages');
         if (!res.ok) return;
