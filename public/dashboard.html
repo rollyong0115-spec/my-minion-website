@@ -56,7 +56,7 @@
         .member-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: #fedb00; display: flex; align-items: center; justify-content: center; font-size: 16px; }
 
         .create-post textarea { width: 100%; height: 75px; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px; font-family: inherit; resize: none; outline: none; }
-        .create-post input { width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-family: inherit; }
+        .upload-file-btn { display: inline-block; background: #e0f2fe; color: #0369a1; border: 2px dashed #38bdf8; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; margin-top: 8px; text-align: center; width: 100%; }
         .img-preview { max-width: 100%; max-height: 180px; border-radius: 8px; margin-top: 8px; display: none; border: 2px dashed #cbd5e1; }
         .post-btn { background: #2563eb; color: white; border: 2px solid #1e3a8a; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 700; font-family: inherit; margin-top: 10px; width: 100%; }
 
@@ -162,8 +162,15 @@
             <div>
                 <div class="card create-post">
                     <div class="card-header">Create Post &#129514;</div>
-                    <textarea id="post-text" placeholder="What's on your mind? Mention someone with @username! (Paste image with Ctrl+V)"></textarea>
-                    <input type="text" id="post-image" placeholder="Or paste an Image/GIF link here">
+                    <textarea id="post-text" placeholder="What's on your mind? Mention someone with @username!"></textarea>
+                    
+                    <!-- Cloudinary File Upload Integration -->
+                    <label class="upload-file-btn" id="upload-label">
+                        📁 Click to Attach Photo / GIF
+                        <input type="file" id="post-file-input" accept="image/*" style="display:none;" onchange="uploadToCloudinary(this)">
+                    </label>
+                    <div id="uploading-status" style="font-size: 12px; color: #2563eb; margin-top: 4px; display: none;">Uploading to Cloudinary... 🚀</div>
+                    
                     <img id="pasted-preview" class="img-preview" alt="Preview">
                     <button class="post-btn" onclick="publishPost()">Post to Feed &#128640;</button>
                 </div>
@@ -225,8 +232,12 @@
 <script>
     let currentUser = null;
     let allPosts = [];
-    let pastedImageBase64 = '';
+    let uploadedImageUrl = '';
     let activeDMUser = null;
+
+    // Cloudinary Configuration
+    const CLOUD_NAME = 'b1zwryoo'; 
+    const UPLOAD_PRESET = 'minion_uploads';
 
     const EMOJIS = {
         banana: String.fromCodePoint(0x1F34C), love: String.fromCodePoint(0x2764),
@@ -250,6 +261,40 @@
         interval = seconds / 60;
         if (interval > 1) return Math.floor(interval) + 'm ago';
         return 'Just now';
+    }
+
+    // --- CLOUDINARY UPLOAD HANDLER ---
+    async function uploadToCloudinary(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        
+        const statusEl = document.getElementById('uploading-status');
+        statusEl.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
+
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            
+            statusEl.style.display = 'none';
+            if (data.secure_url) {
+                uploadedImageUrl = data.secure_url;
+                const preview = document.getElementById('pasted-preview');
+                preview.src = uploadedImageUrl;
+                preview.style.display = 'block';
+            } else {
+                alert('Upload failed: ' + (data.error?.message || 'Unknown error'));
+            }
+        } catch (err) {
+            statusEl.style.display = 'none';
+            alert('Cloudinary upload error.');
+        }
     }
 
     function switchMainTab(tab) {
@@ -355,7 +400,7 @@
     }
     setInterval(loadNotifications, 8000);
 
-    // --- PRIVATE DIRECT MESSAGING (mBasic / FB Inbox) ---
+    // --- PRIVATE DIRECT MESSAGING ---
     async function loadDMConversations() {
         const res = await fetch('/api/dms');
         if (!res.ok) return;
@@ -508,22 +553,34 @@
     setInterval(loadMessages, 4000);
 
     // --- POSTS ---
-    document.getElementById('post-text').addEventListener('paste', (e) => {
-        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-        for (let item of items) {
-            if (item.type.indexOf('image') !== -1) {
-                const blob = item.getAsFile();
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    pastedImageBase64 = event.target.result;
-                    const preview = document.getElementById('pasted-preview');
-                    preview.src = pastedImageBase64;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(blob);
-            }
+    async function publishPost() {
+        const text = document.getElementById('post-text').value.trim();
+        const image = uploadedImageUrl;
+        if (!text && !image) return;
+
+        const res = await fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, image })
+        });
+        if (res.ok) {
+            document.getElementById('post-text').value = '';
+            document.getElementById('pasted-preview').style.display = 'none';
+            uploadedImageUrl = '';
+            loadPosts();
         }
-    });
+    }
+
+    async function loadPosts() {
+        const res = await fetch('/api/posts');
+        if (!res.ok) return;
+        allPosts = await res.json();
+        const container = document.getElementById('posts-container');
+        container.innerHTML = '';
+        allPosts.forEach(post => {
+            container.innerHTML += createPostCardHtml(post);
+        });
+    }
 
     function createPostCardHtml(post) {
         const r = post.reactions || { banana: 0, love: 0, haha: 0, rocket: 0 };
@@ -568,7 +625,12 @@
                             <div class="post-time">${timeAgo(post.createdAt)} ${post.edited ? '<span class="edited-tag">(edited)</span>' : ''}</div>
                         </div>
                     </div>
-                    ${isMyPost ? `<span class="action-link" onclick="editPost('${post._id}', '${post.text.replace(/'/g, "\\'")}')">✏️ Edit Post</span>` : ''}
+                    <div>
+                        ${isMyPost ? `
+                            <span class="action-link" onclick="editPost('${post._id}', '${post.text.replace(/'/g, "\\'")}')">✏️ Edit</span>
+                            <span class="action-link" style="color:#ef4444;" onclick="deletePost('${post._id}')">🗑️ Delete</span>
+                        ` : ''}
+                    </div>
                 </div>
                 ${post.text ? `<div class="post-content">${post.text}</div>` : ''}
                 ${post.image ? `<img class="post-img" src="${post.image}" onerror="this.style.display='none'">` : ''}
@@ -587,37 +649,6 @@
         `;
     }
 
-    async function loadPosts() {
-        const res = await fetch('/api/posts');
-        if (!res.ok) return;
-        allPosts = await res.json();
-        const container = document.getElementById('posts-container');
-        container.innerHTML = '';
-        allPosts.forEach(post => {
-            container.innerHTML += createPostCardHtml(post);
-        });
-    }
-
-    async function publishPost() {
-        const text = document.getElementById('post-text').value.trim();
-        const imageUrl = document.getElementById('post-image').value.trim();
-        const image = pastedImageBase64 || imageUrl;
-        if (!text && !image) return;
-
-        const res = await fetch('/api/posts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, image })
-        });
-        if (res.ok) {
-            document.getElementById('post-text').value = '';
-            document.getElementById('post-image').value = '';
-            document.getElementById('pasted-preview').style.display = 'none';
-            pastedImageBase64 = '';
-            loadPosts();
-        }
-    }
-
     async function editPost(postId, currentText) {
         const newText = prompt("Edit your post:", currentText);
         if (newText === null || newText.trim() === "" || newText.trim() === currentText) return;
@@ -627,6 +658,18 @@
             body: JSON.stringify({ text: newText.trim() })
         });
         if (res.ok) loadPosts();
+    }
+
+    async function deletePost(postId) {
+        if (!confirm("Are you sure you want to delete this Minion post?")) return;
+        const res = await fetch(`/api/posts/${postId}`, {
+            method: 'DELETE'
+        });
+        if (res.ok) {
+            loadPosts();
+        } else {
+            alert('Failed to delete post.');
+        }
     }
 
     async function editComment(postId, commentId, currentText) {
