@@ -1,112 +1,231 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const session = require('express-session');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://rollyong0115_db_user:ST9HMoXn0lysvoPm@ac-k5dzvq1-shard-00-00.bjtl1i4.mongodb.net:27017,ac-k5dzvq1-shard-00-01.bjtl1i4.mongodb.net:27017,ac-k5dzvq1-shard-00-02.bjtl1i4.mongodb.net:27017/?ssl=true&replicaSet=atlas-10bi1m-shard-0&authSource=admin';
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.set('trust proxy', 1);
+
+// Connect to MongoDB
+mongoose.connect(MONGO_URI)
+    .then(() => console.log('✅ Connected to MongoDB Atlas!'))
+    .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+// Email Transporter (uses environment variables if set)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER || '',
+        pass: process.env.EMAIL_PASS || ''
+    }
+});
+
+// --- MONGOOSE SCHEMAS & MODELS ---
+
+// 1. User Model
+const UserSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    fullName: { type: String, required: true },
+    email: { type: String, default: '' },
+    phone: { type: String, default: '' },
+    password: { type: String, required: true },
+    bio: { type: String, default: 'Living life one banana at a time! 🍌' },
+    location: { type: String, default: "Gru's Secret Lab" },
+    role: { type: String, default: 'Rocket Scientist' },
+    avatar: { type: String, default: '' },
+    coverPhoto: { type: String, default: '' },
+    highScore: { type: Number, default: 0 },
+    friends: [{ type: String }],
+    friendRequestsSent: [{ type: String }],
+    friendRequestsReceived: [{ type: String }],
+    blockedUsers: [{ type: String }],
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+    joinedAt: { type: String, default: () => new Date().toLocaleDateString() }
+});
+const User = mongoose.model('User', UserSchema);
+
+// 2. Post & Comment Models
+const CommentSchema = new mongoose.Schema({
+    author: String,
+    username: String,
+    text: String,
+    edited: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now },
+    replies: [{
+        author: String,
+        username: String,
+        text: String,
+        createdAt: { type: Date, default: Date.now }
+    }]
+});
+
+const PostSchema = new mongoose.Schema({
+    author: String,
+    username: String,
+    text: String,
+    image: String,
+    edited: { type: Boolean, default: false },
+    reactions: {
+        banana: { type: Number, default: 1 },
+        love: { type: Number, default: 0 },
+        haha: { type: Number, default: 0 },
+        rocket: { type: Number, default: 0 }
+    },
+    comments: [CommentSchema],
+    createdAt: { type: Date, default: Date.now }
+});
+const Post = mongoose.model('Post', PostSchema);
+
+// 3. Public Chat Message Model
+const MessageSchema = new mongoose.Schema({
+    sender: String,
+    username: String,
+    text: String,
+    replyTo: String,
+    reactions: [{
+        emoji: String,
+        fullName: String,
+        username: String
+    }],
+    createdAt: { type: Date, default: Date.now }
+});
+const Message = mongoose.model('Message', MessageSchema);
+
+// 4. Private Direct Message (DM) Model
+const DMSchema = new mongoose.Schema({
+    sender: String,     // username
+    recipient: String,  // username
+    text: String,
+    replyTo: String,
+    reactions: [{
+        emoji: String,
+        fullName: String,
+        username: String
+    }],
+    createdAt: { type: Date, default: Date.now }
+});
+const DM = mongoose.model('DM', DMSchema);
+
+// 5. Notification Model
+const NotificationSchema = new mongoose.Schema({
+    recipient: { type: String, required: true },
+    sender: { type: String, required: true },
+    senderUsername: { type: String, required: true },
+    type: { type: String, required: true }, // 'friend', 'reply', 'mention', 'dm'
+    text: { type: String, required: true },
+    read: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+});
+const Notification = mongoose.model('Notification', NotificationSchema);
+
+// --- MIDDLEWARE ---
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
     secret: 'minion-secret-key-1234',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 * 7 }
 }));
 
-// MongoDB Connection
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://rollyong0115_db_user:Minion123@cluster0.bjtl1i4.mongodb.net/minionfeed?retryWrites=true&w=majority';
+// Password strength validator
+function isStrongPassword(pwd) {
+    return pwd && pwd.length >= 8 && /[a-zA-Z]/.test(pwd) && /[0-9]/.test(pwd) && /[!@#$%^&*(),.?":{}|<>\-_=+]/.test(pwd);
+}
 
-mongoose.connect(MONGO_URI)
-    .then(() => console.log('✅ Connected to MongoDB Atlas successfully!'))
-    .catch(err => console.error('❌ MongoDB Connection Error:', err));
+// Auto-notify mentions (@username)
+async function notifyMentions(text, sender) {
+    const matches = text.match(/@([a-zA-Z0-9_.-]+)/g);
+    if (!matches) return;
+    for (let m of matches) {
+        const uName = m.replace('@', '').toLowerCase();
+        if (uName !== sender.username.toLowerCase()) {
+            const user = await User.findOne({ username: new RegExp(`^${uName}$`, 'i') });
+            if (user) {
+                await Notification.create({
+                    recipient: user.username,
+                    sender: sender.fullName,
+                    senderUsername: sender.username,
+                    type: 'mention',
+                    text: `${sender.fullName} mentioned you: "${text.substring(0, 35)}..."`
+                });
+            }
+        }
+    }
+}
 
-// Schemas & Models
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    email: { type: String },
-    phone: { type: String },
-    fullName: { type: String, required: true },
-    password: { type: String, required: true }
-});
-const User = mongoose.model('User', userSchema);
+// --- AUTHENTICATION ROUTES ---
 
-const messageSchema = new mongoose.Schema({
-    sender: String,
-    username: String,
-    text: String,
-    createdAt: { type: Date, default: Date.now }
-});
-const Message = mongoose.model('Message', messageSchema);
-
-// --- API ROUTES ---
-
-// Register
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, phone, fullName, password } = req.body;
-        if (!username || !password || !fullName) {
-            return res.status(400).json({ error: 'Username, Full Name, and Password are required' });
+        if (!username || !fullName || !password) {
+            return res.status(400).json({ error: 'Please fill in all required fields!' });
+        }
+        if (!isStrongPassword(password)) {
+            return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers & symbols (e.g. Banana!123).' });
         }
 
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return res.status(400).json({ error: 'Username already taken' });
+        const usernameExists = await User.findOne({ username: new RegExp(`^${username.trim()}$`, 'i') });
+        if (usernameExists) return res.status(400).json({ error: 'Minion Name is already taken!' });
+
+        if (email && email.trim()) {
+            const emailExists = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
+            if (emailExists) return res.status(400).json({ error: 'Email already registered! Please log in.' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ 
-            username, 
-            email: email || '', 
-            phone: phone || '', 
-            fullName, 
-            password: hashedPassword 
+        const newUser = new User({
+            username: username.trim(),
+            fullName: fullName.trim(),
+            email: email ? email.trim().toLowerCase() : '',
+            phone: phone ? phone.trim() : '',
+            password: hashedPassword
         });
         await newUser.save();
 
         req.session.userId = newUser._id;
-        res.json({ message: 'Registered successfully' });
+        res.json({ message: 'Welcome to Gru’s Crew! You can now log in.' });
     } catch (err) {
         console.error('Register error:', err);
         res.status(500).json({ error: 'Server error during registration' });
     }
 });
 
-// Login
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        if (!username || !password) {
-            return res.status(400).json({ error: 'Username and password required' });
-        }
+        if (!username || !password) return res.status(400).json({ error: 'Username and password required.' });
 
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(400).json({ error: 'User not found' });
-        }
+        const user = await User.findOne({
+            $or: [
+                { username: new RegExp(`^${username.trim()}$`, 'i') },
+                { email: new RegExp(`^${username.trim()}$`, 'i') }
+            ]
+        });
+        if (!user) return res.status(400).json({ error: 'Minion not found!' });
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ error: 'Invalid password' });
-        }
+        if (!isMatch) return res.status(400).json({ error: 'Incorrect Banana Code!' });
 
         req.session.userId = user._id;
-        res.json({ message: 'Logged in successfully' });
+        res.json({ message: 'Login successful!' });
     } catch (err) {
-        console.error('Login error:', err);
         res.status(500).json({ error: 'Server error logging in' });
     }
 });
 
-// Check Session
 app.get('/api/me', async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ error: 'Not logged in' });
-    }
+    if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     try {
         const user = await User.findById(req.session.userId).select('-password');
         if (!user) return res.status(404).json({ error: 'User not found' });
@@ -116,35 +235,553 @@ app.get('/api/me', async (req, res) => {
     }
 });
 
-// Get Messages Feed
-app.get('/api/messages', async (req, res) => {
+app.post('/api/logout', (req, res) => {
+    req.session.destroy(() => res.json({ message: 'Logged out.' }));
+});
+
+// --- PASSWORD RESET ROUTES ---
+
+app.post('/api/forgot-password', async (req, res) => {
     try {
-        const messages = await Message.find().sort({ createdAt: -1 }).limit(50);
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Please enter your email.' });
+
+        const user = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i') });
+        if (!user) return res.status(404).json({ error: 'No account found with this email!' });
+
+        const token = crypto.randomBytes(20).toString('hex');
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+        await user.save();
+
+        const host = req.headers.host;
+        const protocol = req.headers['x-forwarded-proto'] || 'http';
+        const resetUrl = `${protocol}://${host}/reset-password.html?token=${token}`;
+
+        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+            await transporter.sendMail({
+                to: user.email,
+                from: process.env.EMAIL_USER,
+                subject: '🍌 Gru’s Lab: Password Reset Link',
+                html: `<p>Bello, ${user.fullName}!</p><p>Reset your password here:</p><p><a href="${resetUrl}">Reset Password</a></p>`
+            });
+            res.json({ message: 'Password reset link sent to your email!' });
+        } else {
+            res.json({
+                message: 'Reset link generated!',
+                resetUrl: resetUrl
+            });
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to process request' });
+    }
+});
+
+app.post('/api/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password required.' });
+
+        if (!isStrongPassword(newPassword)) {
+            return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers, and symbols.' });
+        }
+
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+        if (!user) return res.status(400).json({ error: 'Reset link is invalid or has expired!' });
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        res.json({ message: 'Banana Code successfully reset! You can now log in.' });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to reset password.' });
+    }
+});
+
+// --- USER DIRECTORY & PROFILE ROUTES ---
+
+app.get('/api/users', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const users = await User.find({}, 'fullName username role avatar');
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to load users' });
+    }
+});
+
+app.get('/api/users/:username', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const target = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') }).select('-password');
+        if (!target) return res.status(404).json({ error: 'User not found' });
+
+        const me = await User.findById(req.session.userId);
+        const isFriend = me.friends && me.friends.includes(target.username);
+        const requestSent = me.friendRequestsSent && me.friendRequestsSent.includes(target.username);
+        const requestReceived = me.friendRequestsReceived && me.friendRequestsReceived.includes(target.username);
+        const isBlocked = me.blockedUsers && me.blockedUsers.includes(target.username);
+
+        res.json({
+            fullName: target.fullName,
+            username: target.username,
+            email: target.email,
+            phone: target.phone,
+            bio: target.bio,
+            location: target.location,
+            role: target.role,
+            avatar: target.avatar,
+            coverPhoto: target.coverPhoto,
+            highScore: target.highScore,
+            joinedAt: target.joinedAt,
+            isFriend: !!isFriend,
+            requestSent: !!requestSent,
+            requestReceived: !!requestReceived,
+            isBlocked: !!isBlocked
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to load profile' });
+    }
+});
+
+app.post('/api/profile', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { fullName, email, phone, bio, location, role, avatar, coverPhoto } = req.body;
+        const user = await User.findById(req.session.userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (fullName) user.fullName = fullName.trim();
+        if (phone !== undefined) user.phone = phone.trim();
+
+        if (email && email.trim() && email.trim().toLowerCase() !== (user.email || '').toLowerCase()) {
+            const exists = await User.findOne({
+                email: new RegExp(`^${email.trim()}$`, 'i'),
+                _id: { $ne: user._id }
+            });
+            if (exists) return res.status(400).json({ error: 'This email is already in use by another Minion!' });
+            user.email = email.trim().toLowerCase();
+        }
+
+        if (bio !== undefined) user.bio = bio;
+        if (location !== undefined) user.location = location;
+        if (role) user.role = role;
+        if (avatar !== undefined) user.avatar = avatar;
+        if (coverPhoto !== undefined) user.coverPhoto = coverPhoto;
+
+        await user.save();
+        res.json({ message: 'Profile updated!', user });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+app.post('/api/users/:username/friend', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const me = await User.findById(req.session.userId);
+        const target = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
+        if (!target) return res.status(404).json({ error: 'User not found' });
+
+        if (!me.friends) me.friends = [];
+        if (!target.friends) target.friends = [];
+
+        const idx = me.friends.indexOf(target.username);
+        let isFriend = false;
+        if (idx > -1) {
+            me.friends.splice(idx, 1);
+            const tIdx = target.friends.indexOf(me.username);
+            if (tIdx > -1) target.friends.splice(tIdx, 1);
+        } else {
+            me.friends.push(target.username);
+            target.friends.push(me.username);
+            isFriend = true;
+
+            await Notification.create({
+                recipient: target.username,
+                sender: me.fullName,
+                senderUsername: me.username,
+                type: 'friend',
+                text: `${me.fullName} added you to their Minion crew! 🍌`
+            });
+        }
+        await me.save();
+        await target.save();
+        res.json({ isFriend });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to update friendship' });
+    }
+});
+
+app.post('/api/users/:username/block', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const me = await User.findById(req.session.userId);
+        if (!me.blockedUsers) me.blockedUsers = [];
+        const idx = me.blockedUsers.indexOf(req.params.username);
+        let isBlocked = false;
+        if (idx > -1) {
+            me.blockedUsers.splice(idx, 1);
+        } else {
+            me.blockedUsers.push(req.params.username);
+            isBlocked = true;
+        }
+        await me.save();
+        res.json({ isBlocked });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to block/unblock user' });
+    }
+});
+
+app.post('/api/highscore', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { score } = req.body;
+        const user = await User.findById(req.session.userId);
+        if (user && score > (user.highScore || 0)) {
+            user.highScore = score;
+            await user.save();
+        }
+        res.json({ highScore: user ? user.highScore : 0 });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to save score' });
+    }
+});
+
+// --- POSTS ROUTES ---
+
+app.get('/api/posts', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const me = await User.findById(req.session.userId);
+        const blocked = me.blockedUsers || [];
+        const posts = await Post.find({ username: { $nin: blocked } }).sort({ createdAt: -1 });
+        res.json(posts);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch posts' });
+    }
+});
+
+app.post('/api/posts', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { text, image } = req.body;
+        if (!text && !image) return res.status(400).json({ error: 'Post cannot be empty!' });
+
+        const me = await User.findById(req.session.userId);
+        const newPost = new Post({
+            author: me.fullName,
+            username: me.username,
+            text: text || '',
+            image: image || ''
+        });
+        await newPost.save();
+        if (text) await notifyMentions(text, me);
+        res.json(newPost);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to create post' });
+    }
+});
+
+app.put('/api/posts/:id', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { text } = req.body;
+        if (!text || !text.trim()) return res.status(400).json({ error: 'Text cannot be empty' });
+
+        const me = await User.findById(req.session.userId);
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+        if (post.username !== me.username) return res.status(403).json({ error: 'Not allowed to edit' });
+
+        post.text = text.trim();
+        post.edited = true;
+        await post.save();
+        res.json(post);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to edit post' });
+    }
+});
+
+app.delete('/api/posts/:id', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const me = await User.findById(req.session.userId);
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+        if (post.username !== me.username) return res.status(403).json({ error: 'Not allowed to delete' });
+
+        await Post.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Post deleted' });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete post' });
+    }
+});
+
+app.post('/api/posts/:id/react', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { type } = req.body;
+        const post = await Post.findById(req.params.id);
+        if (post) {
+            post.reactions[type] = (post.reactions[type] || 0) + 1;
+            await post.save();
+            return res.json({ reactions: post.reactions });
+        }
+        res.status(404).json({ error: 'Post not found' });
+    } catch (err) {
+        res.status(500).json({ error: 'Reaction error' });
+    }
+});
+
+app.post('/api/posts/:id/comment', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { text } = req.body;
+        const me = await User.findById(req.session.userId);
+        const post = await Post.findById(req.params.id);
+        if (post && text) {
+            post.comments.push({
+                author: me.fullName,
+                username: me.username,
+                text: text.trim()
+            });
+            await post.save();
+            await notifyMentions(text, me);
+
+            if (post.username !== me.username) {
+                await Notification.create({
+                    recipient: post.username,
+                    sender: me.fullName,
+                    senderUsername: me.username,
+                    type: 'reply',
+                    text: `${me.fullName} commented on your post!`
+                });
+            }
+            return res.json(post.comments[post.comments.length - 1]);
+        }
+        res.status(404).json({ error: 'Post not found' });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to comment' });
+    }
+});
+
+app.put('/api/posts/:postId/comment/:commentId', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { text } = req.body;
+        const me = await User.findById(req.session.userId);
+        const post = await Post.findById(req.params.postId);
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return res.status(404).json({ error: 'Comment not found' });
+        if (comment.username !== me.username) return res.status(403).json({ error: 'Not allowed' });
+
+        comment.text = text.trim();
+        comment.edited = true;
+        await post.save();
+        res.json(comment);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to edit comment' });
+    }
+});
+
+app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { text } = req.body;
+        const me = await User.findById(req.session.userId);
+        const post = await Post.findById(req.params.postId);
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return res.status(404).json({ error: 'Comment not found' });
+
+        if (!comment.replies) comment.replies = [];
+        const newReply = {
+            author: me.fullName,
+            username: me.username,
+            text: text.trim()
+        };
+        comment.replies.push(newReply);
+        await post.save();
+        await notifyMentions(text, me);
+
+        if (comment.username && comment.username !== me.username) {
+            await Notification.create({
+                recipient: comment.username,
+                sender: me.fullName,
+                senderUsername: me.username,
+                type: 'reply',
+                text: `${me.fullName} replied to your comment!`
+            });
+        }
+        res.json(newReply);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to reply' });
+    }
+});
+
+// --- PUBLIC CHAT MESSENGER ROUTES ---
+
+app.get('/api/messages', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const me = await User.findById(req.session.userId);
+        const blocked = me.blockedUsers || [];
+        const messages = await Message.find({ username: { $nin: blocked } }).sort({ createdAt: 1 }).limit(50);
         res.json(messages);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch messages' });
     }
 });
 
-// Post Message
 app.post('/api/messages', async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
-        const user = await User.findById(req.session.userId);
-        const { text } = req.body;
-        if (!text) return res.status(400).json({ error: 'Message text required' });
+        const { text, replyTo } = req.body;
+        if (!text || !text.trim()) return res.status(400).json({ error: 'Message empty' });
 
+        const me = await User.findById(req.session.userId);
         const newMsg = new Message({
-            sender: user.fullName,
-            username: user.username,
-            text
+            sender: me.fullName,
+            username: me.username,
+            text: text.trim(),
+            replyTo: replyTo || ''
         });
         await newMsg.save();
-        res.json({ message: 'Posted successfully' });
+        await notifyMentions(text, me);
+        res.json(newMsg);
     } catch (err) {
         res.status(500).json({ error: 'Failed to post message' });
+    }
+});
+
+app.post('/api/messages/:id/react', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { emoji } = req.body;
+        const me = await User.findById(req.session.userId);
+        
+        // Search in public messages or DMs
+        let msg = await Message.findById(req.params.id);
+        if (!msg) msg = await DM.findById(req.params.id);
+        if (!msg) return res.status(404).json({ error: 'Message not found' });
+
+        if (!msg.reactions) msg.reactions = [];
+        // Remove prior reaction by this user
+        msg.reactions = msg.reactions.filter(r => r.username !== me.username);
+        msg.reactions.push({
+            emoji,
+            fullName: me.fullName,
+            username: me.username
+        });
+        await msg.save();
+        res.json({ success: true, reactions: msg.reactions });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to react to message' });
+    }
+});
+
+// --- PRIVATE MESSAGES (DMs) ROUTES ---
+
+app.get('/api/dms', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const me = await User.findById(req.session.userId);
+        // Find all partners chatted with
+        const dms = await DM.find({
+            $or: [{ sender: me.username }, { recipient: me.username }]
+        });
+        const partnerUsernames = new Set();
+        dms.forEach(d => {
+            if (d.sender !== me.username) partnerUsernames.add(d.sender);
+            if (d.recipient !== me.username) partnerUsernames.add(d.recipient);
+        });
+
+        const partners = await User.find({ username: { $in: Array.from(partnerUsernames) } }, 'fullName username avatar');
+        res.json(partners);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch conversations' });
+    }
+});
+
+app.get('/api/dm/:username', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const me = await User.findById(req.session.userId);
+        const targetUsername = req.params.username;
+        const thread = await DM.find({
+            $or: [
+                { sender: me.username, recipient: targetUsername },
+                { sender: targetUsername, recipient: me.username }
+            ]
+        }).sort({ createdAt: 1 });
+        res.json(thread);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch thread' });
+    }
+});
+
+app.post('/api/dm/:username', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { text, replyTo } = req.body;
+        if (!text || !text.trim()) return res.status(400).json({ error: 'Message empty' });
+
+        const me = await User.findById(req.session.userId);
+        const recipient = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
+        if (!recipient) return res.status(404).json({ error: 'Recipient not found' });
+
+        const newDM = new DM({
+            sender: me.username,
+            recipient: recipient.username,
+            text: text.trim(),
+            replyTo: replyTo || ''
+        });
+        await newDM.save();
+
+        await Notification.create({
+            recipient: recipient.username,
+            sender: me.fullName,
+            senderUsername: me.username,
+            type: 'dm',
+            text: `💬 New private message from ${me.fullName}`
+        });
+
+        res.json(newDM);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to send DM' });
+    }
+});
+
+// --- NOTIFICATION ROUTES ---
+
+app.get('/api/notifications', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const me = await User.findById(req.session.userId);
+        const notifs = await Notification.find({ recipient: me.username }).sort({ createdAt: -1 }).limit(30);
+        res.json(notifs);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch notifications' });
+    }
+});
+
+app.post('/api/notifications/read', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const me = await User.findById(req.session.userId);
+        await Notification.updateMany({ recipient: me.username, read: false }, { read: true });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to mark notifications read' });
     }
 });
 
