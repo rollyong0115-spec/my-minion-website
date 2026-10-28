@@ -65,12 +65,7 @@ const PostSchema = new mongoose.Schema({
     text: String,
     image: String,
     edited: { type: Boolean, default: false },
-    // Array tracking who reacted and with what emoji
-    reactions: [{
-        type: { type: String }, // 'banana', 'love', 'haha', 'rocket'
-        username: String,
-        fullName: String
-    }],
+    reactions: { type: mongoose.Schema.Types.Mixed, default: [] },
     comments: [CommentSchema],
     createdAt: { type: Date, default: Date.now }
 });
@@ -155,7 +150,7 @@ app.post('/api/register', async (req, res) => {
     try {
         const { username, email, phone, fullName, password } = req.body;
         if (!username || !fullName || !password) return res.status(400).json({ error: 'Please fill in all required fields!' });
-        if (!isStrongPassword(password)) return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers & symbols (e.g. Banana!123).' });
+        if (!isStrongPassword(password)) return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers & symbols.' });
 
         const usernameExists = await User.findOne({ username: new RegExp(`^${username.trim()}$`, 'i') });
         if (usernameExists) return res.status(400).json({ error: 'Minion Name is already taken!' });
@@ -311,7 +306,6 @@ app.get('/api/users/:username', async (req, res) => {
     }
 });
 
-// Get user's friends list with details (for Friends Showcase)
 app.get('/api/users/:username/friends', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
@@ -425,8 +419,7 @@ app.post('/api/highscore', async (req, res) => {
     }
 });
 
-// --- POSTS ROUTES (WITH TOGGLE REACTIONS & WHO REACTED) ---
-
+// --- POSTS ROUTES ---
 app.get('/api/posts', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
@@ -468,7 +461,8 @@ app.put('/api/posts/:id', async (req, res) => {
         if (!text || !text.trim()) return res.status(400).json({ error: 'Text cannot be empty' });
 
         const me = await User.findById(req.session.userId);
-        const post = await Post.findById(req.params.id);
+        let post = await Post.findById(req.params.id);
+        if (!post) post = await Post.findOne({ id: req.params.id });
         if (!post) return res.status(404).json({ error: 'Post not found' });
         if (post.username !== me.username) return res.status(403).json({ error: 'Not allowed to edit' });
 
@@ -485,11 +479,12 @@ app.delete('/api/posts/:id', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
         const me = await User.findById(req.session.userId);
-        const post = await Post.findById(req.params.id);
+        let post = await Post.findById(req.params.id);
+        if (!post) post = await Post.findOne({ id: req.params.id });
         if (!post) return res.status(404).json({ error: 'Post not found' });
         if (post.username !== me.username) return res.status(403).json({ error: 'Not allowed to delete' });
 
-        await Post.findByIdAndDelete(req.params.id);
+        await post.remove();
         res.json({ message: 'Post deleted' });
     } catch (err) {
         res.status(500).json({ error: 'Failed to delete post' });
@@ -502,35 +497,54 @@ app.post('/api/posts/:id/react', async (req, res) => {
     try {
         const { type } = req.body;
         const me = await User.findById(req.session.userId);
-        const post = await Post.findById(req.params.id);
+        if (!me) return res.status(401).json({ error: 'User not found' });
+
+        let post = null;
+        if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+            post = await Post.findById(req.params.id);
+        }
+        if (!post) {
+            post = await Post.findOne({ id: req.params.id });
+        }
         if (!post) return res.status(404).json({ error: 'Post not found' });
 
-        if (!Array.isArray(post.reactions)) post.reactions = [];
+        let currentReactions = [];
+        if (Array.isArray(post.reactions)) {
+            currentReactions = post.reactions;
+        } else if (post.reactions && typeof post.reactions === 'object') {
+            currentReactions = [];
+        }
 
-        // Check if current user already reacted
-        const existingIdx = post.reactions.findIndex(r => r.username === me.username);
+        const existingIdx = currentReactions.findIndex(r => r.username === me.username);
 
         if (existingIdx > -1) {
-            if (post.reactions[existingIdx].type === type) {
-                // Same emoji clicked again -> remove reaction (unlike)
-                post.reactions.splice(existingIdx, 1);
+            const existing = currentReactions[existingIdx];
+            if (existing.type === type || existing.emoji === type) {
+                // Clicked same emoji -> remove (unlike)
+                currentReactions.splice(existingIdx, 1);
             } else {
-                // Different emoji clicked -> switch reaction
-                post.reactions[existingIdx].type = type;
+                // Clicked different emoji -> switch
+                currentReactions[existingIdx].type = type;
+                currentReactions[existingIdx].emoji = type;
             }
         } else {
-            // New reaction added
-            post.reactions.push({
-                type,
+            // New reaction
+            currentReactions.push({
+                type: type,
+                emoji: type,
                 username: me.username,
                 fullName: me.fullName
             });
         }
 
+        post.reactions = currentReactions;
+        post.markModified('reactions');
         await post.save();
-        res.json({ reactions: post.reactions });
+
+        res.json({ success: true, reactions: post.reactions });
     } catch (err) {
-        res.status(500).json({ error: 'Reaction error' });
+        console.error('Reaction error:', err);
+        res.status(500).json({ error: 'Reaction error: ' + err.message });
     }
 });
 
@@ -539,7 +553,8 @@ app.post('/api/posts/:id/comment', async (req, res) => {
     try {
         const { text } = req.body;
         const me = await User.findById(req.session.userId);
-        const post = await Post.findById(req.params.id);
+        let post = await Post.findById(req.params.id);
+        if (!post) post = await Post.findOne({ id: req.params.id });
         if (post && text) {
             post.comments.push({
                 author: me.fullName,
@@ -571,7 +586,8 @@ app.put('/api/posts/:postId/comment/:commentId', async (req, res) => {
     try {
         const { text } = req.body;
         const me = await User.findById(req.session.userId);
-        const post = await Post.findById(req.params.postId);
+        let post = await Post.findById(req.params.postId);
+        if (!post) post = await Post.findOne({ id: req.params.postId });
         if (!post) return res.status(404).json({ error: 'Post not found' });
 
         const comment = post.comments.id(req.params.commentId);
@@ -592,7 +608,8 @@ app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
     try {
         const { text } = req.body;
         const me = await User.findById(req.session.userId);
-        const post = await Post.findById(req.params.postId);
+        let post = await Post.findById(req.params.postId);
+        if (!post) post = await Post.findOne({ id: req.params.postId });
         if (!post) return res.status(404).json({ error: 'Post not found' });
 
         const comment = post.comments.id(req.params.commentId);
