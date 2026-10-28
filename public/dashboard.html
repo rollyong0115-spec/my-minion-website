@@ -735,7 +735,14 @@
 
     (async () => {
         await loadProfile();
-        loadPosts();
+        const chatParam = new URLSearchParams(window.location.search).get('chat');
+        const chatUsername = chatParam ? chatParam.replace(/^@/, '') : '';
+        if (chatUsername) {
+            switchMainTab('dms');
+            await selectDMThread(chatUsername);
+        } else {
+            loadPosts();
+        }
         loadMessages();
         loadMembers();
         loadNotifications();
