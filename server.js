@@ -1,4 +1,3 @@
-
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -32,7 +31,8 @@ const userSchema = new mongoose.Schema({
     email: { type: String },
     phone: { type: String },
     fullName: { type: String, required: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
 });
 const User = mongoose.model('User', userSchema);
 
@@ -40,6 +40,7 @@ const messageSchema = new mongoose.Schema({
     sender: String,
     username: String,
     text: String,
+    reactions: { type: Map, of: Number, default: {} },
     createdAt: { type: Date, default: Date.now }
 });
 const Message = mongoose.model('Message', messageSchema);
@@ -103,7 +104,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Check Session
+// Check Session / Current User Profile
 app.get('/api/me', async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).json({ error: 'Not logged in' });
@@ -114,6 +115,16 @@ app.get('/api/me', async (req, res) => {
         res.json(user);
     } catch (err) {
         res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Get All Minion Crew Members
+app.get('/api/users', async (req, res) => {
+    try {
+        const users = await User.find().select('username fullName createdAt').sort({ createdAt: -1 });
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch crew members' });
     }
 });
 
@@ -130,22 +141,46 @@ app.get('/api/messages', async (req, res) => {
 // Post Message
 app.post('/api/messages', async (req, res) => {
     if (!req.session.userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        return res.status(401).json({ error: 'Unauthorized - Please log in' });
     }
     try {
         const user = await User.findById(req.session.userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
         const { text } = req.body;
-        if (!text) return res.status(400).json({ error: 'Message text required' });
+        if (!text || !text.trim()) return res.status(400).json({ error: 'Message text required' });
 
         const newMsg = new Message({
             sender: user.fullName,
             username: user.username,
-            text
+            text: text.trim()
         });
         await newMsg.save();
-        res.json({ message: 'Posted successfully' });
+        res.json({ message: 'Posted successfully', post: newMsg });
     } catch (err) {
+        console.error('Post message error:', err);
         res.status(500).json({ error: 'Failed to post message' });
+    }
+});
+
+// Add Reaction to Message
+app.post('/api/messages/:id/react', async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+        const { emoji } = req.body;
+        const message = await Message.findById(req.params.id);
+        if (!message) return res.status(404).json({ error: 'Message not found' });
+
+        let currentCount = message.reactions.get(emoji) || 0;
+        message.reactions.set(emoji, currentCount + 1);
+        await message.save();
+
+        res.json({ message: 'Reaction saved', reactions: Object.fromEntries(message.reactions) });
+    } catch (err) {
+        console.error('Reaction error:', err);
+        res.status(500).json({ error: 'Failed to save reaction' });
     }
 });
 
