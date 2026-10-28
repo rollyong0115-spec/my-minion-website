@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // REGISTRATION HANDLER (Maps all 5 form fields precisely)
+    // REGISTRATION HANDLER
     // -------------------------------------------------------------
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
@@ -38,9 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
             clearError();
 
             const inputs = registerForm.querySelectorAll('input');
-            
-            // Mapping based on your 5 registration inputs:
-            // 0: Username, 1: Email, 2: Phone/ID, 3: Full Name, 4: Password
             const username = inputs[0] ? inputs[0].value.trim() : '';
             const email = inputs[1] ? inputs[1].value.trim() : '';
             const phone = inputs[2] ? inputs[2].value.trim() : '';
@@ -114,13 +111,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // FEED & MESSAGES
+    // PROFILE & CREW MEMBERS & MESSAGES INITIALIZATION
     // -------------------------------------------------------------
     fetch('/api/me')
-        .then(res => {
-            if (res.ok) loadMessages();
+        .then(async res => {
+            if (res.ok) {
+                const user = await res.json();
+                updateProfileUI(user);
+                loadMessages();
+                loadCrewMembers();
+            } else {
+                // If on dashboard/profile page and not logged in, show fallback
+                const profileName = document.querySelector('.profile-name, h3, #profileName');
+                if (profileName) profileName.textContent = 'User not found';
+            }
         })
         .catch(() => {});
+
+    function updateProfileUI(user) {
+        const nameEl = document.getElementById('profileName') || document.querySelector('.profile-name');
+        const usernameEl = document.getElementById('profileUsername') || document.querySelector('.profile-username');
+        if (nameEl) nameEl.textContent = user.fullName;
+        if (usernameEl) usernameEl.textContent = `@${user.username}`;
+    }
+
+    async function loadCrewMembers() {
+        const crewContainer = document.getElementById('crewMembersList') || document.querySelector('.minion-crew-container');
+        if (!crewContainer) return;
+
+        try {
+            const res = await fetch('/api/users');
+            const users = await res.json();
+
+            crewContainer.innerHTML = '<h4>Minion Crew Members</h4>';
+            users.forEach(u => {
+                const item = document.createElement('div');
+                item.className = 'crew-member-item';
+                item.innerHTML = `<strong>${escapeHtml(u.fullName)}</strong> (@${escapeHtml(u.username)})`;
+                crewContainer.appendChild(item);
+            });
+        } catch (err) {
+            console.error('Failed to load crew members');
+        }
+    }
 
     async function loadMessages() {
         const feedContainer = document.getElementById('messageFeed');
@@ -161,9 +194,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     textInput.value = '';
                     loadMessages();
+                } else {
+                    const errData = await res.json();
+                    alert(errData.error || 'Failed to post message');
                 }
             } catch (err) {
                 console.error('Error posting message');
+                alert('Network error posting message.');
             }
         });
     }
