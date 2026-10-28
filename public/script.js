@@ -1,197 +1,261 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const session = require('express-session');
-const bcrypt = require('bcrypt');
-const path = require('path');
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const messageForm = document.getElementById('messageForm');
+    
+    // Error element container setup
+    let errorMessageEl = document.getElementById('errorMessage');
+    if (!errorMessageEl) {
+        errorMessageEl = document.createElement('div');
+        errorMessageEl.id = 'errorMessage';
+        errorMessageEl.style.color = 'red';
+        errorMessageEl.style.textAlign = 'center';
+        errorMessageEl.style.marginTop = '10px';
+        const targetContainer = registerForm || loginForm;
+        if (targetContainer) targetContainer.appendChild(errorMessageEl);
+    }
 
-const app = express();
-const PORT = process.env.PORT || 10000;
-
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(session({
-    secret: 'minion-secret-key-1234',
-    resave: false,
-    saveUninitialized: false
-}));
-
-// MongoDB Connection
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://rollyong0115_db_user:Minion123@cluster0.bjtl1i4.mongodb.net/minionfeed?retryWrites=true&w=majority';
-
-mongoose.connect(MONGO_URI)
-    .then(() => console.log('✅ Connected to MongoDB Atlas successfully!'))
-    .catch(err => console.error('❌ MongoDB Connection Error:', err));
-
-// Schemas & Models
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    email: { type: String },
-    phone: { type: String },
-    fullName: { type: String, required: true },
-    password: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now }
-});
-const User = mongoose.model('User', userSchema);
-
-const messageSchema = new mongoose.Schema({
-    sender: String,
-    username: String,
-    text: String,
-    reactions: { type: Map, of: Number, default: {} },
-    createdAt: { type: Date, default: Date.now }
-});
-const Message = mongoose.model('Message', messageSchema);
-
-// --- API ROUTES ---
-
-// Register
-app.post('/api/register', async (req, res) => {
-    try {
-        const { username, email, phone, fullName, password } = req.body;
-        if (!username || !password || !fullName) {
-            return res.status(400).json({ error: 'Username, Full Name, and Password are required' });
+    function showError(msg) {
+        if (errorMessageEl) {
+            errorMessageEl.textContent = msg || 'An error occurred';
+            errorMessageEl.style.display = 'block';
         }
+    }
 
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return res.status(400).json({ error: 'Username already taken' });
+    function clearError() {
+        if (errorMessageEl) {
+            errorMessageEl.textContent = '';
+            errorMessageEl.style.display = 'none';
         }
+    }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ 
-            username, 
-            email: email || '', 
-            phone: phone || '', 
-            fullName, 
-            password: hashedPassword 
+    // -------------------------------------------------------------
+    // REGISTRATION HANDLER
+    // -------------------------------------------------------------
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearError();
+
+            const inputs = registerForm.querySelectorAll('input');
+            const username = inputs[0] ? inputs[0].value.trim() : '';
+            const email = inputs[1] ? inputs[1].value.trim() : '';
+            const phone = inputs[2] ? inputs[2].value.trim() : '';
+            const fullName = inputs[3] ? inputs[3].value.trim() : '';
+            const password = inputs[inputs.length - 1] ? inputs[inputs.length - 1].value : '';
+
+            if (!username || !fullName || !password) {
+                showError('Please fill in all required fields.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, phone, fullName, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showError(data.error || data.message || 'Registration failed');
+                    return;
+                }
+
+                window.location.href = '/dashboard.html';
+            } catch (err) {
+                console.error('Register error:', err);
+                showError('Network error! Could not connect to server.');
+            }
         });
-        await newUser.save();
-
-        req.session.userId = newUser._id;
-        res.json({ message: 'Registered successfully' });
-    } catch (err) {
-        console.error('Register error:', err);
-        res.status(500).json({ error: 'Server error during registration' });
     }
-});
 
-// Login
-app.post('/api/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        if (!username || !password) {
-            return res.status(400).json({ error: 'Username and password required' });
-        }
+    // -------------------------------------------------------------
+    // LOGIN HANDLER
+    // -------------------------------------------------------------
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearError();
 
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(400).json({ error: 'User not found' });
-        }
+            const inputs = loginForm.querySelectorAll('input');
+            const username = inputs[0] ? inputs[0].value.trim() : '';
+            const password = inputs[inputs.length - 1] ? inputs[inputs.length - 1].value : '';
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ error: 'Invalid password' });
-        }
+            if (!username || !password) {
+                showError('Please enter both username and password.');
+                return;
+            }
 
-        req.session.userId = user._id;
-        res.json({ message: 'Logged in successfully' });
-    } catch (err) {
-        console.error('Login error:', err);
-        res.status(500).json({ error: 'Server error logging in' });
-    }
-});
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
 
-// Check Session / Current User Profile with their posts
-app.get('/api/me', async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ error: 'Not logged in' });
-    }
-    try {
-        const user = await User.findById(req.session.userId).select('-password');
-        if (!user) return res.status(404).json({ error: 'User not found' });
+                const data = await response.json();
 
-        // Fetch posts created by this user as well
-        const userPosts = await Message.find({ username: user.username }).sort({ createdAt: -1 });
+                if (!response.ok) {
+                    showError(data.error || data.message || 'Login failed');
+                    return;
+                }
 
-        res.json({
-            ...user.toObject(),
-            posts: userPosts
+                window.location.href = '/dashboard.html';
+            } catch (err) {
+                console.error('Login error:', err);
+                showError('Network error! Could not connect to server.');
+            }
         });
-    } catch (err) {
-        console.error('API /me error:', err);
-        res.status(500).json({ error: 'Server error' });
     }
-});
 
-// Get All Minion Crew Members
-app.get('/api/users', async (req, res) => {
-    try {
-        const users = await User.find().select('username fullName createdAt').sort({ createdAt: -1 });
-        res.json(users);
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch crew members' });
+    // -------------------------------------------------------------
+    // INITIALIZE DASHBOARD / PROFILE / CREW / FEED
+    // -------------------------------------------------------------
+    fetch('/api/me')
+        .then(async res => {
+            if (res.ok) {
+                const user = await res.json();
+                updateProfileUI(user);
+                loadMessages();
+                loadCrewMembers();
+            } else {
+                const profileName = document.getElementById('profileName') || document.querySelector('.profile-name, h3');
+                if (profileName) profileName.textContent = 'User not found';
+            }
+        })
+        .catch(() => {});
+
+    function updateProfileUI(user) {
+        const nameEl = document.getElementById('profileName') || document.querySelector('.profile-name');
+        const usernameEl = document.getElementById('profileUsername') || document.querySelector('.profile-username');
+        const postsContainer = document.getElementById('userActivityFeed') || document.querySelector('.activity-posts, .user-posts');
+
+        if (nameEl) nameEl.textContent = user.fullName;
+        if (usernameEl) usernameEl.textContent = `@${user.username}`;
+
+        if (postsContainer && user.posts) {
+            if (user.posts.length === 0) {
+                postsContainer.innerHTML = '<div class="message-card">No posts yet!</div>';
+            } else {
+                postsContainer.innerHTML = '';
+                user.posts.forEach(post => {
+                    const card = document.createElement('div');
+                    card.className = 'message-card';
+                    card.innerHTML = `<p>${escapeHtml(post.text)}</p><small>${new Date(post.createdAt).toLocaleString()}</small>`;
+                    postsContainer.appendChild(card);
+                });
+            }
+        }
     }
-});
 
-// Get Messages Feed
-app.get('/api/messages', async (req, res) => {
-    try {
-        const messages = await Message.find().sort({ createdAt: -1 }).limit(50);
-        res.json(messages);
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch messages' });
+    async function loadCrewMembers() {
+        const crewContainer = document.getElementById('crewMembersList') || document.querySelector('.minion-crew-container');
+        if (!crewContainer) return;
+
+        try {
+            const res = await fetch('/api/users');
+            const users = await res.json();
+
+            crewContainer.innerHTML = '<h4>Minion Crew Members</h4>';
+            users.forEach(u => {
+                const item = document.createElement('div');
+                item.className = 'crew-member-item';
+                item.innerHTML = `<strong>${escapeHtml(u.fullName)}</strong> (@${escapeHtml(u.username)})`;
+                crewContainer.appendChild(item);
+            });
+        } catch (err) {
+            console.error('Failed to load crew members');
+        }
     }
-});
 
-// Post Message
-app.post('/api/messages', async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ error: 'Unauthorized - Please log in' });
+    async function loadMessages() {
+        const feedContainer = document.getElementById('messageFeed');
+        if (!feedContainer) return;
+
+        try {
+            const res = await fetch('/api/messages');
+            const messages = await res.json();
+
+            feedContainer.innerHTML = '';
+            messages.forEach(msg => {
+                const card = document.createElement('div');
+                card.className = 'message-card';
+                card.dataset.id = msg._id;
+                
+                let reactionsHtml = '';
+                if (msg.reactions) {
+                    for (const [emoji, count] of Object.entries(msg.reactions)) {
+                        reactionsHtml += `<span class="reaction-badge">${emoji} ${count}</span> `;
+                    }
+                }
+
+                card.innerHTML = `
+                    <strong>${escapeHtml(msg.sender)}</strong> (@${escapeHtml(msg.username)})
+                    <p>${escapeHtml(msg.text)}</p>
+                    <div class="reactions-container">${reactionsHtml}</div>
+                    <div class="reaction-buttons" style="margin-top: 5px;">
+                        <button onclick="reactToMessage('${msg._id}', '🍌')">🍌</button>
+                        <button onclick="reactToMessage('${msg._id}', '❤️')">❤️</button>
+                        <button onclick="reactToMessage('${msg._id}', '🔥')">🔥</button>
+                    </div>
+                `;
+                feedContainer.appendChild(card);
+            });
+        } catch (err) {
+            console.error('Failed to load feed');
+        }
     }
-    try {
-        const user = await User.findById(req.session.userId);
-        if (!user) return res.status(404).json({ error: 'User not found' });
 
-        const { text } = req.body;
-        if (!text || !text.trim()) return res.status(400).json({ error: 'Message text required' });
+    // Global reaction handler helper
+    window.reactToMessage = async function(postId, emoji) {
+        try {
+            const res = await fetch(`/api/messages/${postId}/react`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ emoji })
+            });
+            if (res.ok) {
+                loadMessages();
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to save reaction.');
+            }
+        } catch (err) {
+            console.error('Reaction error:', err);
+            alert('Network error saving reaction.');
+        }
+    };
 
-        const newMsg = new Message({
-            sender: user.fullName,
-            username: user.username,
-            text: text.trim()
+    if (messageForm) {
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const textInput = document.getElementById('messageText') || messageForm.querySelector('input');
+            if (!textInput || !textInput.value.trim()) return;
+
+            try {
+                const res = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: textInput.value })
+                });
+
+                if (res.ok) {
+                    textInput.value = '';
+                    loadMessages();
+                } else {
+                    const errData = await res.json();
+                    alert(errData.error || 'Failed to post message');
+                }
+            } catch (err) {
+                console.error('Error posting message');
+                alert('Network error posting message.');
+            }
         });
-        await newMsg.save();
-        res.json({ message: 'Posted successfully', post: newMsg });
-    } catch (err) {
-        console.error('Post message error:', err);
-        res.status(500).json({ error: 'Failed to post message' });
     }
-});
 
-// Add Reaction to Message
-app.post('/api/messages/:id/react', async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+    function escapeHtml(text) {
+        return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
     }
-    try {
-        const { emoji } = req.body;
-        const message = await Message.findById(req.params.id);
-        if (!message) return res.status(404).json({ error: 'Message not found' });
-
-        let currentCount = message.reactions.get(emoji) || 0;
-        message.reactions.set(emoji, currentCount + 1);
-        await message.save();
-
-        res.json({ message: 'Reaction saved', reactions: Object.fromEntries(message.reactions) });
-    } catch (err) {
-        console.error('Reaction error:', err);
-        res.status(500).json({ error: 'Failed to save reaction' });
-    }
-});
-
-app.listen(PORT, () => {
-    console.log(`🚀 MinionFeed server running on port ${PORT}`);
 });
