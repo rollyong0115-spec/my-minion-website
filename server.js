@@ -104,7 +104,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Check Session / Current User Profile
+// Check Session / Current User Profile with their posts
 app.get('/api/me', async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).json({ error: 'Not logged in' });
@@ -112,8 +112,16 @@ app.get('/api/me', async (req, res) => {
     try {
         const user = await User.findById(req.session.userId).select('-password');
         if (!user) return res.status(404).json({ error: 'User not found' });
-        res.json(user);
+
+        // Fetch posts created by this user as well
+        const userPosts = await Message.find({ username: user.username }).sort({ createdAt: -1 });
+
+        res.json({
+            ...user.toObject(),
+            posts: userPosts
+        });
     } catch (err) {
+        console.error('API /me error:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
