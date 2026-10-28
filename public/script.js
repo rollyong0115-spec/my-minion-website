@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('registerForm');
     const messageForm = document.getElementById('messageForm');
     
-    // Find or create an error display container safely
+    // Error element container setup
     let errorMessageEl = document.getElementById('errorMessage');
     if (!errorMessageEl) {
         errorMessageEl = document.createElement('div');
@@ -30,32 +30,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // REGISTRATION
+    // REGISTRATION HANDLER
     // -------------------------------------------------------------
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             clearError();
 
-            // Automatically grab all inputs in the form
             const inputs = registerForm.querySelectorAll('input');
             let username = '';
             let fullName = '';
             let password = '';
 
-            // Map inputs intelligently based on type or order
             inputs.forEach((input, index) => {
-                const type = input.type;
-                if (type === 'password') {
+                if (input.type === 'password') {
                     password = input.value;
                 } else if (index === 0) {
-                    username = input.value; // First input usually username
+                    username = input.value;
                 } else if (index === 3 || index === 2) {
-                    fullName = input.value; // Name field position
+                    fullName = input.value;
                 }
             });
 
-            // Fallback: grab values by position if empty
             if (!username && inputs[0]) username = inputs[0].value;
             if (!fullName && inputs[3]) fullName = inputs[3].value;
             if (!password && inputs[inputs.length - 1]) password = inputs[inputs.length - 1].value;
@@ -83,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // LOGIN
+    // LOGIN HANDLER
     // -------------------------------------------------------------
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -127,16 +123,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Check session on load
+    // -------------------------------------------------------------
+    // FEED & MESSAGES
+    // -------------------------------------------------------------
     fetch('/api/me')
         .then(res => {
             if (res.ok) loadMessages();
         })
         .catch(() => {});
 
-    // -------------------------------------------------------------
-    // MESSAGES & FEED
-    // -------------------------------------------------------------
     async function loadMessages() {
         const feedContainer = document.getElementById('messageFeed');
         if (!feedContainer) return;
