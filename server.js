@@ -1,3 +1,4 @@
+
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -28,6 +29,8 @@ mongoose.connect(MONGO_URI)
 // Schemas & Models
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
+    email: { type: String },
+    phone: { type: String },
     fullName: { type: String, required: true },
     password: { type: String, required: true }
 });
@@ -46,9 +49,9 @@ const Message = mongoose.model('Message', messageSchema);
 // Register
 app.post('/api/register', async (req, res) => {
     try {
-        const { username, fullName, password } = req.body;
+        const { username, email, phone, fullName, password } = req.body;
         if (!username || !password || !fullName) {
-            return res.status(400).json({ error: 'All fields are required' });
+            return res.status(400).json({ error: 'Username, Full Name, and Password are required' });
         }
 
         const existingUser = await User.findOne({ username });
@@ -57,7 +60,13 @@ app.post('/api/register', async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ username, fullName, password: hashedPassword });
+        const newUser = new User({ 
+            username, 
+            email: email || '', 
+            phone: phone || '', 
+            fullName, 
+            password: hashedPassword 
+        });
         await newUser.save();
 
         req.session.userId = newUser._id;
