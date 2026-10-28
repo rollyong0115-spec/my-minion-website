@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('registerForm');
     const messageForm = document.getElementById('messageForm');
     
-    // Error element container setup
     let errorMessageEl = document.getElementById('errorMessage');
     if (!errorMessageEl) {
         errorMessageEl = document.createElement('div');
@@ -29,9 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // -------------------------------------------------------------
     // REGISTRATION HANDLER
-    // -------------------------------------------------------------
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -71,9 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // -------------------------------------------------------------
     // LOGIN HANDLER
-    // -------------------------------------------------------------
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -110,9 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // -------------------------------------------------------------
     // INITIALIZE DASHBOARD / PROFILE / CREW / FEED
-    // -------------------------------------------------------------
     fetch('/api/me')
         .then(async res => {
             if (res.ok) {
@@ -208,7 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Global reaction handler helper
     window.reactToMessage = async function(postId, emoji) {
         try {
             const res = await fetch(`/api/messages/${postId}/react`, {
