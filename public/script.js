@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // REGISTRATION HANDLER
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -68,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // LOGIN HANDLER
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -105,63 +103,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // INITIALIZE DASHBOARD / PROFILE / CREW / FEED
     fetch('/api/me')
-        .then(async res => {
-            if (res.ok) {
-                const user = await res.json();
-                updateProfileUI(user);
-                loadMessages();
-                loadCrewMembers();
-            } else {
-                const profileName = document.getElementById('profileName') || document.querySelector('.profile-name, h3');
-                if (profileName) profileName.textContent = 'User not found';
-            }
+        .then(res => {
+            if (res.ok) loadMessages();
         })
         .catch(() => {});
-
-    function updateProfileUI(user) {
-        const nameEl = document.getElementById('profileName') || document.querySelector('.profile-name');
-        const usernameEl = document.getElementById('profileUsername') || document.querySelector('.profile-username');
-        const postsContainer = document.getElementById('userActivityFeed') || document.querySelector('.activity-posts, .user-posts');
-
-        if (nameEl) nameEl.textContent = user.fullName;
-        if (usernameEl) usernameEl.textContent = `@${user.username}`;
-
-        if (postsContainer && user.posts) {
-            if (user.posts.length === 0) {
-                postsContainer.innerHTML = '<div class="message-card">No posts yet!</div>';
-            } else {
-                postsContainer.innerHTML = '';
-                user.posts.forEach(post => {
-                    const card = document.createElement('div');
-                    card.className = 'message-card';
-                    card.innerHTML = `<p>${escapeHtml(post.text)}</p><small>${new Date(post.createdAt).toLocaleString()}</small>`;
-                    postsContainer.appendChild(card);
-                });
-            }
-        }
-    }
-
-    async function loadCrewMembers() {
-        const crewContainer = document.getElementById('crewMembersList') || document.querySelector('.minion-crew-container');
-        if (!crewContainer) return;
-
-        try {
-            const res = await fetch('/api/users');
-            const users = await res.json();
-
-            crewContainer.innerHTML = '<h4>Minion Crew Members</h4>';
-            users.forEach(u => {
-                const item = document.createElement('div');
-                item.className = 'crew-member-item';
-                item.innerHTML = `<strong>${escapeHtml(u.fullName)}</strong> (@${escapeHtml(u.username)})`;
-                crewContainer.appendChild(item);
-            });
-        } catch (err) {
-            console.error('Failed to load crew members');
-        }
-    }
 
     async function loadMessages() {
         const feedContainer = document.getElementById('messageFeed');
@@ -175,24 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
             messages.forEach(msg => {
                 const card = document.createElement('div');
                 card.className = 'message-card';
-                card.dataset.id = msg._id;
-                
-                let reactionsHtml = '';
-                if (msg.reactions) {
-                    for (const [emoji, count] of Object.entries(msg.reactions)) {
-                        reactionsHtml += `<span class="reaction-badge">${emoji} ${count}</span> `;
-                    }
-                }
-
                 card.innerHTML = `
                     <strong>${escapeHtml(msg.sender)}</strong> (@${escapeHtml(msg.username)})
                     <p>${escapeHtml(msg.text)}</p>
-                    <div class="reactions-container">${reactionsHtml}</div>
-                    <div class="reaction-buttons" style="margin-top: 5px;">
-                        <button onclick="reactToMessage('${msg._id}', '🍌')">🍌</button>
-                        <button onclick="reactToMessage('${msg._id}', '❤️')">❤️</button>
-                        <button onclick="reactToMessage('${msg._id}', '🔥')">🔥</button>
-                    </div>
                 `;
                 feedContainer.appendChild(card);
             });
@@ -200,25 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Failed to load feed');
         }
     }
-
-    window.reactToMessage = async function(postId, emoji) {
-        try {
-            const res = await fetch(`/api/messages/${postId}/react`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ emoji })
-            });
-            if (res.ok) {
-                loadMessages();
-            } else {
-                const data = await res.json();
-                alert(data.error || 'Failed to save reaction.');
-            }
-        } catch (err) {
-            console.error('Reaction error:', err);
-            alert('Network error saving reaction.');
-        }
-    };
 
     if (messageForm) {
         messageForm.addEventListener('submit', async (e) => {
@@ -236,13 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     textInput.value = '';
                     loadMessages();
-                } else {
-                    const errData = await res.json();
-                    alert(errData.error || 'Failed to post message');
                 }
             } catch (err) {
                 console.error('Error posting message');
-                alert('Network error posting message.');
             }
         });
     }
