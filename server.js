@@ -12,12 +12,10 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://rollyong0115_db_user:ST9HM
 
 app.set('trust proxy', 1);
 
-// Connect to MongoDB
 mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ Connected to MongoDB Atlas!'))
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// Email Transporter (uses environment variables if set)
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -26,9 +24,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// --- MONGOOSE SCHEMAS & MODELS ---
-
-// 1. User Model
+// --- SCHEMAS & MODELS ---
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     fullName: { type: String, required: true },
@@ -42,8 +38,6 @@ const UserSchema = new mongoose.Schema({
     coverPhoto: { type: String, default: '' },
     highScore: { type: Number, default: 0 },
     friends: [{ type: String }],
-    friendRequestsSent: [{ type: String }],
-    friendRequestsReceived: [{ type: String }],
     blockedUsers: [{ type: String }],
     resetPasswordToken: String,
     resetPasswordExpires: Date,
@@ -51,7 +45,6 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-// 2. Post & Comment Models
 const CommentSchema = new mongoose.Schema({
     author: String,
     username: String,
@@ -72,18 +65,17 @@ const PostSchema = new mongoose.Schema({
     text: String,
     image: String,
     edited: { type: Boolean, default: false },
-    reactions: {
-        banana: { type: Number, default: 1 },
-        love: { type: Number, default: 0 },
-        haha: { type: Number, default: 0 },
-        rocket: { type: Number, default: 0 }
-    },
+    // Array tracking who reacted and with what emoji
+    reactions: [{
+        type: { type: String }, // 'banana', 'love', 'haha', 'rocket'
+        username: String,
+        fullName: String
+    }],
     comments: [CommentSchema],
     createdAt: { type: Date, default: Date.now }
 });
 const Post = mongoose.model('Post', PostSchema);
 
-// 3. Public Chat Message Model
 const MessageSchema = new mongoose.Schema({
     sender: String,
     username: String,
@@ -98,10 +90,9 @@ const MessageSchema = new mongoose.Schema({
 });
 const Message = mongoose.model('Message', MessageSchema);
 
-// 4. Private Direct Message (DM) Model
 const DMSchema = new mongoose.Schema({
-    sender: String,     // username
-    recipient: String,  // username
+    sender: String,
+    recipient: String,
     text: String,
     replyTo: String,
     reactions: [{
@@ -113,19 +104,17 @@ const DMSchema = new mongoose.Schema({
 });
 const DM = mongoose.model('DM', DMSchema);
 
-// 5. Notification Model
 const NotificationSchema = new mongoose.Schema({
     recipient: { type: String, required: true },
     sender: { type: String, required: true },
     senderUsername: { type: String, required: true },
-    type: { type: String, required: true }, // 'friend', 'reply', 'mention', 'dm'
+    type: { type: String, required: true },
     text: { type: String, required: true },
     read: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });
 const Notification = mongoose.model('Notification', NotificationSchema);
 
-// --- MIDDLEWARE ---
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -137,12 +126,10 @@ app.use(session({
     cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 * 7 }
 }));
 
-// Password strength validator
 function isStrongPassword(pwd) {
     return pwd && pwd.length >= 8 && /[a-zA-Z]/.test(pwd) && /[0-9]/.test(pwd) && /[!@#$%^&*(),.?":{}|<>\-_=+]/.test(pwd);
 }
 
-// Auto-notify mentions (@username)
 async function notifyMentions(text, sender) {
     const matches = text.match(/@([a-zA-Z0-9_.-]+)/g);
     if (!matches) return;
@@ -163,17 +150,12 @@ async function notifyMentions(text, sender) {
     }
 }
 
-// --- AUTHENTICATION ROUTES ---
-
+// --- AUTH ROUTES ---
 app.post('/api/register', async (req, res) => {
     try {
         const { username, email, phone, fullName, password } = req.body;
-        if (!username || !fullName || !password) {
-            return res.status(400).json({ error: 'Please fill in all required fields!' });
-        }
-        if (!isStrongPassword(password)) {
-            return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers & symbols (e.g. Banana!123).' });
-        }
+        if (!username || !fullName || !password) return res.status(400).json({ error: 'Please fill in all required fields!' });
+        if (!isStrongPassword(password)) return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers & symbols (e.g. Banana!123).' });
 
         const usernameExists = await User.findOne({ username: new RegExp(`^${username.trim()}$`, 'i') });
         if (usernameExists) return res.status(400).json({ error: 'Minion Name is already taken!' });
@@ -192,11 +174,9 @@ app.post('/api/register', async (req, res) => {
             password: hashedPassword
         });
         await newUser.save();
-
         req.session.userId = newUser._id;
         res.json({ message: 'Welcome to Gru’s Crew! You can now log in.' });
     } catch (err) {
-        console.error('Register error:', err);
         res.status(500).json({ error: 'Server error during registration' });
     }
 });
@@ -207,10 +187,7 @@ app.post('/api/login', async (req, res) => {
         if (!username || !password) return res.status(400).json({ error: 'Username and password required.' });
 
         const user = await User.findOne({
-            $or: [
-                { username: new RegExp(`^${username.trim()}$`, 'i') },
-                { email: new RegExp(`^${username.trim()}$`, 'i') }
-            ]
+            $or: [{ username: new RegExp(`^${username.trim()}$`, 'i') }, { email: new RegExp(`^${username.trim()}$`, 'i') }]
         });
         if (!user) return res.status(400).json({ error: 'Minion not found!' });
 
@@ -240,7 +217,6 @@ app.post('/api/logout', (req, res) => {
 });
 
 // --- PASSWORD RESET ROUTES ---
-
 app.post('/api/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
@@ -251,7 +227,7 @@ app.post('/api/forgot-password', async (req, res) => {
 
         const token = crypto.randomBytes(20).toString('hex');
         user.resetPasswordToken = token;
-        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+        user.resetPasswordExpires = Date.now() + 3600000;
         await user.save();
 
         const host = req.headers.host;
@@ -267,10 +243,7 @@ app.post('/api/forgot-password', async (req, res) => {
             });
             res.json({ message: 'Password reset link sent to your email!' });
         } else {
-            res.json({
-                message: 'Reset link generated!',
-                resetUrl: resetUrl
-            });
+            res.json({ message: 'Reset link generated!', resetUrl: resetUrl });
         }
     } catch (err) {
         res.status(500).json({ error: 'Failed to process request' });
@@ -281,30 +254,22 @@ app.post('/api/reset-password', async (req, res) => {
     try {
         const { token, newPassword } = req.body;
         if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password required.' });
+        if (!isStrongPassword(newPassword)) return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers, and symbols.' });
 
-        if (!isStrongPassword(newPassword)) {
-            return res.status(400).json({ error: 'Password must be 8+ chars with letters, numbers, and symbols.' });
-        }
-
-        const user = await User.findOne({
-            resetPasswordToken: token,
-            resetPasswordExpires: { $gt: Date.now() }
-        });
+        const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
         if (!user) return res.status(400).json({ error: 'Reset link is invalid or has expired!' });
 
         user.password = await bcrypt.hash(newPassword, 10);
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
         await user.save();
-
         res.json({ message: 'Banana Code successfully reset! You can now log in.' });
     } catch (err) {
         res.status(500).json({ error: 'Failed to reset password.' });
     }
 });
 
-// --- USER DIRECTORY & PROFILE ROUTES ---
-
+// --- PROFILE & USERS ROUTES ---
 app.get('/api/users', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
@@ -323,8 +288,6 @@ app.get('/api/users/:username', async (req, res) => {
 
         const me = await User.findById(req.session.userId);
         const isFriend = me.friends && me.friends.includes(target.username);
-        const requestSent = me.friendRequestsSent && me.friendRequestsSent.includes(target.username);
-        const requestReceived = me.friendRequestsReceived && me.friendRequestsReceived.includes(target.username);
         const isBlocked = me.blockedUsers && me.blockedUsers.includes(target.username);
 
         res.json({
@@ -339,13 +302,25 @@ app.get('/api/users/:username', async (req, res) => {
             coverPhoto: target.coverPhoto,
             highScore: target.highScore,
             joinedAt: target.joinedAt,
+            friendsCount: target.friends ? target.friends.length : 0,
             isFriend: !!isFriend,
-            requestSent: !!requestSent,
-            requestReceived: !!requestReceived,
             isBlocked: !!isBlocked
         });
     } catch (err) {
         res.status(500).json({ error: 'Failed to load profile' });
+    }
+});
+
+// Get user's friends list with details (for Friends Showcase)
+app.get('/api/users/:username/friends', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const target = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'i') });
+        if (!target || !target.friends) return res.json([]);
+        const friendsList = await User.find({ username: { $in: target.friends } }, 'fullName username avatar role');
+        res.json(friendsList);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch friends' });
     }
 });
 
@@ -360,11 +335,8 @@ app.post('/api/profile', async (req, res) => {
         if (phone !== undefined) user.phone = phone.trim();
 
         if (email && email.trim() && email.trim().toLowerCase() !== (user.email || '').toLowerCase()) {
-            const exists = await User.findOne({
-                email: new RegExp(`^${email.trim()}$`, 'i'),
-                _id: { $ne: user._id }
-            });
-            if (exists) return res.status(400).json({ error: 'This email is already in use by another Minion!' });
+            const exists = await User.findOne({ email: new RegExp(`^${email.trim()}$`, 'i'), _id: { $ne: user._id } });
+            if (exists) return res.status(400).json({ error: 'This email is already in use!' });
             user.email = email.trim().toLowerCase();
         }
 
@@ -412,7 +384,7 @@ app.post('/api/users/:username/friend', async (req, res) => {
         }
         await me.save();
         await target.save();
-        res.json({ isFriend });
+        res.json({ isFriend, friendsCount: target.friends.length });
     } catch (err) {
         res.status(500).json({ error: 'Failed to update friendship' });
     }
@@ -453,7 +425,7 @@ app.post('/api/highscore', async (req, res) => {
     }
 });
 
-// --- POSTS ROUTES ---
+// --- POSTS ROUTES (WITH TOGGLE REACTIONS & WHO REACTED) ---
 
 app.get('/api/posts', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -478,7 +450,8 @@ app.post('/api/posts', async (req, res) => {
             author: me.fullName,
             username: me.username,
             text: text || '',
-            image: image || ''
+            image: image || '',
+            reactions: []
         });
         await newPost.save();
         if (text) await notifyMentions(text, me);
@@ -523,17 +496,39 @@ app.delete('/api/posts/:id', async (req, res) => {
     }
 });
 
+// TOGGLE REACTION (Prevents infinite spam, records who reacted, allows unlike)
 app.post('/api/posts/:id/react', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
         const { type } = req.body;
+        const me = await User.findById(req.session.userId);
         const post = await Post.findById(req.params.id);
-        if (post) {
-            post.reactions[type] = (post.reactions[type] || 0) + 1;
-            await post.save();
-            return res.json({ reactions: post.reactions });
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+
+        if (!Array.isArray(post.reactions)) post.reactions = [];
+
+        // Check if current user already reacted
+        const existingIdx = post.reactions.findIndex(r => r.username === me.username);
+
+        if (existingIdx > -1) {
+            if (post.reactions[existingIdx].type === type) {
+                // Same emoji clicked again -> remove reaction (unlike)
+                post.reactions.splice(existingIdx, 1);
+            } else {
+                // Different emoji clicked -> switch reaction
+                post.reactions[existingIdx].type = type;
+            }
+        } else {
+            // New reaction added
+            post.reactions.push({
+                type,
+                username: me.username,
+                fullName: me.fullName
+            });
         }
-        res.status(404).json({ error: 'Post not found' });
+
+        await post.save();
+        res.json({ reactions: post.reactions });
     } catch (err) {
         res.status(500).json({ error: 'Reaction error' });
     }
@@ -628,8 +623,7 @@ app.post('/api/posts/:postId/comment/:commentId/reply', async (req, res) => {
     }
 });
 
-// --- PUBLIC CHAT MESSENGER ROUTES ---
-
+// --- MESSAGES & CHAT ---
 app.get('/api/messages', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
@@ -668,43 +662,30 @@ app.post('/api/messages/:id/react', async (req, res) => {
     try {
         const { emoji } = req.body;
         const me = await User.findById(req.session.userId);
-        
-        // Search in public messages or DMs
-        let msg = await Message.findById(req.params.id);
-        if (!msg) msg = await DM.findById(req.params.id);
+        let msg = await Message.findById(req.params.id) || await DM.findById(req.params.id);
         if (!msg) return res.status(404).json({ error: 'Message not found' });
 
         if (!msg.reactions) msg.reactions = [];
-        // Remove prior reaction by this user
         msg.reactions = msg.reactions.filter(r => r.username !== me.username);
-        msg.reactions.push({
-            emoji,
-            fullName: me.fullName,
-            username: me.username
-        });
+        msg.reactions.push({ emoji, fullName: me.fullName, username: me.username });
         await msg.save();
         res.json({ success: true, reactions: msg.reactions });
     } catch (err) {
-        res.status(500).json({ error: 'Failed to react to message' });
+        res.status(500).json({ error: 'Failed to react' });
     }
 });
 
-// --- PRIVATE MESSAGES (DMs) ROUTES ---
-
+// --- PRIVATE DMs ---
 app.get('/api/dms', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
         const me = await User.findById(req.session.userId);
-        // Find all partners chatted with
-        const dms = await DM.find({
-            $or: [{ sender: me.username }, { recipient: me.username }]
-        });
+        const dms = await DM.find({ $or: [{ sender: me.username }, { recipient: me.username }] });
         const partnerUsernames = new Set();
         dms.forEach(d => {
             if (d.sender !== me.username) partnerUsernames.add(d.sender);
             if (d.recipient !== me.username) partnerUsernames.add(d.recipient);
         });
-
         const partners = await User.find({ username: { $in: Array.from(partnerUsernames) } }, 'fullName username avatar');
         res.json(partners);
     } catch (err) {
@@ -716,12 +697,9 @@ app.get('/api/dm/:username', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
         const me = await User.findById(req.session.userId);
-        const targetUsername = req.params.username;
+        const target = req.params.username;
         const thread = await DM.find({
-            $or: [
-                { sender: me.username, recipient: targetUsername },
-                { sender: targetUsername, recipient: me.username }
-            ]
+            $or: [{ sender: me.username, recipient: target }, { sender: target, recipient: me.username }]
         }).sort({ createdAt: 1 });
         res.json(thread);
     } catch (err) {
@@ -752,7 +730,7 @@ app.post('/api/dm/:username', async (req, res) => {
             sender: me.fullName,
             senderUsername: me.username,
             type: 'dm',
-            text: `💬 New private message from ${me.fullName}`
+            text: `💬 New message from ${me.fullName}`
         });
 
         res.json(newDM);
@@ -761,8 +739,7 @@ app.post('/api/dm/:username', async (req, res) => {
     }
 });
 
-// --- NOTIFICATION ROUTES ---
-
+// --- NOTIFICATIONS ---
 app.get('/api/notifications', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
@@ -781,10 +758,8 @@ app.post('/api/notifications/read', async (req, res) => {
         await Notification.updateMany({ recipient: me.username, read: false }, { read: true });
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: 'Failed to mark notifications read' });
+        res.status(500).json({ error: 'Failed to mark read' });
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 MinionFeed server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 MinionFeed running on port ${PORT}`));
