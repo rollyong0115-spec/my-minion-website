@@ -30,31 +30,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // REGISTRATION HANDLER
+    // REGISTRATION HANDLER (Precise Field Lookup)
     // -------------------------------------------------------------
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             clearError();
 
-            const inputs = registerForm.querySelectorAll('input');
-            let username = '';
-            let fullName = '';
-            let password = '';
+            // Grab inputs safely by ID, name, or fallback to querySelector
+            const usernameInput = document.getElementById('regUsername') || registerForm.querySelector('input[name="username"]') || registerForm.querySelectorAll('input')[0];
+            const fullNameInput = document.getElementById('regFullName') || registerForm.querySelector('input[name="fullName"]') || registerForm.querySelectorAll('input')[3] || registerForm.querySelectorAll('input')[1];
+            const passwordInput = document.getElementById('regPassword') || registerForm.querySelector('input[type="password"]');
 
-            inputs.forEach((input, index) => {
-                if (input.type === 'password') {
-                    password = input.value;
-                } else if (index === 0) {
-                    username = input.value;
-                } else if (index === 3 || index === 2) {
-                    fullName = input.value;
-                }
-            });
+            const username = usernameInput ? usernameInput.value.trim() : '';
+            const fullName = fullNameInput ? fullNameInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value : '';
 
-            if (!username && inputs[0]) username = inputs[0].value;
-            if (!fullName && inputs[3]) fullName = inputs[3].value;
-            if (!password && inputs[inputs.length - 1]) password = inputs[inputs.length - 1].value;
+            if (!username || !fullName || !password) {
+                showError('Please fill in all required fields.');
+                return;
+            }
 
             try {
                 const response = await fetch('/api/register', {
@@ -70,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
+                // Success -> Redirect to dashboard
                 window.location.href = '/dashboard.html';
             } catch (err) {
                 console.error('Register error:', err);
@@ -86,20 +82,16 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             clearError();
 
-            const inputs = loginForm.querySelectorAll('input');
-            let username = '';
-            let password = '';
+            const usernameInput = document.getElementById('loginUsername') || loginForm.querySelector('input[name="username"]') || loginForm.querySelectorAll('input')[0];
+            const passwordInput = document.getElementById('loginPassword') || loginForm.querySelector('input[type="password"]');
 
-            inputs.forEach((input) => {
-                if (input.type === 'password') {
-                    password = input.value;
-                } else {
-                    username = input.value;
-                }
-            });
+            const username = usernameInput ? usernameInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value : '';
 
-            if (!username && inputs[0]) username = inputs[0].value;
-            if (!password && inputs[1]) password = inputs[1].value;
+            if (!username || !password) {
+                showError('Please enter both username and password.');
+                return;
+            }
 
             try {
                 const response = await fetch('/api/login', {
