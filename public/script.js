@@ -30,21 +30,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // REGISTRATION HANDLER (Precise Field Lookup)
+    // REGISTRATION HANDLER (Maps all 5 form fields precisely)
     // -------------------------------------------------------------
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             clearError();
 
-            // Grab inputs safely by ID, name, or fallback to querySelector
-            const usernameInput = document.getElementById('regUsername') || registerForm.querySelector('input[name="username"]') || registerForm.querySelectorAll('input')[0];
-            const fullNameInput = document.getElementById('regFullName') || registerForm.querySelector('input[name="fullName"]') || registerForm.querySelectorAll('input')[3] || registerForm.querySelectorAll('input')[1];
-            const passwordInput = document.getElementById('regPassword') || registerForm.querySelector('input[type="password"]');
-
-            const username = usernameInput ? usernameInput.value.trim() : '';
-            const fullName = fullNameInput ? fullNameInput.value.trim() : '';
-            const password = passwordInput ? passwordInput.value : '';
+            const inputs = registerForm.querySelectorAll('input');
+            
+            // Mapping based on your 5 registration inputs:
+            // 0: Username, 1: Email, 2: Phone/ID, 3: Full Name, 4: Password
+            const username = inputs[0] ? inputs[0].value.trim() : '';
+            const email = inputs[1] ? inputs[1].value.trim() : '';
+            const phone = inputs[2] ? inputs[2].value.trim() : '';
+            const fullName = inputs[3] ? inputs[3].value.trim() : '';
+            const password = inputs[inputs.length - 1] ? inputs[inputs.length - 1].value : '';
 
             if (!username || !fullName || !password) {
                 showError('Please fill in all required fields.');
@@ -55,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch('/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, fullName, password })
+                    body: JSON.stringify({ username, email, phone, fullName, password })
                 });
 
                 const data = await response.json();
@@ -65,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Success -> Redirect to dashboard
                 window.location.href = '/dashboard.html';
             } catch (err) {
                 console.error('Register error:', err);
@@ -82,11 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             clearError();
 
-            const usernameInput = document.getElementById('loginUsername') || loginForm.querySelector('input[name="username"]') || loginForm.querySelectorAll('input')[0];
-            const passwordInput = document.getElementById('loginPassword') || loginForm.querySelector('input[type="password"]');
-
-            const username = usernameInput ? usernameInput.value.trim() : '';
-            const password = passwordInput ? passwordInput.value : '';
+            const inputs = loginForm.querySelectorAll('input');
+            const username = inputs[0] ? inputs[0].value.trim() : '';
+            const password = inputs[inputs.length - 1] ? inputs[inputs.length - 1].value : '';
 
             if (!username || !password) {
                 showError('Please enter both username and password.');
