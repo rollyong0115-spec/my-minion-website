@@ -1,3 +1,14 @@
+I’ve already updated the local profile page so it shows **Add Friend** when you aren’t friends and **Unfriend** when you are. I’ll provide the complete updated file for you to replace `public/profile.html` on GitHub.
+
+Read 
+Completed with input: {
+  "path": "C:\\Users\\VTS-ADM-17KIOS01\\Desktop\\my-minion-website-main\\public\\profile.html",
+  "forceReadLargeFiles": true
+}
+
+Yes. This complete `profile.html` includes both actions: **Add Friend** when you aren’t friends, and **Unfriend** when you are. Replace the entire contents of `public/profile.html` on GitHub with this code, then commit the change.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,6 +71,8 @@
         .fb-btn-blue { background: #1877f2; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
         .fb-btn-gray { background: #e4e6eb; color: #050505; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
         .fb-btn-red { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; padding: 10px 16px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 13px; cursor: pointer; }
+        .fb-btn-unfriend { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
+        .fb-btn-unfriend:hover { background: #fecaca; }
 
         /* FRIENDS SHOWCASE CARD */
         .friends-card {
@@ -309,8 +322,8 @@
             actionsArea.innerHTML = `<button class="fb-btn-gray" onclick="openProfileModal()">✏️ Edit Profile & Info</button>`;
         } else {
             actionsArea.innerHTML = `
-                <button class="fb-btn-blue" id="btn-friend" onclick="toggleFriend('${profile.username}')">
-                    ${profile.isFriend ? '✔ Friends' : '➕ Add Friend'}
+                <button class="${profile.isFriend ? 'fb-btn-unfriend' : 'fb-btn-blue'}" id="btn-friend" onclick="toggleFriend('${profile.username}')">
+                    ${profile.isFriend ? 'Unfriend' : '➕ Add Friend'}
                 </button>
                 <button class="fb-btn-gray" onclick="startDirectChat('${profile.username}')">💬 Message</button>
                 <button class="fb-btn-red" id="btn-block" onclick="toggleBlock('${profile.username}')">
@@ -513,3 +526,4 @@
 </script>
 </body>
 </html>
+```
