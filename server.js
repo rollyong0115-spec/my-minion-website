@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 const path = require('path');
 
@@ -12,18 +13,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({
-    secret: 'minion-secret-key-1234',
-    resave: false,
-    saveUninitialized: false
-}));
-
 // MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://rollyong0115_db_user:Minion123@cluster0.bjtl1i4.mongodb.net/minionfeed?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ Connected to MongoDB Atlas successfully!'))
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+// Robust Session Configuration stored in MongoDB Atlas
+app.use(session({
+    secret: 'minion-secret-key-1234',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: MONGO_URI }),
+    cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day session
+}));
 
 // Schemas & Models
 const userSchema = new mongoose.Schema({
@@ -71,7 +75,10 @@ app.post('/api/register', async (req, res) => {
         await newUser.save();
 
         req.session.userId = newUser._id;
-        res.json({ message: 'Registered successfully' });
+        req.session.save((err) => {
+            if (err) console.error('Session save error:', err);
+            res.json({ message: 'Registered successfully' });
+        });
     } catch (err) {
         console.error('Register error:', err);
         res.status(500).json({ error: 'Server error during registration' });
@@ -97,7 +104,10 @@ app.post('/api/login', async (req, res) => {
         }
 
         req.session.userId = user._id;
-        res.json({ message: 'Logged in successfully' });
+        req.session.save((err) => {
+            if (err) console.error('Session save error:', err);
+            res.json({ message: 'Logged in successfully' });
+        });
     } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ error: 'Server error logging in' });
@@ -113,7 +123,6 @@ app.get('/api/me', async (req, res) => {
         const user = await User.findById(req.session.userId).select('-password');
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        // Fetch posts created by this user as well
         const userPosts = await Message.find({ username: user.username }).sort({ createdAt: -1 });
 
         res.json({
@@ -181,6 +190,9 @@ app.post('/api/messages/:id/react', async (req, res) => {
         const message = await Message.findById(req.params.id);
         if (!message) return res.status(404).json({ error: 'Message not found' });
 
+        if (!message.reactions) {
+            message.reactions = new Map();
+        }
         let currentCount = message.reactions.get(emoji) || 0;
         message.reactions.set(emoji, currentCount + 1);
         await message.save();
