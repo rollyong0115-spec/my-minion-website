@@ -13,7 +13,7 @@
             background: #fedb00; border-bottom: 3px solid #1e3a8a; padding: 10px 20px;
             display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
         }
-        .nav-logo { font-size: 22px; font-weight: 700; color: #1e3a8a; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+        .nav-logo { font-size: 22px; font-weight: 700; color: #1e3a8a; display: flex; align-items: center; gap: 6px; text-decoration: none; }
         .nav-center-tabs { display: flex; gap: 8px; }
         .nav-tab-btn {
             background: rgba(255, 255, 255, 0.4); border: 2px solid transparent; padding: 7px 14px;
@@ -29,23 +29,25 @@
             font-weight: 700; font-family: inherit; font-size: 14px; color: #1e3a8a; cursor: pointer;
             display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
         }
+        
+        /* FACEBOOK-STYLE PROFILE CONTAINER */
         .profile-container {
             max-width: 950px; margin: 12px auto 20px auto; background: white;
             box-shadow: 0 4px 15px rgba(0,0,0,0.06); border-radius: 20px; overflow: hidden;
             border: 2px solid #cbd5e1; position: relative;
         }
         .cover-photo-wrapper {
-            position: relative; width: 100%; height: 240px;
+            position: relative; width: 100%; height: 260px;
             background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
             background-size: cover; background-position: center;
         }
         .profile-header-content { padding: 0 25px 20px 25px; position: relative; display: flex; flex-direction: column; }
-        .avatar-wrapper { position: relative; margin-top: -65px; margin-bottom: 12px; }
+        .avatar-wrapper { position: relative; margin-top: -75px; margin-bottom: 12px; }
         .avatar-img {
-            width: 130px; height: 130px; border-radius: 50%;
+            width: 140px; height: 140px; border-radius: 50%;
             border: 5px solid #ffffff; background: #fedb00;
             object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            display: flex; align-items: center; justify-content: center; font-size: 55px;
+            display: flex; align-items: center; justify-content: center; font-size: 60px;
         }
         .profile-title-bar { width: 100%; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px; }
         .profile-names h1 { margin: 0; font-size: 26px; color: #0f172a; }
@@ -59,9 +61,34 @@
         .fb-btn-gray { background: #e4e6eb; color: #050505; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
         .fb-btn-red { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; padding: 10px 16px; border-radius: 8px; font-weight: 700; font-family: inherit; font-size: 13px; cursor: pointer; }
 
-        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 2px solid #cbd5e1; margin-bottom: 20px; }
-        .card-header { font-size: 18px; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #fedb00; padding-bottom: 8px; margin-bottom: 15px; }
+        /* FRIENDS SHOWCASE CARD */
+        .friends-card {
+            background: white; border-radius: 16px; padding: 18px; margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 2px solid #cbd5e1;
+        }
+        .friends-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; margin-top: 12px;
+        }
+        .friend-item {
+            text-align: center; cursor: pointer; text-decoration: none; color: inherit;
+        }
+        .friend-avatar {
+            width: 65px; height: 65px; border-radius: 50%; object-fit: cover; background: #fedb00;
+            margin: 0 auto 5px auto; border: 2px solid #1e3a8a; display: flex; align-items: center; justify-content: center; font-size: 24px;
+        }
+        .friend-name { font-size: 12px; font-weight: 700; color: #1e3a8a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+        /* CREATE POST ON PROFILE */
+        .create-post {
+            background: white; border-radius: 16px; padding: 18px; margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 2px solid #cbd5e1;
+        }
+        .create-post textarea { width: 100%; height: 75px; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px; font-family: inherit; resize: none; outline: none; }
+        .create-post input { width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-family: inherit; }
+        .post-btn { background: #2563eb; color: white; border: 2px solid #1e3a8a; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 700; font-family: inherit; margin-top: 10px; width: 100%; }
+
+        /* POSTS STREAM */
+        .card-header { font-size: 18px; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #fedb00; padding-bottom: 8px; margin-bottom: 15px; }
         .post-card { background: white; border-radius: 16px; padding: 18px; margin-bottom: 16px; border: 2px solid #cbd5e1; }
         .post-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
         .post-author { font-weight: 700; color: #1e3a8a; font-size: 15px; }
@@ -69,6 +96,15 @@
         .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
         .post-img { width: 100%; border-radius: 12px; max-height: 380px; object-fit: cover; margin-bottom: 10px; }
 
+        .reaction-bar { display: flex; gap: 6px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 8px 0; margin: 10px 0; flex-wrap: wrap; }
+        .react-btn {
+            background: #f8fafc; border: 1px solid #cbd5e1; padding: 5px 12px; border-radius: 18px;
+            cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; transition: all 0.1s;
+        }
+        .react-btn:hover { background: #fedb00; }
+        .react-btn.active { background: #fef08a; border-color: #ca8a04; font-weight: bold; }
+
+        /* MODAL */
         .modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 15px; }
         .modal-box { background: white; border-radius: 20px; padding: 22px; border: 4px solid #fedb00; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; position: relative; }
         .modal-box label { display: block; font-size: 12px; font-weight: bold; color: #475569; margin: 10px 0 3px 0; text-align: left; }
@@ -81,7 +117,7 @@
 
     <div class="navbar">
         <a href="dashboard.html" class="nav-logo">
-            <span>🍌</span> MinionFeed
+            <span>&#127820;</span> MinionFeed
         </a>
         <div class="nav-center-tabs">
             <a href="dashboard.html" class="nav-tab-btn">🏠 <span>News Feed</span></a>
@@ -96,6 +132,7 @@
         <a href="dashboard.html" class="back-btn">← Back to News Feed</a>
     </div>
 
+    <!-- PROFILE HERO BANNER -->
     <div class="profile-container">
         <div class="cover-photo-wrapper" id="profile-cover"></div>
 
@@ -111,6 +148,7 @@
                     <p class="profile-bio-text" id="user-bio">"Living life one banana at a time!"</p>
                     
                     <div class="profile-details-pills">
+                        <div class="pill">👥 <span id="user-friends-count">0</span> Friends</div>
                         <div class="pill">📧 <span id="user-display-email">...</span></div>
                         <div class="pill">📍 <span id="user-location">Gru's Secret Lab</span></div>
                         <div class="pill">🚀 <span id="user-role">Rocket Scientist</span></div>
@@ -124,9 +162,27 @@
     </div>
 
     <div style="max-width: 950px; margin: 0 auto 30px auto; padding: 0 15px;">
+        
+        <!-- FRIENDS LIST / SHOWCASE -->
+        <div class="friends-card" id="friends-card">
+            <div class="card-header" style="margin-bottom:5px;">👥 Minion Friends (<span id="friends-card-count">0</span>)</div>
+            <div class="friends-grid" id="friends-grid">
+                <p style="color:#64748b;font-size:13px;">No friends added yet.</p>
+            </div>
+        </div>
+
+        <!-- CREATE POST CARD (Visible when on your own profile) -->
+        <div class="create-post" id="profile-create-post" style="display:none;">
+            <div class="card-header">Post to Your Profile 📝</div>
+            <textarea id="profile-post-text" placeholder="What's happening? Share a status or paste an image URL!"></textarea>
+            <input type="text" id="profile-post-image" placeholder="Image or GIF URL (optional)">
+            <button class="post-btn" onclick="publishProfilePost()">Post to Profile 🚀</button>
+        </div>
+
+        <!-- POSTS STREAM -->
         <div class="card-header">Activity & Posts</div>
         <div id="profile-posts-container">
-            <p style="text-align:center; color:#64748b;">Loading user posts...</p>
+            <p style="text-align:center; color:#64748b;">Loading posts...</p>
         </div>
     </div>
 
@@ -176,11 +232,14 @@
     let newAvatarBase64 = null;
     let newCoverBase64 = null;
 
+    const EMOJIS = {
+        banana: '🍌', love: '❤️', haha: '😂', rocket: '🚀'
+    };
+
     function timeAgo(dateString) {
         if (!dateString) return 'Just now';
         const date = new Date(dateString);
         const seconds = Math.floor((new Date() - date) / 1000);
-        
         if (seconds < 60) return 'Just now';
         let interval = seconds / 31536000;
         if (interval > 1) return Math.floor(interval) + 'y ago';
@@ -213,16 +272,22 @@
 
         document.getElementById('user-fullname').innerText = profile.fullName;
         document.getElementById('user-handle').innerText = '@' + profile.username;
-        document.getElementById('user-bio').innerText = `"${profile.bio || 'Banana lover'}"`;
+        document.getElementById('user-bio').innerText = `"${profile.bio || 'Living life one banana at a time!'}"`;
         document.getElementById('user-location').innerText = profile.location || "Gru's Secret Lab";
         document.getElementById('user-role').innerText = profile.role || 'Minion';
         document.getElementById('user-highscore').innerText = profile.highScore || 0;
+        document.getElementById('user-friends-count').innerText = profile.friendsCount || 0;
+        document.getElementById('friends-card-count').innerText = profile.friendsCount || 0;
 
-        const emailEl = document.getElementById('user-display-email');
-        if (currentUser.username.toLowerCase() === targetUsername.toLowerCase()) {
-            emailEl.innerText = currentUser.email;
+        const isSelf = currentUser.username.toLowerCase() === targetUsername.toLowerCase();
+
+        // Show Create Post box only on your own profile
+        if (isSelf) {
+            document.getElementById('profile-create-post').style.display = 'block';
+            document.getElementById('user-display-email').innerText = currentUser.email || 'N/A';
         } else {
-            emailEl.innerText = 'Minion Member';
+            document.getElementById('profile-create-post').style.display = 'none';
+            document.getElementById('user-display-email').innerText = 'Minion Member';
         }
 
         const avatarEl = document.getElementById('profile-avatar');
@@ -240,27 +305,13 @@
         }
 
         const actionsArea = document.getElementById('profile-actions-area');
-        const isSelf = currentUser.username.toLowerCase() === targetUsername.toLowerCase();
-
         if (isSelf) {
             actionsArea.innerHTML = `<button class="fb-btn-gray" onclick="openProfileModal()">✏️ Edit Profile & Info</button>`;
         } else {
-            let friendBtnHtml = '';
-            if (profile.isFriend) {
-                friendBtnHtml = `<button class="fb-btn-blue" onclick="toggleFriend('${profile.username}')">✔ Crew Member</button>`;
-            } else if (profile.requestSent) {
-                friendBtnHtml = `<button class="fb-btn-gray" onclick="toggleFriend('${profile.username}')">⏳ Request Sent (Cancel)</button>`;
-            } else if (profile.requestReceived) {
-                friendBtnHtml = `
-                    <button class="fb-btn-blue" onclick="acceptRequest('${profile.username}')">✔ Confirm</button>
-                    <button class="fb-btn-red" onclick="declineRequest('${profile.username}')">✖ Decline</button>
-                `;
-            } else {
-                friendBtnHtml = `<button class="fb-btn-blue" onclick="toggleFriend('${profile.username}')">➕ Add to Crew</button>`;
-            }
-
             actionsArea.innerHTML = `
-                ${friendBtnHtml}
+                <button class="fb-btn-blue" id="btn-friend" onclick="toggleFriend('${profile.username}')">
+                    ${profile.isFriend ? '✔ Friends' : '➕ Add Friend'}
+                </button>
                 <button class="fb-btn-gray" onclick="startDirectChat('${profile.username}')">💬 Message</button>
                 <button class="fb-btn-red" id="btn-block" onclick="toggleBlock('${profile.username}')">
                     ${profile.isBlocked ? 'Unblock' : '🚫 Block'}
@@ -268,7 +319,54 @@
             `;
         }
 
+        loadFriendsShowcase(targetUsername);
         loadUserPosts();
+    }
+
+    // Load Friends List for Friends Section
+    async function loadFriendsShowcase(username) {
+        const res = await fetch(`/api/users/${username}/friends`);
+        if (!res.ok) return;
+        const friends = await res.json();
+        const grid = document.getElementById('friends-grid');
+        grid.innerHTML = '';
+
+        if (friends.length === 0) {
+            grid.innerHTML = '<p style="color:#64748b;font-size:13px;">No friends added yet.</p>';
+            return;
+        }
+
+        friends.forEach(f => {
+            const item = document.createElement('a');
+            item.className = 'friend-item';
+            item.href = `profile.html?user=${f.username}`;
+            const avatarHtml = f.avatar && f.avatar.startsWith('data:image') 
+                ? `<img src="${f.avatar}" class="friend-avatar">` 
+                : `<div class="friend-avatar">${f.avatar || '🍌'}</div>`;
+            item.innerHTML = `
+                ${avatarHtml}
+                <div class="friend-name">${f.fullName}</div>
+            `;
+            grid.appendChild(item);
+        });
+    }
+
+    // CREATE POST ON PROFILE
+    async function publishProfilePost() {
+        const text = document.getElementById('profile-post-text').value.trim();
+        const image = document.getElementById('profile-post-image').value.trim();
+        if (!text && !image) return;
+
+        const res = await fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, image })
+        });
+        if (res.ok) {
+            document.getElementById('profile-post-text').value = '';
+            document.getElementById('profile-post-image').value = '';
+            loadUserPosts();
+        }
     }
 
     function startDirectChat(username) {
@@ -283,37 +381,60 @@
 
         const container = document.getElementById('profile-posts-container');
         if (userPosts.length === 0) {
-            container.innerHTML = '<div class="card" style="text-align:center; color:#64748b;">No posts from this Minion yet.</div>';
+            container.innerHTML = '<div class="post-card" style="text-align:center; color:#64748b;">No posts from this Minion yet.</div>';
             return;
         }
 
-        container.innerHTML = userPosts.map(post => `
-            <div class="post-card">
-                <div class="post-top">
-                    <div>
-                        <div class="post-author">${post.author}</div>
-                        <div class="post-time">${timeAgo(post.createdAt)}</div>
+        container.innerHTML = userPosts.map(post => {
+            const reacts = Array.isArray(post.reactions) ? post.reactions : [];
+            
+            // Build reaction buttons with names of who reacted
+            const makeBtn = (type, emoji) => {
+                const list = reacts.filter(r => r.type === type);
+                const hasReacted = currentUser && list.some(r => r.username === currentUser.username);
+                const names = list.map(r => r.fullName || r.username).join(', ');
+                const tooltip = list.length > 0 ? `Reacted by: ${names}` : `Click to react with ${emoji}`;
+                return `
+                    <button title="${tooltip}" class="react-btn ${hasReacted ? 'active' : ''}" onclick="togglePostReact('${post._id}', '${type}')">
+                        ${emoji} ${list.length}
+                    </button>
+                `;
+            };
+
+            return `
+                <div class="post-card">
+                    <div class="post-top">
+                        <div>
+                            <div class="post-author">${post.author}</div>
+                            <div class="post-time">${timeAgo(post.createdAt)} ${post.edited ? '<span style="font-size:10px;color:#94a3b8;">(edited)</span>' : ''}</div>
+                        </div>
+                    </div>
+                    ${post.text ? `<div class="post-content">${post.text}</div>` : ''}
+                    ${post.image ? `<img class="post-img" src="${post.image}">` : ''}
+                    <div class="reaction-bar">
+                        ${makeBtn('banana', '🍌')}
+                        ${makeBtn('love', '❤️')}
+                        ${makeBtn('haha', '😂')}
+                        ${makeBtn('rocket', '🚀')}
                     </div>
                 </div>
-                ${post.text ? `<div class="post-content">${post.text}</div>` : ''}
-                ${post.image ? `<img class="post-img" src="${post.image}">` : ''}
-            </div>
-        `).join('');
+            `;
+        }).join('');
+    }
+
+    // TOGGLE REACTION (Prevents infinite clicking)
+    async function togglePostReact(postId, type) {
+        const res = await fetch(`/api/posts/${postId}/react`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type })
+        });
+        if (res.ok) loadUserPosts();
     }
 
     async function toggleFriend(username) {
         const res = await fetch(`/api/users/${username}/friend`, { method: 'POST' });
-        if (res.ok) location.reload();
-    }
-
-    async function acceptRequest(username) {
-        const res = await fetch(`/api/users/${username}/accept-friend`, { method: 'POST' });
-        if (res.ok) location.reload();
-    }
-
-    async function declineRequest(username) {
-        const res = await fetch(`/api/users/${username}/decline-friend`, { method: 'POST' });
-        if (res.ok) location.reload();
+        if (res.ok) initProfile();
     }
 
     async function toggleBlock(username) {
@@ -381,7 +502,7 @@
 
         if (res.ok) {
             closeProfileModal();
-            location.reload();
+            initProfile();
         } else {
             const data = await res.json();
             alert(data.error || 'Failed to update profile');
