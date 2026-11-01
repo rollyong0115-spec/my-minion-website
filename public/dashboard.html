@@ -18,28 +18,58 @@
       }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Fredoka', cursive, sans-serif; } </style>
+    <style>
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            background: radial-gradient(ellipse at 12% 25%, #ffffffaa 0, transparent 32%),
+                        radial-gradient(ellipse at 90% 70%, #ffffff99 0, transparent 35%),
+                        linear-gradient(155deg, #82c5f1 0%, #c8e7fa 55%, #e8f5fc 100%);
+            background-attachment: fixed;
+            isolation: isolate;
+        }
+        .minion-backdrop {
+            position: fixed;
+            top: 88px;
+            left: max(12px, calc((100vw - 1500px) / 2));
+            width: clamp(150px, 17vw, 280px);
+            height: min(76vh, 820px);
+            object-fit: contain;
+            object-position: top;
+            pointer-events: none;
+            user-select: none;
+            z-index: -1;
+            filter: drop-shadow(0 16px 18px #27649125);
+        }
+        @media (max-width: 1399px) {
+            .minion-backdrop { left: -48px; opacity: .22; width: 210px; }
+        }
+        @media (max-width: 767px) {
+            .minion-backdrop { left: auto; right: -42px; top: 120px; width: 170px; opacity: .16; }
+        }
+    </style>
 </head>
 <body class="bg-slate-200 text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+    <img class="minion-backdrop" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iODUwIiB2aWV3Qm94PSIwIDAgMzAwIDg1MCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InllbGxvdyIgeDI9IjEiIHkyPSIuMyI+PHN0b3Agc3RvcC1jb2xvcj0iI2ZmZTk3NSIvPjxzdG9wIG9mZnNldD0iLjU1IiBzdG9wLWNvbG9yPSIjZmZkNjI5Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZWViNTE0Ii8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZGVuaW0iIHgyPSIxIiB5Mj0iMSI+PHN0b3Agc3RvcC1jb2xvcj0iIzY4YTlkMiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzI4NjM4ZSIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InN0ZWVsIiB4Mj0iMCIgeTI9IjEiPjxzdG9wIHN0b3AtY29sb3I9IiNmOWZjZmYiLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjYTdiNmMzIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZTVlZGYzIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxnIGlkPSJib2R5Ij4KICAgICAgPHJlY3QgeD0iLTY1IiB5PSItMTAwIiB3aWR0aD0iMTMwIiBoZWlnaHQ9IjE5NSIgcng9IjYyIiBmaWxsPSJ1cmwoI3llbGxvdykiLz4KICAgICAgPHBhdGggZD0iTS02NSA1TC00OSAyMlYtN0wtMzAgN1YzN0gzMFY3TDQ5LTdWMjJMNjUgNVY0NVE2NSAxMDAgMCAxMDBRLTY1IDEwMC02NSA0NVoiIGZpbGw9InVybCgjZGVuaW0pIiBzdHJva2U9IiMzMTY5OGYiIHN0cm9rZS13aWR0aD0iMyIvPgogICAgICA8cGF0aCBkPSJNLTI1IDQ1SDI1VjY2UTAgODctMjUgNjZaIiBmaWxsPSIjNDk4YmI5IiBzdHJva2U9IiNiMGQxZTYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iMyAzIi8+CiAgICAgIDxjaXJjbGUgY3g9Ii00MSIgY3k9IjI1IiByPSI1IiBmaWxsPSIjMjAzYzUwIi8+PGNpcmNsZSBjeD0iNDEiIGN5PSIyNSIgcj0iNSIgZmlsbD0iIzIwM2M1MCIvPgogICAgICA8cGF0aCBkPSJNLTI5IDk0TC0zMiAxMjJNMjkgOTRMMzIgMTIyIiBzdHJva2U9IiMzMjZiOTYiIHN0cm9rZS13aWR0aD0iMjQiLz4KICAgICAgPHBhdGggZD0iTS0zMiAxMjBMLTQ4IDEyNE0zMiAxMjBMNDQgMTI0IiBzdHJva2U9IiMyNjMyM2MiIHN0cm9rZS13aWR0aD0iMjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8cGF0aCBkPSJNLTE5LTk5TC0yMy0xMTdNLTItMTAwVi0xMjJNMTQtOTlMMjQtMTE2IiBzdHJva2U9IiMzMzNhNDAiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L2c+CiAgICA8ZyBpZD0iZXllIj4KICAgICAgPGNpcmNsZSByPSIzNCIgZmlsbD0idXJsKCNzdGVlbCkiIHN0cm9rZT0iIzY1NzU4MyIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICAgIDxjaXJjbGUgcj0iMjYiIGZpbGw9IiNmZmZkZjMiIHN0cm9rZT0iI2Q2ZDViZCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICAgIDxjaXJjbGUgY3g9IjQiIGN5PSI3IiByPSIxMiIgZmlsbD0iIzg4NTMyYyIvPjxjaXJjbGUgY3g9IjUiIGN5PSI4IiByPSI3IiBmaWxsPSIjMjUxZDE5Ii8+PGNpcmNsZSBjeD0iOCIgY3k9IjMiIHI9IjMiIGZpbGw9IndoaXRlIi8+CiAgICA8L2c+CiAgPC9kZWZzPgogIDxyZWN0IHg9IjEwIiB5PSI3IiB3aWR0aD0iMjgwIiBoZWlnaHQ9IjEyIiByeD0iNiIgZmlsbD0idXJsKCNzdGVlbCkiLz4KICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNTAgMTY3KSI+CiAgICA8cGF0aCBkPSJNLTU3LTVRLTk5LTQ5LTg3LTEzOU01Ny01UTk5LTQ5IDg3LTEzOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjhjYjI5IiBzdHJva2Utd2lkdGg9IjE4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik0tODctMTQwVi0xNTFNODctMTQwVi0xNTEiIHN0cm9rZT0iIzI2MzIzYyIgc3Ryb2tlLXdpZHRoPSIyMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8dXNlIGhyZWY9IiNib2R5Ii8+CiAgICA8cGF0aCBkPSJNLTY1LTU0SDY1IiBzdHJva2U9IiMyOTM0M2YiIHN0cm9rZS13aWR0aD0iMTUiLz4KICAgIDx1c2UgaHJlZj0iI2V5ZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTMyIC01NCkiLz48dXNlIGhyZWY9IiNleWUiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyIC01NCkiLz4KICAgIDxwYXRoIGQ9Ik0tMjAtNVEwIDEzIDIwLTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzhjNWIxZSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8L2c+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTE4IDQyMSkgcm90YXRlKDEyKSI+CiAgICA8cGF0aCBkPSJNNDUgNVE3Ni01MSA0OS0xNDIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y4Y2IyOSIgc3Ryb2tlLXdpZHRoPSIxOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8cGF0aCBkPSJNNDktMTQxTDUxLTE1MSIgc3Ryb2tlPSIjMjYzMjNjIiBzdHJva2Utd2lkdGg9IjIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik0tNTQgMTRRLTk1IDYwLTc1IDg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmOGNiMjkiIHN0cm9rZS13aWR0aD0iMTciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgPHBhdGggZD0iTS03NSA4NUwtNjkgOTIiIHN0cm9rZT0iIzI2MzIzYyIgc3Ryb2tlLXdpZHRoPSIyNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8dXNlIGhyZWY9IiNib2R5Ii8+CiAgICA8cGF0aCBkPSJNLTY1LTUzSDY1IiBzdHJva2U9IiMyOTM0M2YiIHN0cm9rZS13aWR0aD0iMTUiLz4KICAgIDx1c2UgaHJlZj0iI2V5ZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCAtNTQpIHNjYWxlKDEuMjUpIi8+CiAgICA8cGF0aCBkPSJNLTI1IDFRMC05IDI4LTFRMjAgMzQtNSAyNlEtMjQgMjItMjUgMSIgZmlsbD0iIzUxMzEyNSIvPgogICAgPHBhdGggZD0iTS0yMCAxUTAtNCAyMiAwTDE2IDlILTE0WiIgZmlsbD0iI2ZmZmRmMyIvPgogIDwvZz4KICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNjAgNjg0KSByb3RhdGUoLTE0KSI+CiAgICA8cGF0aCBkPSJNLTQ4IDBRLTgyLTY5LTQ3LTE0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjhjYjI5IiBzdHJva2Utd2lkdGg9IjE4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik0tNDctMTQyTC00NC0xNTMiIHN0cm9rZT0iIzI2MzIzYyIgc3Ryb2tlLXdpZHRoPSIyMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8cGF0aCBkPSJNNTUgMTJROTUgNTQgNzggODEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y4Y2IyOSIgc3Ryb2tlLXdpZHRoPSIxNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8cGF0aCBkPSJNNzggODFMNzIgOTAiIHN0cm9rZT0iIzI2MzIzYyIgc3Ryb2tlLXdpZHRoPSIyNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8dXNlIGhyZWY9IiNib2R5Ii8+CiAgICA8cGF0aCBkPSJNLTY1LTU0SDY1IiBzdHJva2U9IiMyOTM0M2YiIHN0cm9rZS13aWR0aD0iMTUiLz4KICAgIDx1c2UgaHJlZj0iI2V5ZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTMyIC01NCkiLz48dXNlIGhyZWY9IiNleWUiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyIC01NCkiLz4KICAgIDxlbGxpcHNlIGN5PSI2IiByeD0iMTMiIHJ5PSIxNyIgZmlsbD0iIzUxMzEyNSIvPgogIDwvZz4KPC9zdmc+Cg==" alt="" aria-hidden="true" draggable="false">
 
     <!-- TOP NAVBAR -->
     <nav class="bg-minion-yellow border-b-4 border-minion-blue px-5 py-3 sticky top-0 z-50 flex justify-between items-center shadow-md">
         <a href="dashboard.html" class="text-2xl font-bold text-minion-blue flex items-center gap-2 hover:scale-105 transition-transform">
-            <span>🍌</span> MinionFeed
+            <span>ðŸŒ</span> MinionFeed
         </a>
         <div class="flex gap-2">
-            <button class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-minion-blue text-minion-yellow shadow" id="btn-tab-feed" onclick="switchMainTab('feed')">🏠 <span>News Feed</span></button>
-            <button class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80" id="btn-tab-dms" onclick="switchMainTab('dms')">💬 <span>Messages</span></button>
-            <a href="profile.html" class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80">👤 <span>My Profile</span></a>
+            <button class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-minion-blue text-minion-yellow shadow" id="btn-tab-feed" onclick="switchMainTab('feed')">ðŸ  <span>News Feed</span></button>
+            <button class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80" id="btn-tab-dms" onclick="switchMainTab('dms')">ðŸ’¬ <span>Messages</span></button>
+            <a href="profile.html" class="px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-all bg-white/40 text-minion-blue hover:bg-white/80">ðŸ‘¤ <span>My Profile</span></a>
         </div>
         <div class="flex items-center gap-3 relative">
-            <button class="bg-white border-2 border-minion-blue rounded-full w-10 h-10 flex items-center justify-center relative hover:bg-yellow-50 transition-colors shadow-sm" onclick="toggleNotifs()">🔔<span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-[10px] font-bold px-1.5 py-0.5 hidden" id="notif-badge">0</span></button>
+            <button class="bg-white border-2 border-minion-blue rounded-full w-10 h-10 flex items-center justify-center relative hover:bg-yellow-50 transition-colors shadow-sm" onclick="toggleNotifs()">ðŸ””<span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-[10px] font-bold px-1.5 py-0.5 hidden" id="notif-badge">0</span></button>
             <div class="hidden absolute top-12 right-24 w-80 bg-white rounded-2xl shadow-2xl border-2 border-slate-300 z-50 overflow-hidden" id="notif-dropdown">
-                <div class="bg-minion-blue text-minion-yellow px-4 py-3 font-bold text-sm flex justify-between items-center"><span>Notifications 🔔</span><span class="cursor-pointer text-xs underline font-normal" onclick="markNotifsRead()">Mark all read</span></div>
+                <div class="bg-minion-blue text-minion-yellow px-4 py-3 font-bold text-sm flex justify-between items-center"><span>Notifications ðŸ””</span><span class="cursor-pointer text-xs underline font-normal" onclick="markNotifsRead()">Mark all read</span></div>
                 <div class="max-h-72 overflow-y-auto" id="notif-list"><div class="p-4 text-center text-slate-500 text-xs">No notifications yet.</div></div>
             </div>
-            <button class="bg-emerald-500 hover:bg-emerald-600 text-white border-2 border-emerald-700 px-3 py-1.5 rounded-xl font-bold text-xs shadow transition-transform active:scale-95" onclick="openGame()">🎮 Arcade</button>
-            <button class="bg-red-500 hover:bg-red-600 text-white border-2 border-red-700 px-3 py-1.5 rounded-xl font-bold text-xs shadow transition-transform active:scale-95" onclick="logout()">👋</button>
+            <button class="bg-emerald-500 hover:bg-emerald-600 text-white border-2 border-emerald-700 px-3 py-1.5 rounded-xl font-bold text-xs shadow transition-transform active:scale-95" onclick="openGame()">ðŸŽ® Arcade</button>
+            <button class="bg-red-500 hover:bg-red-600 text-white border-2 border-red-700 px-3 py-1.5 rounded-xl font-bold text-xs shadow transition-transform active:scale-95" onclick="logout()">ðŸ‘‹</button>
         </div>
     </nav>
 
@@ -49,12 +79,12 @@
             <div>
                 <!-- Create Post Card -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-slate-300 mb-5">
-                    <div class="text-lg font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">Create Post 📝</div>
+                    <div class="text-lg font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">Create Post ðŸ“</div>
                     <textarea id="post-text" class="w-full h-20 border-2 border-slate-200 rounded-xl p-3 font-inherit resize-none outline-none focus:border-minion-blue transition-colors mb-2" placeholder="What's on your mind? Mention someone with @username!"></textarea>
-                    <label class="block bg-sky-50 text-sky-700 border-2 border-dashed border-sky-400 p-2.5 rounded-xl font-bold text-xs text-center cursor-pointer hover:bg-sky-100 transition-colors">📁 Click to Attach Photo / GIF from Device<input type="file" id="post-file-input" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'post')"></label>
-                    <div id="uploading-status" class="text-xs text-blue-600 font-semibold mt-1 hidden">Uploading... 🚀</div>
+                    <label class="block bg-sky-50 text-sky-700 border-2 border-dashed border-sky-400 p-2.5 rounded-xl font-bold text-xs text-center cursor-pointer hover:bg-sky-100 transition-colors">ðŸ“ Click to Attach Photo / GIF from Device<input type="file" id="post-file-input" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'post')"></label>
+                    <div id="uploading-status" class="text-xs text-blue-600 font-semibold mt-1 hidden">Uploading... ðŸš€</div>
                     <img id="pasted-preview" class="max-w-full max-h-44 rounded-xl mt-2 hidden border-2 border-dashed border-slate-300 object-cover" alt="Preview">
-                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white border-2 border-minion-blue p-2.5 rounded-xl font-bold mt-3 shadow transition-transform active:scale-[0.99]" onclick="publishPost()">Post to Feed 🚀</button>
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white border-2 border-minion-blue p-2.5 rounded-xl font-bold mt-3 shadow transition-transform active:scale-[0.99]" onclick="publishPost()">Post to Feed ðŸš€</button>
                 </div>
                 <!-- Posts Container -->
                 <div id="posts-container"></div>
@@ -64,13 +94,13 @@
             <div class="space-y-5">
                 <!-- Crew Members -->
                 <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-slate-300">
-                    <div class="text-base font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">👥 Minion Crew Members</div>
+                    <div class="text-base font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">ðŸ‘¥ Minion Crew Members</div>
                     <div id="members-list" class="max-h-48 overflow-y-auto space-y-1"></div>
                 </div>
 
                 <!-- Public Chatroom -->
                 <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-slate-300 flex flex-col h-[380px]">
-                    <div class="text-base font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">💬 Public Lab Messenger</div>
+                    <div class="text-base font-bold text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">ðŸ’¬ Public Lab Messenger</div>
                     <div class="flex-1 overflow-y-auto flex flex-col gap-2 pr-1" id="chat-messages"></div>
                     <div id="chat-img-preview-box" class="hidden relative mt-2">
                         <img id="chat-img-preview" class="max-h-16 rounded-lg border-2 border-dashed border-sky-400 object-cover">
@@ -81,15 +111,15 @@
                         <span onclick="cancelReply()" class="cursor-pointer text-red-500 font-bold px-1">&times;</span>
                     </div>
                     <div class="flex gap-2 mt-2 items-center relative">
-                        <label class="bg-sky-100 text-sky-700 border border-sky-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-sm hover:bg-sky-200 transition-colors shrink-0" title="Attach Photo/GIF">📷<input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'public_chat')"></label>
-                        <button class="bg-yellow-100 border border-yellow-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-base hover:bg-yellow-200 transition-colors shrink-0" onclick="toggleEmojiPicker('public')" title="Insert Emoji">😊</button>
+                        <label class="bg-sky-100 text-sky-700 border border-sky-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-sm hover:bg-sky-200 transition-colors shrink-0" title="Attach Photo/GIF">ðŸ“·<input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'public_chat')"></label>
+                        <button class="bg-yellow-100 border border-yellow-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-base hover:bg-yellow-200 transition-colors shrink-0" onclick="toggleEmojiPicker('public')" title="Insert Emoji">ðŸ˜Š</button>
                         <div class="hidden absolute bottom-11 left-9 bg-white border-2 border-slate-300 rounded-2xl p-1.5 shadow-xl flex gap-1.5 z-30" id="emoji-popover-public">
-                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '🍌')">🍌</span>
-                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '❤️')">❤️</span>
-                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '😂')">😂</span>
-                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '🚀')">🚀</span>
-                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '🔥')">🔥</span>
-                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', '👍')">👍</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', 'ðŸŒ')">ðŸŒ</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', 'â¤ï¸')">â¤ï¸</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', 'ðŸ˜‚')">ðŸ˜‚</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', 'ðŸš€')">ðŸš€</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', 'ðŸ”¥')">ðŸ”¥</span>
+                            <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('public', 'ðŸ‘')">ðŸ‘</span>
                         </div>
                         <input type="text" id="chat-input" class="flex-1 py-2 px-3 border-2 border-slate-200 rounded-xl text-xs outline-none focus:border-minion-blue" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()">
                         <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold shrink-0 transition-transform active:scale-95" onclick="sendChat()">Send</button>
@@ -103,26 +133,26 @@
     <div id="view-dms" class="w-full flex-1" style="display: none;">
         <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 p-4 h-[580px]">
             <div class="bg-white rounded-2xl border-2 border-slate-300 p-4 overflow-y-auto">
-                <div class="font-bold text-sm text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">📥 Private Inbox</div>
+                <div class="font-bold text-sm text-minion-blue border-b-2 border-minion-yellow pb-2 mb-3">ðŸ“¥ Private Inbox</div>
                 <div id="dm-conversations-list" class="space-y-1"><div class="text-xs text-slate-500 text-center py-4">Loading conversations...</div></div>
             </div>
             <div class="bg-white rounded-2xl border-2 border-slate-300 p-4 flex flex-col justify-between">
-                <div id="dm-active-header" class="font-bold text-base text-minion-blue border-b-2 border-minion-yellow pb-2 mb-2">Select a Minion to message 💬</div>
+                <div id="dm-active-header" class="font-bold text-base text-minion-blue border-b-2 border-minion-yellow pb-2 mb-2">Select a Minion to message ðŸ’¬</div>
                 <div class="flex-1 overflow-y-auto py-2 flex flex-col gap-2" id="dm-thread-messages"></div>
                 <div id="dm-img-preview-box" class="hidden relative mt-2">
                     <img id="dm-img-preview" class="max-h-16 rounded-lg border-2 border-dashed border-sky-400 object-cover">
                     <span onclick="cancelChatImg('dm')" class="absolute -top-2 left-16 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] text-center font-bold cursor-pointer leading-tight">&times;</span>
                 </div>
                 <div class="flex gap-2 items-center relative mt-2" id="dm-input-area" style="display:none;">
-                    <label class="bg-sky-100 text-sky-700 border border-sky-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-sm hover:bg-sky-200 transition-colors shrink-0" title="Attach Photo/GIF">📷<input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'dm_chat')"></label>
-                    <button class="bg-yellow-100 border border-yellow-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-base hover:bg-yellow-200 transition-colors shrink-0" onclick="toggleEmojiPicker('dm')" title="Insert Emoji">😊</button>
+                    <label class="bg-sky-100 text-sky-700 border border-sky-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-sm hover:bg-sky-200 transition-colors shrink-0" title="Attach Photo/GIF">ðŸ“·<input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinary(this, 'dm_chat')"></label>
+                    <button class="bg-yellow-100 border border-yellow-300 rounded-lg w-9 h-9 flex items-center justify-center cursor-pointer text-base hover:bg-yellow-200 transition-colors shrink-0" onclick="toggleEmojiPicker('dm')" title="Insert Emoji">ðŸ˜Š</button>
                     <div class="hidden absolute bottom-11 left-9 bg-white border-2 border-slate-300 rounded-2xl p-1.5 shadow-xl flex gap-1.5 z-30" id="emoji-popover-dm">
-                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '🍌')">🍌</span>
-                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '❤️')">❤️</span>
-                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '😂')">😂</span>
-                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '🚀')">🚀</span>
-                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '🔥')">🔥</span>
-                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', '👍')">👍</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', 'ðŸŒ')">ðŸŒ</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', 'â¤ï¸')">â¤ï¸</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', 'ðŸ˜‚')">ðŸ˜‚</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', 'ðŸš€')">ðŸš€</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', 'ðŸ”¥')">ðŸ”¥</span>
+                        <span class="cursor-pointer text-lg hover:scale-125 transition-transform" onclick="insertEmoji('dm', 'ðŸ‘')">ðŸ‘</span>
                     </div>
                     <input type="text" id="dm-input" class="flex-1 py-2 px-3 border-2 border-slate-200 rounded-xl text-xs outline-none focus:border-minion-blue" placeholder="Type a private message..." onkeypress="if(event.key==='Enter') sendPrivateDM()">
                     <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-bold shrink-0 transition-transform active:scale-95" onclick="sendPrivateDM()">Send DM</button>
@@ -135,17 +165,17 @@
     <div id="msg-actions-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end md:justify-center items-center p-0 md:p-4 backdrop-blur-xs">
         <div class="bg-white w-full md:max-w-sm rounded-t-3xl md:rounded-2xl p-5 shadow-2xl border-4 border-minion-yellow flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-5 duration-150">
             <div class="bg-slate-100 p-2.5 rounded-full flex justify-around items-center shadow-inner">
-                <span onclick="reactToMessage('❤️')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Love">❤️</span>
-                <span onclick="reactToMessage('😆')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Haha">😆</span>
-                <span onclick="reactToMessage('😮')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Wow">😮</span>
-                <span onclick="reactToMessage('😢')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Sad">😢</span>
-                <span onclick="reactToMessage('😡')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Angry">😡</span>
-                <span onclick="reactToMessage('👍')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Like">👍</span>
+                <span onclick="reactToMessage('â¤ï¸')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Love">â¤ï¸</span>
+                <span onclick="reactToMessage('ðŸ˜†')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Haha">ðŸ˜†</span>
+                <span onclick="reactToMessage('ðŸ˜®')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Wow">ðŸ˜®</span>
+                <span onclick="reactToMessage('ðŸ˜¢')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Sad">ðŸ˜¢</span>
+                <span onclick="reactToMessage('ðŸ˜¡')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Angry">ðŸ˜¡</span>
+                <span onclick="reactToMessage('ðŸ‘')" class="cursor-pointer text-2xl hover:scale-125 transition-transform" title="Like">ðŸ‘</span>
             </div>
             <div class="flex flex-col text-sm font-semibold text-slate-700 divide-y divide-slate-100">
-                <button onclick="copyMessageText()" class="py-3 flex items-center gap-3 hover:bg-slate-50 px-3 rounded-xl transition-colors text-left">📋 Copy text</button>
-                <button onclick="replyToMessagePrompt()" class="py-3 flex items-center gap-3 hover:bg-slate-50 px-3 rounded-xl transition-colors text-left">↩️ Reply</button>
-                <button onclick="deleteActiveMessage()" class="py-3 flex items-center gap-3 text-red-500 hover:bg-red-50 px-3 rounded-xl transition-colors text-left">🗑️ Delete message</button>
+                <button onclick="copyMessageText()" class="py-3 flex items-center gap-3 hover:bg-slate-50 px-3 rounded-xl transition-colors text-left">ðŸ“‹ Copy text</button>
+                <button onclick="replyToMessagePrompt()" class="py-3 flex items-center gap-3 hover:bg-slate-50 px-3 rounded-xl transition-colors text-left">â†©ï¸ Reply</button>
+                <button onclick="deleteActiveMessage()" class="py-3 flex items-center gap-3 text-red-500 hover:bg-red-50 px-3 rounded-xl transition-colors text-left">ðŸ—‘ï¸ Delete message</button>
             </div>
             <button onclick="closeMsgActions()" class="w-full bg-slate-200 hover:bg-slate-300 py-2.5 rounded-xl font-bold text-slate-700 text-xs">Cancel</button>
         </div>
@@ -258,7 +288,7 @@
 
     function copyMessageText() {
         navigator.clipboard.writeText(selectedMsgText);
-        alert('Message copied to clipboard! 📋');
+        alert('Message copied to clipboard! ðŸ“‹');
         closeMsgActions();
     }
 
@@ -357,7 +387,7 @@
             const item = document.createElement('div');
             item.className = `p-2.5 rounded-xl cursor-pointer flex items-center gap-3 transition-colors ${activeDMUser === p.username ? 'bg-yellow-100 border border-minion-yellow' : 'hover:bg-slate-100'}`;
             item.onclick = () => selectDMThread(p.username, p.fullName);
-            const avatarHtml = p.avatar && p.avatar.startsWith('data:image') ? `<img src="${p.avatar}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-minion-yellow flex items-center justify-center text-xs font-bold">🍌</div>`;
+            const avatarHtml = p.avatar && p.avatar.startsWith('data:image') ? `<img src="${p.avatar}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-minion-yellow flex items-center justify-center text-xs font-bold">ðŸŒ</div>`;
             item.innerHTML = `${avatarHtml}<div><div class="font-bold text-xs text-minion-blue">${p.fullName}</div><div class="text-[10px] text-slate-500">@${p.username}</div></div>`;
             list.appendChild(item);
         });
@@ -365,7 +395,7 @@
 
     async function selectDMThread(username, fullName = '') {
         activeDMUser = username;
-        document.getElementById('dm-active-header').innerText = `💬 Chat with @${username} ${fullName ? `(${fullName})` : ''}`;
+        document.getElementById('dm-active-header').innerText = `ðŸ’¬ Chat with @${username} ${fullName ? `(${fullName})` : ''}`;
         document.getElementById('dm-input-area').style.display = 'flex';
 
         const res = await fetch(`/api/dm/${username}`);
@@ -391,7 +421,7 @@
             }
 
             let replyHtml = '';
-            if (m.replyTo) { replyHtml = `<div class="bg-black/5 border-l-2 border-minion-blue px-2 py-1 rounded text-[10px] mb-1 italic text-slate-600">↩️ ${m.replyTo}</div>`; }
+            if (m.replyTo) { replyHtml = `<div class="bg-black/5 border-l-2 border-minion-blue px-2 py-1 rounded text-[10px] mb-1 italic text-slate-600">â†©ï¸ ${m.replyTo}</div>`; }
 
             let reactionsHtml = '';
             if (m.reactions && m.reactions.length > 0) {
@@ -416,7 +446,7 @@
                 ${mediaHtml}
                 ${reactionsHtml}
                 <div class="text-[9px] text-slate-400 mt-1 text-right">${timeAgo(m.createdAt)}</div>
-                <div class="absolute -top-2 right-2 hidden group-hover:block bg-white border border-slate-300 rounded-full px-1.5 shadow text-[10px]">⚙️</div>
+                <div class="absolute -top-2 right-2 hidden group-hover:block bg-white border border-slate-300 rounded-full px-1.5 shadow text-[10px]">âš™ï¸</div>
             `;
             box.appendChild(bubble);
         });
@@ -453,7 +483,7 @@
             const item = document.createElement('div');
             item.className = 'flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors';
             item.onclick = () => openUserProfile(u.username);
-            const avatarHtml = u.avatar && u.avatar.startsWith('data:image') ? `<img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-minion-yellow flex items-center justify-center text-xs font-bold">🍌</div>`;
+            const avatarHtml = u.avatar && u.avatar.startsWith('data:image') ? `<img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-minion-yellow flex items-center justify-center text-xs font-bold">ðŸŒ</div>`;
             item.innerHTML = `<div class="flex items-center gap-2">${avatarHtml}<div><div class="font-bold text-xs text-minion-blue">${u.fullName} ${isMe ? '(You)' : ''}</div><div class="text-[10px] text-slate-400">@${u.username}</div></div></div><span class="text-xs text-blue-600 font-semibold">&rarr;</span>`;
             container.appendChild(item);
         });
@@ -488,7 +518,7 @@
             }
 
             let replyHtml = '';
-            if (m.replyTo) { replyHtml = `<div class="bg-black/5 border-l-2 border-minion-blue px-2 py-1 rounded text-[10px] mb-1 italic text-slate-600">↩️ ${m.replyTo}</div>`; }
+            if (m.replyTo) { replyHtml = `<div class="bg-black/5 border-l-2 border-minion-blue px-2 py-1 rounded text-[10px] mb-1 italic text-slate-600">â†©ï¸ ${m.replyTo}</div>`; }
 
             let reactionsHtml = '';
             if (m.reactions && m.reactions.length > 0) {
@@ -514,7 +544,7 @@
                 ${mediaHtml}
                 ${reactionsHtml}
                 <div class="text-[9px] text-slate-400 mt-1 text-right">${timeAgo(m.createdAt)}</div>
-                <div class="absolute -top-2 right-2 hidden group-hover:block bg-white border border-slate-300 rounded-full px-1.5 shadow text-[10px]">⚙️</div>
+                <div class="absolute -top-2 right-2 hidden group-hover:block bg-white border border-slate-300 rounded-full px-1.5 shadow text-[10px]">âš™ï¸</div>
             `;
             box.appendChild(bubble);
         });
@@ -610,7 +640,7 @@
             <div class="bg-white rounded-2xl p-4 shadow-sm border-2 border-slate-300 mb-4 transition-all" id="post-${post._id}">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-3 cursor-pointer" onclick="openUserProfile('${post.username}')">
-                        <div class="w-10 h-10 rounded-full bg-minion-yellow border-2 border-minion-blue flex items-center justify-center text-lg font-bold">🍌</div>
+                        <div class="w-10 h-10 rounded-full bg-minion-yellow border-2 border-minion-blue flex items-center justify-center text-lg font-bold">ðŸŒ</div>
                         <div>
                             <div class="font-bold text-minion-blue text-sm">${post.author}</div>
                             <div class="text-[11px] text-slate-400">${timeAgo(post.createdAt)} ${post.edited ? '<span class="italic">(edited)</span>' : ''}</div>
@@ -621,10 +651,10 @@
                 ${post.text ? `<div class="text-sm mb-3 leading-relaxed">${post.text}</div>` : ''}
                 ${post.image ? `<img class="w-full rounded-xl max-h-80 object-cover mb-3" src="${post.image}" onerror="this.style.display='none'">` : ''}
                 <div class="flex gap-2 border-y border-slate-100 py-2 my-2 flex-wrap">
-                    ${makeBtn('banana', '🍌')}
-                    ${makeBtn('love', '❤️')}
-                    ${makeBtn('haha', '😂')}
-                    ${makeBtn('rocket', '🚀')}
+                    ${makeBtn('banana', 'ðŸŒ')}
+                    ${makeBtn('love', 'â¤ï¸')}
+                    ${makeBtn('haha', 'ðŸ˜‚')}
+                    ${makeBtn('rocket', 'ðŸš€')}
                 </div>
                 <div class="space-y-1 mb-3">${commentsHtml}</div>
                 <div class="flex gap-2">
